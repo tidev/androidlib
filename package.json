@@ -1,6 +1,6 @@
 {
   "name": "androidlib",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Android Utility Library",
   "main": "index.js",
   "scripts": {
