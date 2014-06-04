@@ -4,6 +4,11 @@ android:
     - build-tools-18.1.0
     - android-19
 
+env:
+	global:
+		- ANDROID_HOME=/usr/android-sdk
+		- ANDROID_SDK=/usr/android-sdk    
+
 before_script:
 # download and install Ant
 - ant -version
