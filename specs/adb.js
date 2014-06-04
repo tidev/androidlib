@@ -23,7 +23,7 @@ describe("adb", function(){
 			var child = spawn('ant',['debug']);
 			child.on('error',done);
 			child.stdout.on('data',function(buf){
-				//console.log(String(buf).trim());
+				process.env.TRAVIS && console.log(String(buf).trim());
 			});
 			child.stderr.on('data',function(buf){
 				console.error(String(buf).trim());
