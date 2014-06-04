@@ -1,0 +1,25 @@
+language: android
+android:
+  components:
+    - build-tools-18.1.0
+    - android-19
+
+before_script:
+# download and setup NDK
+- wget http://dl.google.com/android/ndk/android-ndk-r9-linux-x86_64.tar.bz2
+- tar xf android-ndk-r9-linux-x86_64.tar.bz2
+- sudo mv android-ndk-r9 /usr/local/android-ndk
+# sym link because currently node-appc looks here
+- sudo ln -s /usr/local/android-sdk /usr/android-sdk
+- sudo ln -s /usr/local/android-ndk /usr/android-ndk
+# Create and start emulator
+- echo no | android create avd --force -n test -t android-16 --abi armeabi-v7a
+- emulator -avd test -no-skin -no-audio -no-window &
+- ./wait_for_emulator
+
+install:
+- npm install
+
+script:
+- npm test
+
