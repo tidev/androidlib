@@ -5,9 +5,9 @@ android:
     - android-19
 
 env:
-	global:
-		- ANDROID_HOME=/usr/android-sdk
-		- ANDROID_SDK=/usr/android-sdk    
+  global:
+    - ANDROID_HOME=/usr/android-sdk
+    - ANDROID_SDK=/usr/android-sdk    
 
 before_script:
 # download and install Ant
