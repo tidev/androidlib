@@ -6,7 +6,7 @@ android:
 
 before_script:
 # download and install Ant
-- ant --version
+- ant -version
 # download and setup NDK
 - wget http://dl.google.com/android/ndk/android-ndk-r9-linux-x86_64.tar.bz2
 - tar xf android-ndk-r9-linux-x86_64.tar.bz2
