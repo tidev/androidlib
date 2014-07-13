@@ -51,7 +51,9 @@ describe("adb", function(){
 					apk: apk,
 					appid: 'org.appcelerator.test',
 					name: 'Main',
-					auto_exit: true
+					auto_exit: true,
+					arch: 'arm',
+					sdk: '19'
 				};
 
 				adb.launch(config);
