@@ -8,7 +8,7 @@ var should = require('should'),
 describe("env", function(){
 
 	it("should be able to find SDK and NDK", function(done){
-		var options = {arch:'armv7',sdk:'19'};
+		var options = {arch:'armv7',sdk:'18'};
 		var android = env.find(options,done);
 		should(options.sdk).be.ok;
 		should(android).be.an.object;
@@ -34,6 +34,9 @@ describe("env", function(){
 		fs.existsSync(android.toolchain_llvm).should.be.true;
 		fs.existsSync(android.toolchain_ar).should.be.true;
 		fs.existsSync(android.toolchain_clang).should.be.true;
+		fs.existsSync(android.toolchain_platform_sdk).should.be.true;
+		fs.existsSync(android.toolchain_libstdcpp).should.be.true;
+		fs.existsSync(android.toolchain_libstdcpplib).should.be.true;
 		done();
 	});
 	

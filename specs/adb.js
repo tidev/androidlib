@@ -53,7 +53,7 @@ describe("adb", function(){
 					name: 'Main',
 					auto_exit: true,
 					arch: 'arm',
-					sdk: '19'
+					sdk: '18'
 				};
 
 				adb.launch(config);
