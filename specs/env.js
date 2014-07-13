@@ -34,9 +34,6 @@ describe("env", function(){
 		fs.existsSync(android.toolchain_llvm).should.be.true;
 		fs.existsSync(android.toolchain_ar).should.be.true;
 		fs.existsSync(android.toolchain_clang).should.be.true;
-		fs.existsSync(android.toolchain_platform_sdk).should.be.true;
-		fs.existsSync(android.toolchain_libstdcpp).should.be.true;
-		fs.existsSync(android.toolchain_libstdcpplib).should.be.true;
 		done();
 	});
 	
