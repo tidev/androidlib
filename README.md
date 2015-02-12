@@ -1,12 +1,13 @@
-Android Utility Library 
+Android Utility Library [![Build Status](https://travis-ci.org/appcelerator/androidlib.svg?branch=master)](https://travis-ci.org/appcelerator/androidlib)
 ===================
 
 This is a library of utilities for dealing programmatically with Android applications, used namely for tools like [Hyperloop](https://github.com/appcelerator/hyperloop) and [Titanium](https://github.com/appcelerator/titanium).
 
-## Current Status [![Build Status](https://travis-ci.org/appcelerator/androidlib.svg?branch=master)](https://travis-ci.org/appcelerator/androidlib) [![NPM version](https://badge.fury.io/js/androidlib.svg)](http://badge.fury.io/js/androidlib)
+[![NPM](https://nodei.co/npm/androidlib.png?downloads=true&stars=true)](https://nodei.co/npm/androidlib/)
+
+## Current Status
 
 - work in progress. do not use yet!
-
 
 ## Reporting Bugs or submitting fixes
 
