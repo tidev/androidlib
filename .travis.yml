@@ -1,31 +1,31 @@
 language: android
 android:
   components:
-    - build-tools-18.1.0
-    - android-19
-
+  - build-tools-18.1.0
+  - android-19
 env:
   global:
-    - ANDROID_HOME=/usr/android-sdk
-    - ANDROID_SDK=/usr/android-sdk    
-
+  - ANDROID_HOME=/usr/android-sdk
+  - ANDROID_SDK=/usr/android-sdk
 before_script:
 - ant -version
-# download and setup NDK
 - wget http://dl.google.com/android/ndk/android-ndk-r9-linux-x86_64.tar.bz2
 - tar xf android-ndk-r9-linux-x86_64.tar.bz2
 - sudo mv android-ndk-r9 /usr/local/android-ndk
-# sym link because currently node-appc looks here
 - sudo ln -s /usr/local/android-sdk /usr/android-sdk
 - sudo ln -s /usr/local/android-ndk /usr/android-ndk
-# Create and start emulator
 - echo no | android create avd --force -n test -t android-16 --abi armeabi-v7a
 - emulator -avd test -no-skin -no-audio -no-window &
 - ./wait_for_emulator
-
 install:
 - npm install
-
 script:
 - npm test
-
+deploy:
+  provider: npm
+  email: npmjs@appcelerator.com
+  api_key:
+    secure: awK0WET+u9OOlVtg+hwe0AToeFcMKqJfxv8EnJJg0vttj0aNDwVGaGfl/MGpip9lG02d7vsVL+TzERL4+xLyratt0zjggFM7vI2puHsnPHTZkJ209h4K+L1sNiomJdwpXIsO4fHbmpZEKpzIRGdI0gqqgSI5D20OEvQl2MM9ygg=
+  on:
+    tags: true
+    repo: appcelerator/androidlib
