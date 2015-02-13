@@ -12,11 +12,6 @@ before_script:
   - chmod a+x ndk.bin
   - ./ndk.bin -y | grep -v Extracting
   - export ANDROID_NDK=${PWD}/android-ndk-r10d
-  - ls -la
-  - ls -la $ANDROID_NDK
-  - ls -la $ANDROID_NDK/toolchains
-  - ls -la $ANDROID_NDK/platforms
-  - ls -la $ANDROID_NDK/sources
   
   - echo no | android create avd --force -n test -t android-16 --abi armeabi-v7a
   - emulator -avd test -no-skin -no-audio -no-window &
