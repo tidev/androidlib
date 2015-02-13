@@ -1,26 +1,34 @@
 language: android
+sudo: false
 android:
   components:
   - build-tools-18.1.0
   - android-19
-env:
-  global:
-  - ANDROID_HOME=/usr/android-sdk
-  - ANDROID_SDK=/usr/android-sdk
+  
 before_script:
-- ant -version
-- wget http://dl.google.com/android/ndk/android-ndk-r9-linux-x86_64.tar.bz2
-- tar xf android-ndk-r9-linux-x86_64.tar.bz2
-- sudo mv android-ndk-r9 /usr/local/android-ndk
-- sudo ln -s /usr/local/android-sdk /usr/android-sdk
-- sudo ln -s /usr/local/android-ndk /usr/android-ndk
-- echo no | android create avd --force -n test -t android-16 --abi armeabi-v7a
-- emulator -avd test -no-skin -no-audio -no-window &
-- ./wait_for_emulator
+
+  # Get Android NDK
+  - wget http://dl.google.com/android/ndk/android-ndk-r10d-linux-x86_64.bin -O ndk.bin
+  - chmod a+x ndk.bin
+  - ./ndk.bin -y | grep -v Extracting
+  - export ANDROID_NDK=${PWD}/android-ndk-r10d
+  - ls -la
+  - ls -la $ANDROID_NDK
+  - ls -la $ANDROID_NDK/toolchains
+  - ls -la $ANDROID_NDK/platforms
+  - ls -la $ANDROID_NDK/sources
+  
+  - echo no | android create avd --force -n test -t android-16 --abi armeabi-v7a
+  - emulator -avd test -no-skin -no-audio -no-window &
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
+  
 install:
-- npm install
+  - npm install
+  
 script:
-- npm test
+  - npm test
+  
 deploy:
   provider: npm
   email: npmjs@appcelerator.com
