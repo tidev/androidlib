@@ -1,9 +1,13 @@
-Android Utility Library [![Build Status](https://travis-ci.org/appcelerator/androidlib.svg?branch=master)](https://travis-ci.org/appcelerator/androidlib)
-===================
+# Android Utility Library
 
-This is a library of utilities for dealing programmatically with Android applications, used namely for tools like [Hyperloop](https://github.com/appcelerator/hyperloop) and [Titanium](https://github.com/appcelerator/titanium).
+> This is a library of utilities for dealing programmatically with Android applications, used namely for tools like [Hyperloop](https://github.com/appcelerator/hyperloop) and [Titanium](https://github.com/appcelerator/titanium).
 
-[![NPM](https://nodei.co/npm/androidlib.png?downloads=true&stars=true)](https://nodei.co/npm/androidlib/)
+[![Build Status](https://travis-ci.org/appcelerator/androidlib.svg?branch=master)](https://travis-ci.org/appcelerator/androidlib)
+[![Dependency Status](https://david-dm.org/appcelerator/androidlib.svg)](https://david-dm.org/appcelerator/androidlib)
+[![devDependency Status](https://david-dm.org/appcelerator/androidlib/dev-status.svg)](https://david-dm.org/appcelerator/androidlib#info=devDependencies)
+[![NPM version](https://badge.fury.io/js/androidlib.svg)](http://badge.fury.io/js/grunt-appc-js)
+
+[![NPM](https://nodei.co/npm-dl/androidlib.png)](https://nodei.co/npm/androidlib/)
 
 ## Current Status
 
