@@ -1,5 +1,8 @@
+.DS_Store
+._*
 node_modules
 build
 _tmp
 out
 npm-debug.log
+dist
