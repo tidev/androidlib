@@ -2,6 +2,7 @@
 ._*
 npm-debug.log
 node_modules
-.git*
-.travis.yml
 src
+.git*
+coverage
+.travis.yml

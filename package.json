@@ -1,34 +1,63 @@
 {
   "name": "androidlib",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "description": "Android Utility Library",
-  "main": "index.js",
-  "scripts": {
-    "test": "./node_modules/.bin/mocha --reporter list ./specs"
+  "main": "./dist/index.js",
+  "author": {
+    "name": "Appcelerator, Inc.",
+    "email": "npmjs@appcelerator.com"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/appcelerator/androidlib.git"
-  },
-  "bin": "./bin/androidlib",
-  "keywords": [
-    "android"
+  "maintainers": [
+    {
+      "name": "Feon Sua",
+      "email": "fmiao@appcelerator.com"
+    },
+    {
+      "name": "Chris Barber",
+      "email": "cbarber@appcelerator.com"
+    }
   ],
-  "author": "Jeff Haynie",
-  "license": "Apache-2",
-  "bugs": {
-    "url": "https://github.com/appcelerator/androidlib/issues"
+  "license": "Apache-2.0",
+  "keywords": [
+    "appcelerator",
+    "android",
+    "ndk",
+    "adb"
+  ],
+  "scripts": {
+    "build": "gulp build",
+    "prepublish": "gulp build",
+    "coverage": "gulp coverage",
+    "test": "gulp test"
   },
   "dependencies": {
-    "adbkit-logcat": "~1.0.3",
-    "async": "~0.9.0",
-    "colors": "~0.6.2",
-    "commander": "~2.2.0",
-    "tiapp.xml": "~0.2.0",
-    "wrench": "~1.5.8"
+    "jdklib": "^0.1.2",
+    "source-map-support": "^0.4.0"
   },
   "devDependencies": {
-    "mocha": "~1.20.0",
-    "should": "~4.0.0"
+    "babel-eslint": "^5.0.0",
+    "babel-preset-nodejs-lts": "^1.2.1",
+    "chai": "^3.5.0",
+    "del": "^2.2.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-babel-istanbul": "^0.12.0",
+    "gulp-debug": "^2.1.2",
+    "gulp-eslint": "^2.0.0",
+    "gulp-filter": "^3.0.1",
+    "gulp-inject-modules": "^0.1.0",
+    "gulp-load-plugins": "^1.2.0",
+    "gulp-mocha": "^2.2.0",
+    "gulp-plumber": "^1.1.0",
+    "gulp-sourcemaps": "^1.6.0"
+  },
+  "homepage": "https://github.com/appcelerator/androidlib",
+  "bugs": "https://github.com/appcelerator/androidlib/issues",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/appcelerator/androidlib.git"
+  },
+  "engines": {
+    "node": ">=4.0.0"
   }
 }

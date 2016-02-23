@@ -1,34 +1,11 @@
-language: android
+language: node_js
+node_js:
+  - "4"
+  - "5"
+os:
+  - linux
 sudo: false
-android:
-  components:
-  - build-tools-18.1.0
-  - android-19
-  
 before_script:
-
-  # Get Android NDK
-  - wget http://dl.google.com/android/ndk/android-ndk-r10d-linux-x86_64.bin -O ndk.bin
-  - chmod a+x ndk.bin
-  - ./ndk.bin -y | grep -v Extracting
-  - export ANDROID_NDK=${PWD}/android-ndk-r10d
-  
-  - echo no | android create avd --force -n test -t android-16 --abi armeabi-v7a
-  - emulator -avd test -no-skin -no-audio -no-window &
-  - android-wait-for-emulator
-  - adb shell input keyevent 82 &
-  
-install:
-  - npm install
-  
+  - sh -c "git log | head -12"
 script:
-  - npm test
-  
-deploy:
-  provider: npm
-  email: npmjs@appcelerator.com
-  api_key:
-    secure: awK0WET+u9OOlVtg+hwe0AToeFcMKqJfxv8EnJJg0vttj0aNDwVGaGfl/MGpip9lG02d7vsVL+TzERL4+xLyratt0zjggFM7vI2puHsnPHTZkJ209h4K+L1sNiomJdwpXIsO4fHbmpZEKpzIRGdI0gqqgSI5D20OEvQl2MM9ygg=
-  on:
-    tags: true
-    repo: appcelerator/androidlib
+  - npm run coverage
