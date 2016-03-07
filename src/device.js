@@ -1,3 +1,7 @@
+import 'babel-polyfill';
+import 'source-map-support/register';
+import { ADB } from './adb';
+
 /**
  * Detects connected devices.
  *
