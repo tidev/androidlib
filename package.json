@@ -35,8 +35,7 @@
     "babel-polyfill": "^6.6.1",
     "source-map-support": "^0.4.0",
     "which": "^1.2.4",
-    "wrench": "~1.5.8",
-    "node-appc": "^0.2.35"
+    "wrench": "~1.5.8"
   },
   "devDependencies": {
     "babel-eslint": "^5.0.0",

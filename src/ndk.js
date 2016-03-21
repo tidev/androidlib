@@ -6,7 +6,7 @@ import which from 'which';
 
 import * as util from './util';
 
-const ndkBuild = util.ndkBuild;
+const ndkBuild = 'ndk-build' + util.cmd;
 let cache = null;
 
 /**
@@ -14,7 +14,7 @@ let cache = null;
  *
  * @param {Object} [opts] - An object with various params.
  * @param {Boolean} [opts.bypassCache=false] - When true, forces scan for all Paths.
- * @param {String} [opts.android.ndkPath] - Path to a known Android NDK directory.
+ * @param {String} [opts.ndkPath] - Path to a known Android NDK directory.
  * @returns {Promise}
  */
 export function detect(opts = {}) {
@@ -26,7 +26,7 @@ export function detect(opts = {}) {
 		ndk: {}
 	};
 
-	let ndkDir = opts.android && opts.android.ndkPath || process.env.ANDROID_NDK;
+	let ndkDir = opts.ndkPath || process.env.ANDROID_NDK;
 	let ndkPaths = [];
 	const searchDirs = util.getSearchPaths();
 
@@ -45,17 +45,14 @@ export function detect(opts = {}) {
 			});
 		});
 
-	return Promise.resolve(ndkPaths)
-		.then(paths => {
-			return Promise.all(paths.map(p => {
-				return isNDK(p);
-			}));
-		})
-		.then(values => {
-			results.ndk = values.filter(a => { return a; }).shift();
-			cache = results;
-		})
-		.then(() => results);
+	return Promise.all(ndkPaths.map(p => {
+		return isNDK(p);
+	}))
+	.then(values => {
+		results.ndk = values.filter(a => { return a; }).shift();
+		cache = results;
+		return results;
+	});
 }
 
 /**

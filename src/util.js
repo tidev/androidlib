@@ -11,7 +11,6 @@ export const winEnvVarRegExp = /(%([^%]*)%)/g;
 export const exe = isWindows ? '.exe' : '';
 export const cmd = isWindows ? '.cmd' : '';
 export const bat = isWindows ? '.bat' : '';
-export const ndkBuild = 'ndk-build' + cmd;
 
 /**
  * Returns a list of search directory according to platform
@@ -38,7 +37,7 @@ export function getSearchPaths() {
  */
 export function findExecutable(executable) {
 	return new Promise((resolve, reject) => {
-		which(executable, function (err, file) {
+		which(executable, (err, file) => {
 			if (err) {
 				reject(err);
 			} else {

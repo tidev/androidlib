@@ -4,7 +4,6 @@ import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import * as net from 'net';
-import appc from 'node-appc';
 
 import * as util from '../util';
 import * as sdk from '../sdk';
@@ -24,7 +23,6 @@ let cache = null;
  * @returns {Promise}
  */
 export function detect(opts = {}) {
-	// get the list of emulators through  `android list`
 	//TODO normalized `android` command for Windows
 
 	if (cache && !opts.bypassCache) {
@@ -32,201 +30,25 @@ export function detect(opts = {}) {
 	}
 
 	const results = cache = {
-		sdk : {},
-		targets: {},
 		avds: []
 	};
 
-	let sdkInfo;
-
 	return sdk
-		.detect()
+		.detect(opts)
 		.then(result => {
-			sdkInfo = result.sdk;
-			results.sdk = result.sdk;
-			return util.run(sdkInfo.executables.android, ['list']);
+			return util.run(result.sdk.executables.android, ['list', 'avd']);
 		})
 		.then(({ code, stdout, stderr }) => {
 			if (code) {
 				return null;
 			}
 
-			let addons = {};
-			const addonsDir = path.join(sdkInfo.path, 'add-ons');
-			const sdkPlatformDir = path.join(sdkInfo.path, 'platforms');
-			const manifestNameRegex = /^(?:name|Addon\.Name(?:Display)?)=(.*)$/m;
-			const manifestVendorRegex = /^(?:vendor|Addon\.Vendor(?:Display)?)=(.*)$/m;
-			const manifestApiRegex = /^(?:api|AndroidVersion\.ApiLevel)=(.*)$/m;
-			const manifestRevisionRegex = /^(?:revision|Pkg.Revision)=(.*)$/m;
-
-			fs.existsSync(addonsDir) && fs.readdirSync(addonsDir).forEach(subDir => {
-				const dir = path.join(addonsDir, subDir);
-				if (fs.statSync(dir).isDirectory()) {
-					let file = path.join(dir, 'manifest.ini');
-
-					if (!fs.existsSync(file)) {
-						file = path.join(dir, 'source.properties');
-					}
-
-					if (fs.existsSync(file)) {
-						const manifest = fs.readFileSync(file).toString();
-						const name = manifest.match(manifestNameRegex);
-						const vendor = manifest.match(manifestVendorRegex);
-						const api = manifest.match(manifestApiRegex);
-						const revision = manifest.match(manifestRevisionRegex);
-						name && vendor && api && revision && (addons[name[1] + '|' + vendor[1] + '|' + api[1] + '|' + revision[1]] = dir);
-					}
-				}
-			});
-
-			let sections = {};
-			let lastSection;
-			const sectionRegExp = /^\w.*\:$/;
-
-			stdout.split('\n').forEach(line => {
-				if (sectionRegExp.test(line)) {
-					sections[line] || (sections[line] = []);
-					lastSection = line;
-				} else if (lastSection && line) {
-					sections[lastSection].push(line);
-				}
-			});
-
-			Object.keys(sections).forEach(name => {
-				sections[name] = sections[name].join('\n').split(/\-\-\-\-\-\-+\n/);
-			});
-
-			// process the targets
-			const targets = sections['Available Android targets:'];
-			const avds = sections['Available Android Virtual Devices:'];
-			const issues = sections['The following Android Virtual Devices could not be loaded:'];
-			const deviceDefs = sections['Available devices definitions:'];
-			const idRegex = /^id: ([^\s]+) or "(.+)"$/;
-			const libEntryRegex = /^\*\s+?(.+) \((.*)\)$/;
-			const basedOnRegex = /^Based on Android ([^\s]+) \(API level ([^)]+)\)$/;
+			const basedOnAPIRegex = /^(?:Based on )?Android ([^\s]+) \(API level ([^)]+)\)$/;
 			const keyValRegex = /^\s*(.+)\: (.+)$/;
-			let apiLevelMap = {};
-			let sdkMap = {};
-			let finalTargets = {};
-			let finalAvds = [];
-			let ver2api = {};
-
-			//TODO refactor this
-			targets && targets.forEach(target => {
-				target.split('\n\w').forEach(chunk => {
-					chunk = chunk.trim();
-					if (!chunk) return;
-					let lines = chunk.split('\n');
-					let m = lines.shift().match(idRegex);
-					let info = m && (finalTargets[m[1]] = { id: m[2], abis: [], skins: [] });
-					let line;
-					let p;
-					let key;
-					let value;
-					if (!m) return; // shouldn't happen
-
-					for (let i = 0, len = lines.length; i < len; i++) {
-						line = lines[i].trim();
-						if (line == 'Libraries:') {
-							info.libraries || (info.libraries = {});
-							for (++i; i < len; i++) {
-								if (m = lines[i].trim().match(libEntryRegex)) {
-									if (++i < len) {
-										info.libraries[m[1]] = {
-											jar: m[2],
-											description: lines[i].trim()
-										};
-									} else {
-										i--;
-									}
-								} else {
-									i--;
-									break;
-								}
-							}
-						} else if (m = line.match(basedOnRegex)) {
-							info['based-on'] = {
-								'android-version': m[1],
-								'api-level': ~~m[2]
-							};
-						} else {
-							// simple key-value
-							p = line.indexOf(':');
-							if (p != -1) {
-								key = line.substring(0, p).toLowerCase().trim().replace(/\s/g, '-');
-								value = line.substring(p+1).trim();
-								switch (key) {
-									case 'abis':
-									case 'skins':
-										value.split(',').forEach(function (v) {
-											v = v.replace('(default)', '').trim();
-											if (info[key].indexOf(v) == -1) {
-												info[key].push(v);
-											}
-										});
-										break;
-									case 'tag/abis':
-										// note: introduced in android sdk tools 22.6
-										value.split(',').forEach(function (v) {
-											var p = v.indexOf('/');
-											v = (p == -1 ? v : v.substring(p + 1)).trim();
-											if (info.abis.indexOf(v) == -1) {
-												info.abis.push(v);
-											}
-										});
-										break;
-									case 'type':
-										info[key] = value.toLowerCase();
-										break;
-									default:
-										var num = Number(value);
-										if (value.indexOf('.') === -1 && !isNaN(num) && typeof num === 'number') {
-											info[key] = Number(value);
-										} else {
-											info[key] = value;
-										}
-								}
-							}
-						}
-					}
-
-					if (info.type === 'platform') {
-						let srcPropsFile = path.join(sdkPlatformDir, info.id, 'source.properties'),
-							srcProps = fs.existsSync(srcPropsFile) ? fs.readFileSync(srcPropsFile).toString() : '';
-
-						info.path = path.join(sdkPlatformDir, info.id);
-						info.sdk = (function (m) { return m ? ~~m[1] : null; })(srcProps.match(/^AndroidVersion.ApiLevel=(.*)$/m));
-						info.version = (function (m) { if (m) return m[1]; m = info.name.match(/Android (((\d\.)?\d\.)?\d)/); return m ? m[1] : null; })(srcProps.match(/^Platform.Version=(.*)$/m));
-						info.androidJar = path.join(info.path, 'android.jar');
-						//TODO
-						// info.supported = !~~info['api-level'] || appc.version.satisfies(info['api-level'], androidPackageJson.vendorDependencies['android sdk'], true);
-						info.aidl = path.join(info.path, 'framework.aidl');
-						fs.existsSync(info.aidl) || (info.aidl = null);
-
-						apiLevelMap[info['api-level'] || info.id.replace('android-', '')] = info;
-						sdkMap[info.version] = info;
-						ver2api[info.version] = info.sdk;
-					} else if (info.type === 'add-on' && info['based-on']) {
-						info.path = addons[info.name + '|' + info.vendor + '|' + info['based-on']['api-level'] + '|' + info.revision] || null;
-						info.version = info['based-on']['android-version'];
-						info.androidJar = null;
-						//TODO
-						// info.supported = !~~info['based-on']['api-level'] || appc.version.satisfies(info['based-on']['api-level'], androidPackageJson.vendorDependencies['android sdk'], true);
-					}
-				});
-			});
-
-			// all targets are processed, now try to fill in aidl & androidJar paths for  add-ons
-			Object.keys(finalTargets).forEach(id => {
-				let basedOn = finalTargets[id]['based-on'];
-				if (finalTargets[id].type === 'add-on' && basedOn && apiLevelMap[basedOn['api-level']]) {
-					finalTargets[id].androidJar = apiLevelMap[basedOn['api-level']].androidJar;
-					finalTargets[id].aidl = apiLevelMap[basedOn['api-level']].aidl;
-				}
-			});
+			let avds = [];
 
 			// parse the avds
-			avds && avds.forEach(avd => {
+			stdout.split(/\-\-\-\-\-\-+\n/).forEach(avd => {
 				if (avd = avd.trim()) {
 					let lines = avd.split('\n');
 					let info = {
@@ -244,7 +66,7 @@ export function detect(opts = {}) {
 							} else {
 								info[key] = m[2];
 							}
-						} else if (m = line.match(basedOnRegex)) {
+						} else if (m = line.match(basedOnAPIRegex)) {
 							info['based-on'] = {
 								'android-version': m[1],
 								'api-level': ~~m[2]
@@ -262,21 +84,18 @@ export function detect(opts = {}) {
 					if (info['based-on'] && info['based-on']['android-version']) {
 						info['sdk-version'] = info['based-on']['android-version'];
 					} else if (info.target) {
-						if (m = info.target.match(/^Android ([^\s]+)/)) {
+						if (m = info.target.match(basedOnAPIRegex)) {
 							info['sdk-version'] = m[1];
-							info['api-level'] = ver2api[m[1]] || null;
+							info['api-level'] = m[2];
 						}
 					}
-					finalAvds.push(info);
+					avds.push(info);
 				}
 			});
 
-			results.targets = finalTargets;
-			results.avds = finalAvds;
+			results.avds = avds;
+			cache = results;
 			return results;
-		})
-		.catch(err => {
-			console.log('- emulator detect err: ', err);
 		});
 }
 
@@ -292,14 +111,6 @@ export function isRunning(config, emu, devices) {
 	devices = devices.filter(d => { return emuRegExp.test(d.id) && d.state === 'device'; });
 	if (!devices.length || emu.type !== 'avd') return Promise.resolve(false);
 
-	// let result;
-	// devices.some(device => {
-	// 	let m = device.id.match(emuRegExp);
-	// 	if (m && device.emulator.name === emu.name) {
-	// 		result = device;
-	// 		return true;
-	// 	}
-	// });
 	const result = devices.filter(device => {
 		let m = device.id.match(emuRegExp);
 		return m && device.emulator.name === emu.name;
@@ -546,32 +357,32 @@ export function stop(config, name, device, opts) {
  */
 function getAvdName(port) {
 	return new Promise((resolve, reject) => {
-		const WAITING_FOR_WELCOME = 1;
-		const WAITING_FOR_NAME = 2;
-		let state = WAITING_FOR_WELCOME;
+		let state = 'connecting';
+		let avdName = null;
+		let buffer = '';
+		const responseRegExp = /(.*)\r\nOK\r\n/;
 		let socket = net.connect({ port: port });
 
-		function end(err, result) {
-			if (socket) {
-				socket.end();
-				socket = null;
-				resolve(result);
-			}
-		}
-
-		socket.on('data', function (data) {
-			switch (state) {
-				case WAITING_FOR_WELCOME:
-					state = WAITING_FOR_NAME;
-					socket.write('avd name\n');
-					break;
-				case WAITING_FOR_NAME:
-					end(null, data.toString().trim().split('\n').shift().trim());
-					break;
+		socket.on('data', data => {
+			buffer += data.toString();
+			let m = buffer.match(responseRegExp);
+			if (!m || state === 'done') {
+				// do nothing
+			} else if (state === 'connecting') {
+				state = 'sending command';
+				buffer = '';
+				socket.write('avd name\n');
+			} else if (state === 'sending command') {
+				state = 'done';
+				avdName = m[1].trim();
+				socket.end('quit\n');
 			}
 		});
 
-		socket.on('end', end);
-		socket.on('error', end);
+		socket.on('end', () => {
+			resolve(avdName);
+		});
+
+		socket.on('error', resolve);
 	});
 }

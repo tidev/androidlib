@@ -51,6 +51,7 @@ export function detect(opts = {}) {
 			results.avds = virtualbox.avds;
 		}
 
+		cache = results;
 		return results;
 	});
 }

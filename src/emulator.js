@@ -3,7 +3,6 @@ import 'source-map-support/register';
 import { EventEmitter } from 'events';
 import fs from 'fs';
 import path from 'path';
-import appc from 'node-appc';
 
 import { ADB } from './adb';
 import * as sdk from './sdk';
@@ -49,7 +48,6 @@ export class EmulatorManager {
 	detect(opts = {}) {
 		//TODO normalized `android` command for Windows
 		const results = cache = {
-			targets: {},
 			avds: [],
 			genymotions: {}
 		};
@@ -59,15 +57,10 @@ export class EmulatorManager {
 			genymotion.detect()
 		])
 		.then(([avds, genys]) => {
-			if (avds) {
-				results.targets = avds.targets;
-				results.avds = avds.avds;
-			}
 
-			if (genys) {
-				results.genymotions = genys;
-			}
-
+			results.avds = avds;
+			results.genymotions = genys;
+			cache = results;
 			return results;
 		})
 		.catch(err => {
