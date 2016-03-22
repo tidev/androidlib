@@ -6,7 +6,9 @@ import which from 'which';
 
 import * as util from './util';
 
-const ndkBuild = 'ndk-build' + util.cmd;
+const cmd = util.cmd;
+const ndkBuild = 'ndk-build' + cmd;
+const ndkGdb = 'ndk-gdb' + cmd;
 let cache = null;
 
 /**
@@ -68,34 +70,40 @@ function isNDK(dir) {
 			return resolve();
 		}
 
-		const ndkbuild = path.join(dir, ndkBuild);
-		if (!fs.existsSync(ndkbuild)) {
+		const things = [ndkBuild, ndkGdb, 'build', 'prebuilt', 'platforms'];
+		if (!things.every(thing => { return fs.existsSync(path.join(dir, thing)); })) {
 			return resolve();
 		}
 
-		return util.findExecutable(ndkbuild)
-			.then(file => {
-				const ndkdir = path.dirname(file);
-				let releasetxt;
-				let version;
+		let version;
+		fs.readdirSync(dir).forEach(file => {
+			if (file.toLowerCase() === 'release.txt') {
+				const releasetxt = path.join(dir, file);
+				version = fs.readFileSync(releasetxt).toString().split('\n').shift().trim();
+			}
+		});
 
-				fs.readdirSync(ndkdir).forEach(file => {
-					if (file.toLowerCase() === 'release.txt') {
-						releasetxt = path.join(ndkdir, file);
-						version = fs.readFileSync(releasetxt).toString().split('\n').shift().trim();
-					}
-				});
+		// android NDK r11, release.txt file is removed
+		// ndk version is in source.properties
+		if (!version) {
+			const sourceProps = path.join(dir, 'source.properties');
+			if (fs.existsSync(sourceProps)) {
+				const m = fs.readFileSync(sourceProps).toString().match(/Pkg\.Revision\s*=\s*(.+)/m);
+				if (m && m[1]) {
+					version = m[1].trim();
+				}
+			}
+		}
 
-				const nkdInfo = {
-					path: ndkdir,
-					executables: {
-						'ndkbuild': file
-					},
-					version: version
-				};
-				resolve(nkdInfo);
-			})
-			.catch(err => console.error);
+		const nkdInfo = {
+			path: dir,
+			executables: {
+				ndkbuild: path.join(dir, ndkBuild),
+				ndkgdb: path.join(dir, ndkGdb)
+			},
+			version: version
+		};
+		resolve(nkdInfo);
 	});
 }
 
