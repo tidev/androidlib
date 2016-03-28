@@ -1,43 +1,29 @@
-import 'babel-polyfill';
-import 'source-map-support/register';
 import { spawn } from 'child_process';
-import fs from 'fs';
 import path from 'path';
 import * as net from 'net';
 
 import * as util from '../util';
 import * as sdk from '../sdk';
-import { Emulator, EmulatorManager } from '../emulator';
 
 // All emulators have their console ports opened on even ports between ports 5554 and 5584
 const DEFAULTPORT = 5554;
 const PORTLIMIT = 5584;
 const emuRegExp = /^emulator\-(\d+)$/;
-let cache = null;
 
 /**
  * Detects all existing Android Virtual Devices.
  *
  * @param {Object} [opts] - An object with various params.
- * @param {Boolean} [opts.bypassCache=false] - When true, forces scan for all Paths.
  * @returns {Promise}
  */
 export function detect(opts = {}) {
-	//TODO normalized `android` command for Windows
-
-	if (cache && !opts.bypassCache) {
-		return Promise.resolve(cache);
-	}
-
-	const results = cache = {
+	const results = {
 		avds: []
 	};
 
 	return sdk
 		.detect(opts)
-		.then(result => {
-			return util.run(result.sdk.executables.android, ['list', 'avd']);
-		})
+		.then(result => util.run(result.sdk.executables.android, ['list', 'avd']))
 		.then(({ code, stdout, stderr }) => {
 			if (code) {
 				return null;
@@ -45,7 +31,6 @@ export function detect(opts = {}) {
 
 			const basedOnAPIRegex = /^(?:Based on )?Android ([^\s]+) \(API level ([^)]+)\)$/;
 			const keyValRegex = /^\s*(.+)\: (.+)$/;
-			let avds = [];
 
 			// parse the avds
 			stdout.split(/\-\-\-\-\-\-+\n/).forEach(avd => {
@@ -57,8 +42,8 @@ export function detect(opts = {}) {
 					let m;
 					let key;
 
-					for (let i = 0, len = lines.length; i < len; i++) {
-						let line = lines[i].trim();
+					lines.forEach(line => {
+						line = line.trim();
 						if (m = line.match(keyValRegex)) {
 							key = m[1].toLowerCase().trim().replace(/\s/g, '-');
 							if (key === 'tag/abi') {
@@ -72,11 +57,11 @@ export function detect(opts = {}) {
 								'api-level': ~~m[2]
 							};
 						}
-					}
+					});
 
-					if (info.path && info.sdcard && !fs.existsSync(info.sdcard)) {
+					if (info.path && info.sdcard && !util.existsSync(info.sdcard)) {
 						let sdcardFile = path.join(info.path, 'sdcard.img');
-						info.sdcard = fs.existsSync(sdcardFile) ? sdcardFile : null;
+						info.sdcard = util.existsSync(sdcardFile) ? sdcardFile : null;
 					}
 
 					info.googleApis = /google/i.test(info.target);
@@ -89,82 +74,73 @@ export function detect(opts = {}) {
 							info['api-level'] = m[2];
 						}
 					}
-					avds.push(info);
+					results.avds.push(info);
 				}
 			});
-
-			results.avds = avds;
-			cache = results;
-			return results;
-		});
+		})
+		.then(() => results);
 }
 
 /**
  * Detects if a specific Android Virtual Device is running and if so, returns
- * the emulator AVD definition object and the device definition object.
- * @param {Object} config - The CLI config object
- * @param {Object} emu - The Android emulator avd definition
- * @param {Array<Object>} devices - An array of device definition objects
+ * the emulator AVD definition object.
+ *
+ * @param {Object} emu - The Android emulator avd definition.
+ * @param {Array<Object>} devices - An array of device definition objects.
+ * @param {Object} opts - Various options.
  * @returns {Promise}
  */
-export function isRunning(config, emu, devices) {
-	devices = devices.filter(d => { return emuRegExp.test(d.id) && d.state === 'device'; });
-	if (!devices.length || emu.type !== 'avd') return Promise.resolve(false);
-
-	const result = devices.filter(device => {
-		let m = device.id.match(emuRegExp);
-		return m && device.emulator.name === emu.name;
-	});
-
+export function isRunning(emu, devices = [], opts = {}) {
+	if (!devices.length || emu.type !== 'avd') {
+		return Promise.resolve(false);
+	}
+	const result = devices.filter(d => { return emuRegExp.test(d.id) && d.emulator && d.emulator.name === emu.name; });
 	return Promise.resolve(result.shift());
 }
 
 /**
  * Detects if a specific device name is an Android emulator.
- * @param {Object} config - The CLI config object
- * @param {Object} device - The device names
+ *
+ * @param {String} deviceId - The id of the emulator.
+ * @param {Object} opts - Various options.
  * @returns {Promise}
  */
-export function isEmulator(config, device) {
-	let port = device.match(emuRegExp);
+export function isEmulator(deviceId, opts = {}) {
+	let port = deviceId.match(emuRegExp);
 	if (!port) {
 		return Promise.resolve(false);
 	}
 
 	return Promise.all([
 		getAvdName(port[1]),
-		this.detect(config)
+		this.detect(opts)
 	])
-	.then(([avdName, avdInfo]) => {
-		let avds = avdInfo && avdInfo.avds;
-		return avds.filter(a => { return a.name === avdName; }).shift();
-	});
+	.then(([avdName, avdInfo]) => avdInfo && avdInfo.avds.filter(a => { return a.name === avdName; }).shift());
 }
 
 /**
  * Launches the specified Android emulator.
- * @param {Object} config - The CLI config object
- * @param {Object|String} emu - The Android emulator avd definition or the name of the emulator
- * @param {Object} [opts] - Emulator start options
- * @param {Boolean} [opts.bypassCache=false] - Bypasses the Android environment detection cache and re-queries the system
- * @param {Number} [opts.port=5560] - The TCP port the emulator will use for the console
- * @param {String} [opts.sdcard] - A path to the virtual SD card to use with the emulator
- * @param {Number} [opts.partitionSize=128] - The emulator's system/data partition size in MBs
- * @param {Array|String} [opts.stdio] - The stdio configuration to pass into spawn()
- * @param {Boolean} [opts.detached] - The detached flag to pass into spawn()
- * @returns {Promise}
+ *
+ * @param {Object} emu - An emulator object.
+ * @param {Object} [opts] - Emulator start options.
+ * @param {Boolean} [opts.bypassCache=false] - Bypasses the Android environment detection cache and re-queries the system.
+ * @param {Number} [opts.port=5560] - The TCP port the emulator will use for the console.
+ * @param {String} [opts.sdcard] - A path to the virtual SD card to use with the emulator.
+ * @param {Number} [opts.partitionSize=128] - The emulator's system/data partition size in MBs.
+ * @param {Array|String} [opts.stdio] - The stdio configuration to pass into spawn().
+ * @param {Boolean} [opts.detached] - The detached flag to pass into spawn().
+ * @returns {EventEmitter}
  */
-export function start(config = {}, opts = {}, emu) {
+export function start(emu, opts = {}) {
 	let port = opts.port || DEFAULTPORT;
 	let emulatorExe;
 
-	return this
-		.detect()
+	return sdk
+		.detect(opts)
 		.then(result => {
 			emulatorExe = result.sdk.executables.emulator;
 
-			//TODO check if the emulator is valid
-			function doUntil(p){
+			function doUntil(p) {
 				return util.findport(p)
 					.then(result => {
 						if (result || p >= PORTLIMIT) {
@@ -178,12 +154,12 @@ export function start(config = {}, opts = {}, emu) {
 
 			return doUntil(port)
 				.then(result => {
-					console.log('result: ', result);
+					emu.emit('message', `Found port "${result}" for "${emu.name}"`);
 					return result;
 				});
 		})
 		.then(port => {
-			console.log('using port : ', port);
+			emu.emit('message', `Using port "${port}"`);
 
 			// default args
 			let args = [
@@ -262,7 +238,7 @@ export function start(config = {}, opts = {}, emu) {
 			// set system property on boot
 			if (opts.props && typeof opts.props === 'object') {
 				Object.keys(opts.props).forEach(prop => {
-					args.push('-prop', prop + '=' + opts.props[prop]);
+					args.push('-prop', `${prop} = ${opts.props[prop]}`);
 				});
 			}
 
@@ -274,85 +250,58 @@ export function start(config = {}, opts = {}, emu) {
 
 			let emuopts = {
 				detached: opts.hasOwnProperty('detached') ? !!opts.detached : true,
-				stdio: opts.stdio// || 'ignore'
+				stdio: opts.stdio || 'ignore'
 			};
 			opts.cwd && (emuopts.cwd = opts.cwd);
 			opts.env && (emuopts.env = opts.env);
 			opts.uid && (emuopts.uid = opts.uid);
 			opts.gid && (emuopts.gid = opts.gid);
 
-			console.log('---- starting emulator');
+			emu.emit('message', `Starting emulator "${emu.name}" on port "${port}"`);
 
 			let child = this.child = spawn(emulatorExe, args, emuopts);
-			let device = new Emulator;
 
-			device.id = 'emulator-' + port;
-			device.emulator = {
-				pid: child.pid,
-				port: port
-			};
-			Object.assign(device.emulator, emu);
+			emu.id = `emulator-${port}`;
+			emu.pid = child.pid;
+			emu.port = port;
 
-			child.stdout && child.stdout.on('data', data => {
-				device.emit('stdout', data);
-			});
-
-			child.stderr && child.stderr.on('data', data => {
-				device.emit('stderr', data);
-			});
-
-			child.on('error', err => {
-				device.emit('error', err);
-			});
-
-			child.on('close', (code, signal) => {
-				device.emit('exit', code, signal);
-			});
+			child.stdout && child.stdout.on('data', data => emu.emit('stdout', data));
+			child.stderr && child.stderr.on('data', data => emu.emit('stderr', data));
+			child.on('error', err => emu.emit('error', err));
+			child.on('close', (code, signal) => emu.emit('exit', code, signal));
 
 			child.unref();
-
-			return device;
 		});
-		// .catch(err => {
-		// 	console.log('- emulator start err: ', err);
-		// });
 }
 
 /**
- * Kills the specified Android emulator.
- * @param {Object} config - The CLI config object
- * @param {String} name - The name of the emulator
- * @param {Object} device - Android device definition object
- * @param {Number} [device.port] - The TCP port the emulator used
- * @param {Object} opts - Emulator options object
- * @param {Boolean} [opts.bypassCache=false] - Bypasses the Genymotion environment detection cache and re-queries the system
+ * Stops the specified Android emulator.
+ *
+ * @param {String} deviceId - The id of the emulator.
+ * @param {Object} opts - Various options.
  * @returns {Promise}
  */
-export function stop(config, name, device, opts) {
-	let args = [
+export function stop(deviceId, opts = {}) {
+	if (!emuRegExp.test(deviceId)) {
+		return Promise.reject(new Error(`Invalid emulator ID: "${deviceId}"`));
+	}
+
+	const args = [
 		'-s',
-		'emulator-' + device.port,
+		deviceId,
 		'emu',
 		'kill'
 	];
 
-	return this
+	return sdk
 		.detect(opts)
-		.then(result => {
-			return util.run(result.sdk.executables.adb, args);
-		})
-		.then(({ code, stdout, stderr }) => {
-			console.log('- code: ', code);
-			console.log('- stdout: ', stdout);
-			console.log('- stderr: ', stderr);
-			return { code, stdout, stderr };
-		});
+		.then(result => util.run(result.sdk.executables.adb, args));
 }
 
-
 /**
- * Get the name of the emulator connected to a specifc port
- * @param {Number} port - The TCP port the emulator used
+ * Get the name of the emulator connected of a specific port.
+ *
+ * @param {Number} port - The TCP port the emulator used.
  * @returns {Promise}
  */
 function getAvdName(port) {
@@ -365,7 +314,7 @@ function getAvdName(port) {
 
 		socket.on('data', data => {
 			buffer += data.toString();
-			let m = buffer.match(responseRegExp);
+			const m = buffer.match(responseRegExp);
 			if (!m || state === 'done') {
 				// do nothing
 			} else if (state === 'connecting') {
@@ -379,10 +328,7 @@ function getAvdName(port) {
 			}
 		});
 
-		socket.on('end', () => {
-			resolve(avdName);
-		});
-
+		socket.on('end', () => resolve(avdName));
 		socket.on('error', resolve);
 	});
 }

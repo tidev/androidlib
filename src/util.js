@@ -1,19 +1,19 @@
-import 'babel-polyfill';
-import 'source-map-support/register';
 import { spawn } from 'child_process';
+import fs from 'fs';
 import path from 'path';
 import which from 'which';
 import * as net from 'net';
 
 export const isWindows = process.platform === 'win32';
-export const homeRegExp = /^(~)([\\/].*)?$/;
-export const winEnvVarRegExp = /(%([^%]*)%)/g;
 export const exe = isWindows ? '.exe' : '';
 export const cmd = isWindows ? '.cmd' : '';
 export const bat = isWindows ? '.bat' : '';
 
+const homeDirRegExp = /^(~)([\\/].*)?$/;
+const winEnvVarRegExp = /(%([^%]*)%)/g;
+
 /**
- * Returns a list of search directory according to platform
+ * Returns a list of search directory according to platform.
  *
  * @returns {String}
  */
@@ -48,20 +48,21 @@ export function findExecutable(executable) {
 }
 
 /**
- * Resolves the specified directory.
+ * Resolves a path into an absolute path.
  *
- * @param {String} dir - The directory path to resolve.
+ * @param {...String} segments - The path segments to join and resolve.
  * @returns {String}
  */
-export function resolveDir(dir) {
-	return path.resolve(
-		dir.replace(homeRegExp, (match, tilde, dir) => {
-			return process.env[isWindows ? 'USERPROFILE' : 'HOME'] + (dir || path.sep);
-		})
-		.replace(winEnvVarRegExp, (match, token, name) => {
-			return isWindows && process.env[name] || token;
+export function expandPath(...segments) {
+	segments[0] = segments[0].replace(homeDirRegExp, (process.env.HOME || process.env.USERPROFILE) + '$1');
+	if (isWindows) {
+		return path.resolve(path.join.apply(null, segments).replace(winEnvVarRegExp, (s, m, n) => {
+			return process.env[n] || m;
 		}));
+	}
+	return path.resolve.apply(null, segments);
 }
+
 
 /**
  * Runs a specified command and returns the result.
@@ -88,12 +89,17 @@ export function run(cmd, args) {
 	});
 }
 
-
+/**
+ * Runs a specified command and returns the result.
+ *
+ * @param {String} cmd - The command to run.
+ * @param {Array} [args] - An array of arguments to pass into the command.
+ * @returns {Promise}
+ */
 export function findport(p) {
 	return new Promise((resolve, reject) => {
 		let socket = net.connect({ port: p }, function () {
 			socket.end();
-			console.log('[PORT TAKEN] : ', p);
 			resolve();
 		});
 
@@ -111,9 +117,22 @@ export function findport(p) {
 					socket.end();
 					socket = null;
 				}
-				console.log('[PORT FOUND] : ', p);
 				resolve(p);
 			}
 		});
 	});
+}
+
+/**
+ * Determines if a file or directory exists.
+ * @param {String} file - The full path to check if exists.
+ * @returns {Boolean}
+ */
+export function existsSync(file) {
+	try {
+		fs.statSync(file);
+		return true;
+	} catch (e) {
+		return false;
+	}
 }

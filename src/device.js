@@ -1,15 +1,13 @@
-import 'babel-polyfill';
-import 'source-map-support/register';
 import { ADB } from './adb';
 
 /**
  * Detects connected devices.
  *
- * @param {DataType} variablename - description
+ * @param {Object} [opts] - Detection options.
  * @returns {Promise}
  */
-export function detect() {
-}
-
-export function install() {
+export function detect(opts = {}) {
+	return new ADB()
+		.devices(opts)
+		.then(result => result.filter(n => { return !n.emulator; }));
 }

@@ -1,5 +1,3 @@
-import 'babel-polyfill';
-import 'source-map-support/register';
 import fs from 'fs';
 import path from 'path';
 import which from 'which';
@@ -24,37 +22,35 @@ export function detect(opts = {}) {
 		return Promise.resolve(cache);
 	}
 
-	const results = {
+	const results = cache = {
 		ndk: {}
 	};
 
 	let ndkDir = opts.ndkPath || process.env.ANDROID_NDK;
-	let ndkPaths = [];
+	const ndkPaths = [];
 	const searchDirs = util.getSearchPaths();
 
 	if (ndkDir) {
-		ndkDir = util.resolveDir(ndkDir);
-		if (fs.existsSync(ndkDir)) {
+		ndkDir = util.expandPath(ndkDir);
+		if (util.existsSync(ndkDir)) {
 			ndkPaths.push(ndkDir);
 		}
 	}
 
 	searchDirs
-		.map(dir => util.resolveDir(dir))
 		.map(dir => {
-			fs.existsSync(dir) && fs.readdirSync(dir).forEach(sub => {
-				ndkPaths.push(path.join(dir, sub));
-			});
+			dir = util.expandPath(dir);
+			if (util.existsSync(dir)) {
+				fs.readdirSync(dir).forEach(sub => {
+					ndkPaths.push(path.join(dir, sub));
+				});
+			}
 		});
 
-	return Promise.all(ndkPaths.map(p => {
-		return isNDK(p);
-	}))
-	.then(values => {
-		results.ndk = values.filter(a => { return a; }).shift();
-		cache = results;
-		return results;
-	});
+	return Promise
+		.all(ndkPaths.map(p => isNDK(p)))
+		.then(values => results.ndk = values.filter(a => { return a; }).shift())
+		.then(() => results);
 }
 
 /**
@@ -71,7 +67,7 @@ function isNDK(dir) {
 		}
 
 		const things = [ndkBuild, ndkGdb, 'build', 'prebuilt', 'platforms'];
-		if (!things.every(thing => { return fs.existsSync(path.join(dir, thing)); })) {
+		if (!things.every(thing => util.existsSync(path.join(dir, thing)))) {
 			return resolve();
 		}
 
@@ -87,7 +83,7 @@ function isNDK(dir) {
 		// ndk version is in source.properties
 		if (!version) {
 			const sourceProps = path.join(dir, 'source.properties');
-			if (fs.existsSync(sourceProps)) {
+			if (util.existsSync(sourceProps)) {
 				const m = fs.readFileSync(sourceProps).toString().match(/Pkg\.Revision\s*=\s*(.+)/m);
 				if (m && m[1]) {
 					version = m[1].trim();
@@ -103,7 +99,7 @@ function isNDK(dir) {
 			},
 			version: version
 		};
-		resolve(nkdInfo);
+		return resolve(nkdInfo);
 	});
 }
 

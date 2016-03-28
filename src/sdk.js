@@ -1,5 +1,3 @@
-import 'babel-polyfill';
-import 'source-map-support/register';
 import fs from 'fs';
 import path from 'path';
 
@@ -35,7 +33,7 @@ export function detect(opts = {}) {
 		return Promise.resolve(cache);
 	}
 
-	const results = {
+	const results = cache = {
 		sdk: {},
 		targets: null,
 		linux64bit: null
@@ -46,37 +44,28 @@ export function detect(opts = {}) {
 	let sdkPaths = [];
 
 	if (sdkDir) {
-		sdkDir = util.resolveDir(sdkDir);
-		if (fs.existsSync(sdkDir)) {
+		sdkDir = util.expandPath(sdkDir);
+		if (util.existsSync(sdkDir)) {
 			sdkPaths.push(sdkDir);
 		}
 	}
 
 	searchDirs
-		.map(dir => util.resolveDir(dir))
 		.map(dir => {
-			fs.existsSync(dir) && fs.readdirSync(dir).forEach(sub => {
-				sdkPaths.push(path.join(dir, sub));
-			});
+			dir = util.expandPath(dir);
+			if (util.existsSync(dir)) {
+				fs.readdirSync(dir).forEach(sub => sdkPaths.push(path.join(dir, sub)));
+			}
 		});
 
-	return Promise.all(sdkPaths.map(p => {
-		return isSDK(p, opts);
-	}))
-	.then(values => {
-		results.sdk = values.filter(a => { return a; }).shift();
-		return results.sdk;
-	})
-	.then(sdk => getAndroidTargets(sdk))
-	.then(targets => {
-		results.targets = targets;
-	})
-	.then(linux.detect())
-	.then(linux64bit => {
-		results.linux64bit = linux64bit;
-		cache = results;
-		return results;
-	});
+	return Promise
+		.all(sdkPaths.map(p => isSDK(p, opts)))
+		.then(values => results.sdk = values.filter(a => { return a; }).shift())
+		.then(sdk => getAndroidTargets(sdk))
+		.then(targets => results.targets = targets)
+		.then(linux.detect)
+		.then(linux64bit => results.linux64bit = linux64bit)
+		.then(() => results);
 }
 
 /**
@@ -87,7 +76,7 @@ export function detect(opts = {}) {
  * @param {Object} [opts] - An object with various params.
  * @returns {Promise}
  */
-function isSDK(dir, opts) {
+function isSDK(dir, opts = {}) {
 	return new Promise((resolve, reject) => {
 		if (!dir) {
 			return resolve();
@@ -99,10 +88,10 @@ function isSDK(dir, opts) {
 		const toolsDirPropertiesFile 		= path.join(toolsDir, 'source.properties');
 		const platformToolsPropertiesFile 	= path.join(platformToolsDir, 'source.properties');
 
-		if (!fs.existsSync(buildToolsDir) ||
-			!fs.existsSync(platformToolsDir) ||
-			!fs.existsSync(toolsDir) ||
-			!fs.existsSync(toolsDirPropertiesFile)) {
+		if (!util.existsSync(buildToolsDir) ||
+			!util.existsSync(platformToolsDir) ||
+			!util.existsSync(toolsDir) ||
+			!util.existsSync(toolsDirPropertiesFile)) {
 			return resolve();
 		}
 
@@ -122,8 +111,8 @@ function isSDK(dir, opts) {
 				aidl:     path.join(platformToolsDir, 'aidl' + exe),
 				dx:       path.join(platformToolsDir, 'dx' + bat)
 			},
-			dx: fs.existsSync(dxJarPath) ? dxJarPath : null,
-			proguard: fs.existsSync(proguardPath) ? proguardPath : null,
+			dx: util.existsSync(dxJarPath) ? dxJarPath : null,
+			proguard: util.existsSync(proguardPath) ? proguardPath : null,
 			tools: {
 				path: null,
 				version: null
@@ -139,8 +128,8 @@ function isSDK(dir, opts) {
 		};
 
 		const pgkVersionRegex = /Pkg\.Revision\s*?\=\s*?([^\s]+)/;
-		if (fs.existsSync(toolsDirPropertiesFile)) {
-			let txt = fs.readFileSync(toolsDirPropertiesFile).toString().match(pgkVersionRegex);
+		if (util.existsSync(toolsDirPropertiesFile)) {
+			const txt = fs.readFileSync(toolsDirPropertiesFile).toString().match(pgkVersionRegex);
 			if (txt) {
 				result.tools = {
 					path: toolsDir,
@@ -149,8 +138,8 @@ function isSDK(dir, opts) {
 			}
 		}
 
-		if (fs.existsSync(platformToolsPropertiesFile)) {
-			let txt = fs.readFileSync(platformToolsPropertiesFile).toString().match(pgkVersionRegex);
+		if (util.existsSync(platformToolsPropertiesFile)) {
+			const txt = fs.readFileSync(platformToolsPropertiesFile).toString().match(pgkVersionRegex);
 			if (txt) {
 				result.platformTools = {
 					path: platformToolsDir,
@@ -163,7 +152,7 @@ function isSDK(dir, opts) {
 		if (!buildToolsVer) {
 			// No selected version set, so find the newest installed build tools version
 			const files = fs.readdirSync(buildToolsDir).sort().reverse();
-			if (files.length >= 1) {
+			if (files.length > 0) {
 				buildToolsVer = files[0];
 			} else {
 				//No buildTools installed
@@ -174,7 +163,7 @@ function isSDK(dir, opts) {
 		if (buildToolsVer) {
 			const versionedBuildToolDir = path.join(buildToolsDir, buildToolsVer);
 			const file = path.join(versionedBuildToolDir, 'source.properties');
-			if (fs.existsSync(file) && fs.statSync(versionedBuildToolDir).isDirectory()) {
+			if (util.existsSync(file) && fs.statSync(versionedBuildToolDir).isDirectory()) {
 				const m = fs.readFileSync(file).toString().match(pgkVersionRegex);
 				if (m) {
 					result.buildTools = {
@@ -182,11 +171,11 @@ function isSDK(dir, opts) {
 						version: m[1]
 					};
 					let file;
-					fs.existsSync(file = path.join(versionedBuildToolDir, 'aapt' + exe)) && (result.executables.aapt = file);
-					fs.existsSync(file = path.join(versionedBuildToolDir, 'aidl' + exe)) && (result.executables.aidl = file);
-					fs.existsSync(file = path.join(versionedBuildToolDir, 'dx' + bat)) && (result.executables.dx = file);
-					fs.existsSync(file = path.join(versionedBuildToolDir, 'zipalign' + exe)) && (result.executables.zipalign = file);
-					fs.existsSync(file = path.join(versionedBuildToolDir, 'lib', 'dx.jar')) && (result.dx = file);
+					util.existsSync(file = path.join(versionedBuildToolDir, 'aapt' + exe)) && (result.executables.aapt = file);
+					util.existsSync(file = path.join(versionedBuildToolDir, 'aidl' + exe)) && (result.executables.aidl = file);
+					util.existsSync(file = path.join(versionedBuildToolDir, 'dx' + bat)) && (result.executables.dx = file);
+					util.existsSync(file = path.join(versionedBuildToolDir, 'zipalign' + exe)) && (result.executables.zipalign = file);
+					util.existsSync(file = path.join(versionedBuildToolDir, 'lib', 'dx.jar')) && (result.dx = file);
 				}
 			}
 		}
@@ -200,17 +189,24 @@ function isSDK(dir, opts) {
 
 		Promise
 			.all(searchTools)
-			.then(values => {
-				resolve(result);
-			})
-			.catch(err => {
-				// something went wrong, one of the required sdk tools might be missing
-				resolve();
-			});
+			.then(values => resolve(result))
+			// something went wrong, one of the required sdk tools might be missing
+			// so not a sdk folder
+			.catch(err => resolve);
 	});
 }
 
+/**
+ * Determins installed Android targets.
+ *
+ * @param {Object} sdk - An object containing the Android SDK info.
+ * @returns {Promise}
+ */
 function getAndroidTargets(sdk) {
+	if (!sdk || typeof sdk !== 'object') {
+		return Promise.reject(new TypeError('Expected sdk to be an object.'));
+	}
+
 	return util.run(sdk.executables.android, ['list', 'target'])
 		.then(({ code, stdout, stderr }) => {
 			if (code) {
@@ -225,16 +221,16 @@ function getAndroidTargets(sdk) {
 			const manifestRevisionRegex = /^(?:revision|Pkg.Revision)=(.*)$/m;
 
 			let addons = {};
-			fs.existsSync(addonsDir) && fs.readdirSync(addonsDir).forEach(subDir => {
+			util.existsSync(addonsDir) && fs.readdirSync(addonsDir).forEach(subDir => {
 				const dir = path.join(addonsDir, subDir);
 				if (fs.statSync(dir).isDirectory()) {
 					let file = path.join(dir, 'manifest.ini');
 
-					if (!fs.existsSync(file)) {
+					if (!util.existsSync(file)) {
 						file = path.join(dir, 'source.properties');
 					}
 
-					if (fs.existsSync(file)) {
+					if (util.existsSync(file)) {
 						const manifest = fs.readFileSync(file).toString();
 						const name = manifest.match(manifestNameRegex);
 						const vendor = manifest.match(manifestVendorRegex);
@@ -255,7 +251,7 @@ function getAndroidTargets(sdk) {
 				t.split('\n\w').forEach(chunk => {
 					chunk = chunk.trim();
 					if (!chunk) return;
-					let lines = chunk.split('\n');
+					const lines = chunk.split('\n');
 					let m = lines.shift().match(idRegex);
 					if (!m) return;
 
@@ -288,8 +284,9 @@ function getAndroidTargets(sdk) {
 							// simple key-value
 							let p = line.indexOf(':');
 							if (p !== -1) {
-								let key = line.substring(0, p).toLowerCase().trim().replace(/\s/g, '-');
-								let value = line.substring(p+1).trim();
+								const key = line.substring(0, p).toLowerCase().trim().replace(/\s/g, '-');
+								const value = line.substring(p+1).trim();
+								const num = Number(value);
 								switch (key) {
 									case 'abis':
 									case 'skins':
@@ -314,7 +311,6 @@ function getAndroidTargets(sdk) {
 										info[key] = value.toLowerCase();
 										break;
 									default:
-										var num = Number(value);
 										if (value.indexOf('.') === -1 && !isNaN(num) && typeof num === 'number') {
 											info[key] = Number(value);
 										} else {
@@ -327,14 +323,14 @@ function getAndroidTargets(sdk) {
 
 					if (info.type === 'platform') {
 						let srcPropsFile = path.join(sdkPlatformDir, info.id, 'source.properties');
-						let srcProps = fs.existsSync(srcPropsFile) ? fs.readFileSync(srcPropsFile).toString() : '';
+						let srcProps = util.existsSync(srcPropsFile) ? fs.readFileSync(srcPropsFile).toString() : '';
 
 						info.path = path.join(sdkPlatformDir, info.id);
 						info.sdk = (function (m) { return m ? ~~m[1] : null; })(srcProps.match(/^AndroidVersion.ApiLevel=(.*)$/m));
 						info.version = (function (m) { if (m) return m[1]; m = info.name.match(/Android (((\d\.)?\d\.)?\d)/); return m ? m[1] : null; })(srcProps.match(/^Platform.Version=(.*)$/m));
 						info.androidJar = path.join(info.path, 'android.jar');
 						info.aidl = path.join(info.path, 'framework.aidl');
-						fs.existsSync(info.aidl) || (info.aidl = null);
+						util.existsSync(info.aidl) || (info.aidl = null);
 
 						apiLevelMap[info['api-level'] || info.id.replace('android-', '')] = info;
 					} else if (info.type === 'add-on' && info['based-on']) {

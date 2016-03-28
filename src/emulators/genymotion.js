@@ -1,36 +1,27 @@
-import 'babel-polyfill';
-import 'source-map-support/register';
 import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 
 import * as util from '../util';
 import { ADB } from '../adb';
-import { Emulator, EmulatorManager } from '../emulator';
 
 const exe = util.exe;
 const bat = util.bat;
-let cache = null;
 
 /**
  * Detects all existing Genymotion emulators.
  *
  * @param {Object} [opts] - An object with various params.
  * @param {Boolean} [opts.genymotion.path] - Genymotion path.
- * @param {Boolean} [opts.bypassCache=false] - When true, forces scan for all Paths.
  * @returns {Promise}
  */
 export function detect(opts = {}) {
-	if (cache && !opts.bypassCache) {
-		return Promise.resolve(cache);
-	}
-
-	const results = cache = {
+	const results = {
 		path : null,
 		home: null,
 		virtualbox: null,
 		executables: [],
-		avds: null
+		avds: []
 	};
 
 	return Promise.all([
@@ -51,7 +42,6 @@ export function detect(opts = {}) {
 			results.avds = virtualbox.avds;
 		}
 
-		cache = results;
 		return results;
 	});
 }
@@ -73,7 +63,7 @@ function scan(parent, pattern, depth) {
 					result = scan(file, pattern, depth - 1);
 				}
 			} catch (err) {
-				// console.log('scan err:', err );
+				// skip
 			}
 
 			if (result) {
@@ -95,9 +85,9 @@ function detectGenymotion(opts = {}) {
 	}
 
 	searchDirs
-		.map(dir => util.resolveDir(dir))
+		.map(dir => util.expandPath(dir))
 		.map(dir => {
-			fs.existsSync(dir) && fs.readdirSync(dir).forEach(sub => {
+			util.existsSync(dir) && fs.readdirSync(dir).forEach(sub => {
 				let subdir = path.join(dir, sub);
 				if (genyRegexp.test(subdir) && sub[0] !== '.' && fs.statSync(subdir).isDirectory()) {
 					genyPaths.push(path.join(dir, sub));
@@ -105,66 +95,69 @@ function detectGenymotion(opts = {}) {
 			});
 		});
 
-	return Promise.all(genyPaths.map(p => {
-		const executable = scan(p, executableName);
-		if (!executable) return Promise.resolve();
-
-		// strip off the executable name to get the genymotion directory
-		const dir = path.dirname(executable);
-
-		let player = opts.genymotion && opts.genymotion.executables && opts.genymotion.executables.player;
-		if (!player || !fs.existsSync(player)) {
-			player = path.join(dir, 'player' + exe);
-		}
-		if (!fs.existsSync(player) && process.platform === 'darwin') {
-			player = path.join(dir, 'player.app', 'Contents', 'MacOS', 'player');
-		}
-		if (!fs.existsSync(player)) {
-			player = null;
-		}
-		return {
-			path: dir,
-			executables: {
-				genymotion: executable,
-				player: player
+	return Promise
+		.all(genyPaths.map(p => {
+			const executable = scan(p, executableName);
+			if (!executable) {
+				return Promise.resolve();
 			}
-		};
-	}))
-	.then(results => {
-		let geny;
-		results.some(v => {
-			if (v) {
-				geny = v;
-				return true;
+
+			// strip off the executable name to get the genymotion directory
+			const dir = path.dirname(executable);
+
+			let player = opts.genymotion && opts.genymotion.executables && opts.genymotion.executables.player;
+			if (!player || !util.existsSync(player)) {
+				player = path.join(dir, 'player' + exe);
 			}
+			if (!util.existsSync(player) && process.platform === 'darwin') {
+				player = path.join(dir, 'player.app', 'Contents', 'MacOS', 'player');
+			}
+			if (!util.existsSync(player)) {
+				player = null;
+			}
+			return {
+				path: dir,
+				executables: {
+					genymotion: executable,
+					player: player
+				}
+			};
+		}))
+		.then(results => {
+			let geny;
+			results.some(v => {
+				if (v) {
+					geny = v;
+					return true;
+				}
+			});
+
+			return geny;
+		})
+		.then(result => {
+			// attempt to find the Genymotion home directory
+			const genyHomeDir = opts.genymotion && opts.genymotion.home;
+			let genymotionHomeDirs = [];
+
+			if (util.existsSync(genyHomeDir)) {
+				genymotionHomeDirs.push(genyHomeDir);
+			}
+			if (process.platform === 'win32') {
+				genymotionHomeDirs.push('~/AppData/Local/Genymobile/Genymotion');
+			} else {
+				genymotionHomeDirs.push('~/.Genymobile/Genymotion', '~/.Genymotion');
+			}
+
+			for (let i = 0, j = genymotionHomeDirs.length; i < j; i++) {
+				const dir = util.expandPath(genymotionHomeDirs[i]);
+				if (util.existsSync(dir) && fs.statSync(dir).isDirectory()) {
+					result.home = dir;
+					break;
+				}
+			}
+
+			return result;
 		});
-
-		return geny;
-	})
-	.then(result => {
-		// attempt to find the Genymotion home directory
-		const genyHomeDir = opts.genymotion && opts.genymotion.home;
-		let genymotionHomeDirs = [];
-
-		if (fs.existsSync(genyHomeDir)) {
-			genymotionHomeDirs.push(genyHomeDir);
-		}
-		if (process.platform === 'win32') {
-			genymotionHomeDirs.push('~/AppData/Local/Genymobile/Genymotion');
-		} else {
-			genymotionHomeDirs.push('~/.Genymobile/Genymotion', '~/.Genymotion');
-		}
-
-		for (let i = 0, j = genymotionHomeDirs.length; i < j; i++) {
-			const dir = util.resolveDir(genymotionHomeDirs[i]);
-			if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
-				result.home = dir;
-				break;
-			}
-		}
-
-		return result;
-	});
 }
 
 function detectVirtualbox(opts = {}) {
@@ -172,53 +165,54 @@ function detectVirtualbox(opts = {}) {
 	const vboxManagePath = opts.genymotion && opts.genymotion.executables && opts.genymotion.executables.vboxmanage;
 	let exePaths = [executableName];
 
-	if (vboxManagePath && fs.existsSync(vboxManagePath)) {
+	if (vboxManagePath && util.existsSync(vboxManagePath)) {
 		exePaths.unshift(vboxManagePath);
 	}
 
-	return Promise.race(exePaths.map(e => {
-		return util.findExecutable(e)
-			.catch(err => Promise.resolve());
-	}))
-	.then(result => {
-		if (!result) {
-			const executableName = 'VBoxManage' + exe;
-			let searchDirs = util.getSearchPaths();
+	return Promise
+		.race(exePaths.map(e => {
+			return util.findExecutable(e)
+				.catch(err => Promise.resolve());
+		}))
+		.then(result => {
+			if (!result) {
+				const executableName = 'VBoxManage' + exe;
+				let searchDirs = util.getSearchPaths();
 
-			return Promise.race(searchDirs.map(dir => {
-				dir = util.resolveDir(dir);
-				if (!fs.existsSync(dir)) {
-					return Promise.resolve();
-				}
-				const executable = scan(dir, executableName, 3);
-				return Promise.resolve(executable);
-			}));
-		}
+				return Promise.race(searchDirs.map(dir => {
+					dir = util.expandPath(dir);
+					if (!util.existsSync(dir)) {
+						return Promise.resolve();
+					}
+					const executable = scan(dir, executableName, 3);
+					return Promise.resolve(executable);
+				}));
+			}
 
-		return result;
-	})
-	.then(result => {
-		return util.run(result, ['--version'])
-			.then(({ code, stdout, stderr }) => {
-				return {
-					vboxmanage: result,
-					version: code ? null : stdout.trim()
-				};
-			});
-	})
-	.then(result => {
-		// find all AVDs
-		const vboxmanage = result.vboxmanage;
-		if (vboxmanage) {
-			return getVMInfo(opts, vboxmanage)
-				.then(emus => {
-					result.avds = emus;
-					return result;
+			return result;
+		})
+		.then(result => {
+			return util.run(result, ['--version'])
+				.then(({ code, stdout, stderr }) => {
+					return {
+						vboxmanage: result,
+						version: code ? null : stdout.trim()
+					};
 				});
-		}
+		})
+		.then(result => {
+			// find all AVDs
+			const vboxmanage = result.vboxmanage;
+			if (vboxmanage) {
+				return getVMInfo(opts, vboxmanage)
+					.then(emus => {
+						result.avds = emus;
+						return result;
+					});
+			}
 
-		return result;
-	});
+			return result;
+		});
 }
 
 function getVMInfo(opts, vboxmanage) {
@@ -308,20 +302,23 @@ function getVMInfo(opts, vboxmanage) {
 
 /**
  * Detects if a specific Genymotion VM is running and if so, returns
- * the emulator definition object and the device definition object.
- * @param {Object} emu - The Android emulator avd definition
- * @param {Array<Object>} devices - An array of device definition objects
+ * the emulator definition object.
+ *
+ * @param {Object} emu - The Android emulator avd definition.
+ * @param {Array<Object>} devices - An array of device definition objects.
+ * @param {Object} opts - Various options.
  * @returns {Promise}
  */
-export function isRunning(opts, emu, devices) {
-	if ((devices && !devices.length) || !emu.type === 'genymotion') {
+export function isRunning(emu, devices, opts = {}) {
+	if (!devices.length || emu.type !== 'genymotion') {
 		return Promise.resolve(false);
 	}
 
-	return detectVirtualbox()
+	return detectVirtualbox(opts)
 		.then(result => {
-			const emus = result && result.avds.filter(e => { return e && e.name == emu.name; }).shift();
+			const emus = result && result.avds.filter(e => { return e && e.name == emu.name && !!emu.ipaddress; }).shift();
 			if (emus) {
+				emus.id = `${emu.ipaddress}:5555`;
 				return emus;
 			}
 			return false;
@@ -330,51 +327,37 @@ export function isRunning(opts, emu, devices) {
 
 /**
  * Detects if a specific device name is an Genymotion emulator.
- * @param {Object} config - The CLI config object
- * @param {Object} device - The device name
+ *
+ * @param {String} deviceId - The id of the emulator.
+ * @param {Object} opts - Various options.
  * @returns {Promise}
  */
- export function isEmulator(config, device) {
+ export function isEmulator(deviceId, opts = {}) {
 	return detectVirtualbox()
-		.then(result => {
-			const emus = result && result.avds.filter(e => { return e && e.name == device; }).shift();
-			if (emus) {
-				return emus;
-			}
-			return false;
-		});
+		.then(result => result && result.avds.filter(e => { return e && deviceId.includes(e.ipaddress); }).shift());
  }
 
  /**
  * Launches the specified Genymotion emulator.
- * @param {Object} config - The CLI config object
- * @param {Object|String} emu - The Android emulator avd definition or the name of the emulator
- * @param {Object} opts - Emulator options object
- * @param {String} [opts.titaniumHomeDir="~/.titanium"] - The Titanium home directory
- * @param {Boolean} [opts.bypassCache=false] - Bypasses the Genymotion environment detection cache and re-queries the system
- * @param {String} [opts.cwd] - The current working directory to pass into spawn()
- * @param {Array|String} [opts.stdio="ignore"] - The stdio configuration to pass into spawn()
- * @param {Object} [opts.env] - The environment variables to pass into spawn()
- * @param {Boolean} [opts.detached=true] - The detached flag to pass into spawn()
- * @param {Number} [opts.uid] - The user id to pass into spawn()
- * @param {Number} [opts.gid] - The group id to pass into spawn()
+ *
+ * @param {Object} emu - An emulator object.
+ * @param {Object} opts - Emulator options object.
+ * @param {String} [opts.titaniumHomeDir="~/.titanium"] - The Titanium home directory.
+ * @param {Boolean} [opts.bypassCache=false] - Bypasses the Genymotion environment detection cache and re-queries the system.
+ * @param {String} [opts.cwd] - The current working directory to pass into spawn().
+ * @param {Array|String} [opts.stdio="ignore"] - The stdio configuration to pass into spawn().
+ * @param {Object} [opts.env] - The environment variables to pass into spawn().
+ * @param {Boolean} [opts.detached=true] - The detached flag to pass into spawn().
+ * @param {Number} [opts.uid] - The user id to pass into spawn().
+ * @param {Number} [opts.gid] - The group id to pass into spawn().
  * @returns {Promise}
  */
-export function start(config, emu, opts = {}) {
+export function start(emu, opts = {}) {
 	return detect(opts)
 		.then(results => {
 			if (!results) return Promise.resolve();
 
-			// if they passed in the emulator name, get the emulator avd definition
-			if (emu && typeof emu == 'string') {
-				let name = emu;
-				emu = results.avds.filter(function (e) { return e && e.name === name; }).shift();
-				if (!emu) {
-					return Promise.resolve();
-				}
-			}
-
-			var emuopts = {
+			const emuopts = {
 				detached: opts.hasOwnProperty('detached') ? !!opts.detached : true,
 				stdio: opts.stdio || 'ignore'
 			};
@@ -383,40 +366,25 @@ export function start(config, emu, opts = {}) {
 			opts.uid && (emuopts.uid = opts.uid);
 			opts.gid && (emuopts.gid = opts.gid);
 
+			emu.emit('message', `Starting emulator "${emu.name}"`);
+
 			let child = spawn(results.executables.player, ['--vm-name', emu.name], emuopts);
-			let device = new Emulator;
+			emu.pid = child.pid;
 
-			device.emulator = {
-				pid: child.pid
-			};
-			Object.assign(device.emulator, emu);
-
-			child.stdout && child.stdout.on('data', data => {
-				device.emit('stdout', data);
-			});
-
-			child.stderr && child.stderr.on('data', data => {
-				device.emit('stderr', data);
-			});
-
-			child.on('error', err => {
-				device.emit('error', err);
-			});
-
-			child.on('close', (code, signal) => {
-				device.emit('exit', code, signal);
-			});
+			child.stdout && child.stdout.on('data', data => emu.emit('stdout', data));
+			child.stderr && child.stderr.on('data', data => emu.emit('stderr', data));
+			child.on('error', err => emu.emit('error', err));
+			child.on('close', (code, signal) => emu.emit('exit', code, signal));
 
 			child.unref();
-
-			return device;
 		});
 }
 
  /**
- * Kills the specified Genymotion emulator.
+ * Stops the specified Genymotion emulator.
+ *
  * @returns {Promise}
  */
- export function stop(config, name, device, opts) {
+ export function stop(device, opts = {}) {
 	 //TODO
  }

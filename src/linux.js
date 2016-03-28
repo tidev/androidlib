@@ -1,19 +1,21 @@
-import 'babel-polyfill';
-import 'source-map-support/register';
 import fs from 'fs';
 import path from 'path';
-import which from 'which';
 
 import * as util from './util';
 
+/**
+ * Detect if we're using a 64-bit Linux OS that's missing 32-bit libraries.
+ *
+ * @param {Object} [opts] - An object with various params.
+ * @returns {Promise}
+ */
 export function detect(opts = {}) {
-	// detect if we're using a 64-bit Linux OS that's missing 32-bit libraries
 	if (process.platform !== 'linux' ||  process.arch !== 'x64') {
 		return Promise.resolve();
 	}
 
 	const result = {
-		libGL: fs.existsSync('/usr/lib/libGL.so'),
+		libGL: util.existsSync('/usr/lib/libGL.so'),
 		i386arch: null,
 		'libc6:i386': null,
 		'libncurses5:i386': null,
@@ -23,31 +25,33 @@ export function detect(opts = {}) {
 		libstdcpp: null
 	};
 
-	return Promise.all([
-		findDpkg(),
-		findDpkgQuery(),
-		findRpm()
-	])
-	.then(([dpkg, dpkgquery, rpm]) => {
-		if (dpkg) {
-			result.i386arch = dpkg && !!dpkg.i386;
-		}
+	return Promise
+		.all([
+			findDpkg(),
+			findDpkgQuery(),
+			findRpm()
+		])
+		.then(([dpkg, dpkgquery, rpm]) => {
+			if (dpkg) {
+				result.i386arch = dpkg && !!dpkg.i386;
+			}
 
-		if (dpkgquery) {
-			Object.assign(result, dpkgquery);
-		}
-		if (rpm) {
-			result.glibc = rpm.glibc;
-			result.libstdcpp = rpm.libstdcpp;
-		}
-	})
-	.then(() => result);
+			if (dpkgquery) {
+				Object.assign(result, dpkgquery);
+			}
 
+			if (rpm) {
+				result.glibc = rpm.glibc;
+				result.libstdcpp = rpm.libstdcpp;
+			}
+		})
+		.then(() => result);
 }
 
 function findDpkg() {
 	let result = {};
-	return util.findExecutable('dpkg')
+	return util
+		.findExecutable('dpkg')
 		.then(dpkg => {
 			if (!dpkg) {
 				return Promise.resolve();
@@ -68,7 +72,8 @@ function findDpkg() {
 
 function findDpkgQuery() {
 	let result = {};
-	return util.findExecutable('dpkg-query')
+	return util
+		.findExecutable('dpkg-query')
 		.then(dpkgquery => {
 			if (!dpkgquery) {
 				return Promise.resolve();
@@ -99,14 +104,16 @@ function findDpkgQuery() {
 }
 
 function findRpm() {
-	return util.findExecutable('rpm')
+	return util
+		.findExecutable('rpm')
 		.then(rpm => {
 			if (!rpm) {
 				return Promise.resolve();
 			}
 
 			let result = {};
-			return util.run(rpm, ['-qa'])
+			return util
+				.run(rpm, ['-qa'])
 				.then((code, stdout, stderr) => {
 					stdout.split('\n').forEach(line => {
 						if (/^glibc\-/.test(line)) {
