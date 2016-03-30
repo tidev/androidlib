@@ -129,7 +129,7 @@ export function isEmulator(deviceId, opts = {}) {
  * @param {Number} [opts.partitionSize=128] - The emulator's system/data partition size in MBs.
  * @param {Array|String} [opts.stdio] - The stdio configuration to pass into spawn().
  * @param {Boolean} [opts.detached] - The detached flag to pass into spawn().
- * @returns {EventEmitter}
+ * @returns {Promise}
  */
 export function start(emu, opts = {}) {
 	let port = opts.port || DEFAULTPORT;
