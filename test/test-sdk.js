@@ -1,18 +1,16 @@
-import * as sdk from '../src/sdk';
 import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';
 
-describe('detect', () => {
-	it('should detect installed SDK', function (done) {
-		this.timeout(5000);
-		this.slow(4000);
+import * as sdk from '../src/sdk';
 
+describe('SDK detect', () => {
+	it('should detect installed SDK', done => {
 		sdk
 			.detect()
 			.then(result => {
 				expect(result).to.be.an.Object;
-				expect(result).to.have.keys('sdk');
+				expect(result).to.have.keys('sdk', 'targets', 'linux64bit');
 				expect(result.sdk).to.be.an.Object;
 
 				const sdk = result.sdk;
@@ -29,27 +27,27 @@ describe('detect', () => {
 				expect(sdk.proguard).to.not.equal('');
 
 				expect(sdk.executables).to.be.an.Object;
-				Object.keys(sdk.executables).forEach(name => {
+				for (let name of Object.keys(sdk.executables)) {
 					expect(sdk.executables[name]).to.be.a.String;
 					expect(sdk.executables[name]).to.not.equal('');
 					expect(() => fs.statSync(sdk.executables[name])).to.not.throw(Error);
-				});
+				}
 
 				const tools = sdk.tools;
 				expect(tools).to.be.an.Object;
-				expect(tools).to.have.keys('path', 'supported', 'version');
+				expect(tools).to.have.keys('path', 'version');
 
 				const platformTools = sdk.platformTools;
 				expect(platformTools).to.be.an.Object;
-				expect(platformTools).to.have.keys('path', 'supported', 'version');
+				expect(platformTools).to.have.keys('path', 'version');
 
 				const buildTools = sdk.buildTools;
 				expect(buildTools).to.be.an.Object;
-				expect(buildTools).to.have.keys('path', 'supported', 'version', 'tooNew', 'maxSupported');
+				expect(buildTools).to.have.keys('path', 'version');
 
 				done();
 			})
-			.catch(err => console.error);
+			.catch(done);
 	});
 
 	//TODO add more test

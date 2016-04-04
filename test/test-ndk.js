@@ -1,13 +1,11 @@
-import * as ndk from '../src/ndk';
 import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';
 
-describe('detect', () => {
-	it('should detect installed NDK', function (done) {
-		this.timeout(5000);
-		this.slow(4000);
+import * as ndk from '../src/ndk';
 
+describe('NDK detect', () => {
+	it('should detect installed NDK', done => {
 		ndk
 			.detect()
 			.then(result => {
@@ -23,15 +21,15 @@ describe('detect', () => {
 				expect(ndk.version).to.be.a.String;
 				expect(ndk.version).to.not.equal('');
 				expect(ndk.executables).to.be.an.Object;
-				Object.keys(ndk.executables).forEach(name => {
+				for (let name of Object.keys(ndk.executables)) {
 					expect(ndk.executables[name]).to.be.a.String;
 					expect(ndk.executables[name]).to.not.equal('');
 					expect(() => fs.statSync(ndk.executables[name])).to.not.throw(Error);
-				});
+				}
 
 				done();
 			})
-			.catch(err => console.error);
+			.catch(done);
 	});
 
 	//TODO add more test

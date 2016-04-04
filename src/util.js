@@ -90,40 +90,6 @@ export function run(cmd, args) {
 }
 
 /**
- * Runs a specified command and returns the result.
- *
- * @param {String} cmd - The command to run.
- * @param {Array} [args] - An array of arguments to pass into the command.
- * @returns {Promise}
- */
-export function findport(p) {
-	return new Promise((resolve, reject) => {
-		let socket = net.connect({ port: p }, function () {
-			socket.end();
-			resolve();
-		});
-
-		socket.on('end', function (err) {
-			if (socket) {
-				socket.end();
-				socket = null;
-			}
-		});
-
-		socket.on('error', function (err) {
-			// port available!
-			if ('ECONNREFUSED' === err.errno) {
-				if (socket) {
-					socket.end();
-					socket = null;
-				}
-				resolve(p);
-			}
-		});
-	});
-}
-
-/**
  * Determines if a file or directory exists.
  * @param {String} file - The full path to check if exists.
  * @returns {Boolean}

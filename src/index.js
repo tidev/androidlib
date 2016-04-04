@@ -25,7 +25,18 @@ export function detect(opts = {}) {
 		ndk.detect(opts),
 		device.detect(opts),
 		new EmulatorManager().detect(opts)
-	]);
+	])
+	.then(([home, sdk, ndk, devices, emulators]) => {
+		const result = {
+			home: home,
+			sdk: sdk,
+			ndk: ndk,
+			devices: devices,
+			emulators: emulators
+		};
+
+		return result;
+	});
 }
 
 function getAndroidHome(opts = {}) {

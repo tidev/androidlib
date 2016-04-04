@@ -192,7 +192,7 @@ function isSDK(dir, opts = {}) {
 			.then(values => resolve(result))
 			// something went wrong, one of the required sdk tools might be missing
 			// so not a sdk folder
-			.catch(err => resolve);
+			.catch(resolve);
 	});
 }
 
@@ -207,7 +207,8 @@ function getAndroidTargets(sdk) {
 		return Promise.reject(new TypeError('Expected sdk to be an object.'));
 	}
 
-	return util.run(sdk.executables.android, ['list', 'target'])
+	return util
+		.run(sdk.executables.android, ['list', 'target'])
 		.then(({ code, stdout, stderr }) => {
 			if (code) {
 				return null;
@@ -290,22 +291,22 @@ function getAndroidTargets(sdk) {
 								switch (key) {
 									case 'abis':
 									case 'skins':
-										value.split(',').forEach(v => {
+										for (let v in value.split(',')) {
 											v = v.replace('(default)', '').trim();
 											if (info[key].indexOf(v) === -1) {
 												info[key].push(v);
 											}
-										});
+										}
 										break;
 									case 'tag/abis':
 										// note: introduced in android sdk tools 22.6
-										value.split(',').forEach(v => {
+										for (let v in value.split(',')) {
 											let p = v.indexOf('/');
 											v = (p === -1 ? v : v.substring(p + 1)).trim();
 											if (info.abis.indexOf(v) === -1) {
 												info.abis.push(v);
 											}
-										});
+										}
 										break;
 									case 'type':
 										info[key] = value.toLowerCase();
@@ -342,13 +343,13 @@ function getAndroidTargets(sdk) {
 			});
 
 			// all targets are processed, now try to fill in aidl & androidJar paths for  add-ons
-			Object.keys(targets).forEach(id => {
+			for (let id of Object.keys(targets)) {
 				let basedOn = targets[id]['based-on'];
 				if (targets[id].type === 'add-on' && basedOn && apiLevelMap[basedOn['api-level']]) {
 					targets[id].androidJar = apiLevelMap[basedOn['api-level']].androidJar;
 					targets[id].aidl = apiLevelMap[basedOn['api-level']].aidl;
 				}
-			});
+			}
 
 			return targets;
 		});

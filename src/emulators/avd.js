@@ -21,6 +21,7 @@ export function detect(opts = {}) {
 		avds: []
 	};
 
+	opts.bypassCache = true;
 	return sdk
 		.detect(opts)
 		.then(result => util.run(result.sdk.executables.android, ['list', 'avd']))
@@ -33,8 +34,9 @@ export function detect(opts = {}) {
 			const keyValRegex = /^\s*(.+)\: (.+)$/;
 
 			// parse the avds
-			stdout.split(/\-\-\-\-\-\-+\n/).forEach(avd => {
-				if (avd = avd.trim()) {
+			for (let avd of stdout.split(/\-\-\-\-\-\-+\n/)) {
+				avd = avd.trim();
+				if (avd) {
 					let lines = avd.split('\n');
 					let info = {
 						type: 'avd'
@@ -42,7 +44,7 @@ export function detect(opts = {}) {
 					let m;
 					let key;
 
-					lines.forEach(line => {
+					for (let line of lines) {
 						line = line.trim();
 						if (m = line.match(keyValRegex)) {
 							key = m[1].toLowerCase().trim().replace(/\s/g, '-');
@@ -57,7 +59,7 @@ export function detect(opts = {}) {
 								'api-level': ~~m[2]
 							};
 						}
-					});
+					}
 
 					if (info.path && info.sdcard && !util.existsSync(info.sdcard)) {
 						let sdcardFile = path.join(info.path, 'sdcard.img');
@@ -76,7 +78,7 @@ export function detect(opts = {}) {
 					}
 					results.avds.push(info);
 				}
-			});
+			}
 		})
 		.then(() => results);
 }
@@ -106,13 +108,17 @@ export function isRunning(emu, devices = [], opts = {}) {
  * @returns {Promise}
  */
 export function isEmulator(deviceId, opts = {}) {
+	if (typeof deviceId !== 'string' || !deviceId) {
+		return Promise.reject(new TypeError('Expected device ID to be a string.'));
+	}
+
 	let port = deviceId.match(emuRegExp);
 	if (!port) {
 		return Promise.resolve(false);
 	}
 
 	return Promise.all([
-		getAvdName(port[1]),
+		getAvdName(+port[1]),
 		this.detect(opts)
 	])
 	.then(([avdName, avdInfo]) => avdInfo && avdInfo.avds.filter(a => { return a.name === avdName; }).shift());
@@ -129,9 +135,14 @@ export function isEmulator(deviceId, opts = {}) {
  * @param {Number} [opts.partitionSize=128] - The emulator's system/data partition size in MBs.
  * @param {Array|String} [opts.stdio] - The stdio configuration to pass into spawn().
  * @param {Boolean} [opts.detached] - The detached flag to pass into spawn().
+ * @param {Array|String} [opts.extraArgs] - Additional arguments to be passed to emulator.
  * @returns {Promise}
  */
 export function start(emu, opts = {}) {
+	if (emu && !emu.name) {
+		return Promise.reject(new Error('Expected the emulator object to have a "name" property.'));
+	}
+
 	let port = opts.port || DEFAULTPORT;
 	let emulatorExe;
 
@@ -140,19 +151,19 @@ export function start(emu, opts = {}) {
 		.then(result => {
 			emulatorExe = result.sdk.executables.emulator;
 
-			function doUntil(p) {
-				return util.findport(p)
+			function findPort(p) {
+				return checkPort(p)
 					.then(result => {
-						if (result || p >= PORTLIMIT) {
+						if (result) {
 							return result;
 						} else {
-							p = p + 2;
-							return doUntil(p);
+							emu.emit('message', `Port "${p}" is not available, keep scanning.`);
+							return findPort(p + 2);
 						}
 					});
 			}
 
-			return doUntil(port)
+			return findPort(port)
 				.then(result => {
 					emu.emit('message', `Found port "${result}" for "${emu.name}"`);
 					return result;
@@ -172,74 +183,15 @@ export function start(emu, opts = {}) {
 			let sdcard = opts.sdcard || emu.sdcard;
 			sdcard && args.push('-sdcard', sdcard);              // SD card image (default <system>/sdcard.img
 
-			// add any other args
-			opts.logcat               && args.push('-logcat', opts.logcat);                // enable logcat output with given tags
-			opts.sysdir               && args.push('-sysdir', opts.sysdir);                // search for system disk images in <dir>
-			opts.system               && args.push('-system', opts.system);                // read initial system image from <file>
-			opts.datadir              && args.push('-datadir', opts.datadir);              // write user data into <dir>
-			opts.kernel               && args.push('-kernel', opts.kernel);                // use specific emulated kernel
-			opts.ramdisk              && args.push('-ramdisk', opts.ramdisk);              // ramdisk image (default <system>/ramdisk.img
-			opts.initdata             && args.push('-init-data', opts.initdata);           // same as '-init-data <file>'
-			opts.data                 && args.push('-data', opts.data);                    // data image (default <datadir>/userdata-qemu.img
-			opts.cache                && args.push('-cache', opts.cache);                  // cache partition image (default is temporary file)
-			opts.cacheSize            && args.push('-cache-size', opts.cacheSize);         // cache partition size in MBs
-			opts.noCache              && args.push('-no-cache');                           // disable the cache partition
-			opts.snapStorage          && args.push('-snapstorage', opts.snapStorage);      // file that contains all state snapshots (default <datadir>/snapshots.img)
-			opts.noSnapStorage        && args.push('-no-snapstorage');                     // do not mount a snapshot storage file (this disables all snapshot functionality)
-			opts.snapshot             && args.push('-snapshot', opts.snapshot);            // name of snapshot within storage file for auto-start and auto-save (default 'default-boot')
-			opts.noSnapshot           && args.push('-no-snapshot');                        // perform a full boot and do not do not auto-save, but qemu vmload and vmsave operate on snapstorage
-			opts.noSnapshotSave       && args.push('-no-snapshot-save');                   // do not auto-save to snapshot on exit: abandon changed state
-			opts.noSnapshotLoad       && args.push('-no-snapshot-load');                   // do not auto-start from snapshot: perform a full boot
-			opts.snapshotList         && args.push('-snapshot-list');                      // show a list of available snapshots
-			opts.noSnapshotUpdateTime && args.push('-no-snapshot-update-time');            // do not do try to correct snapshot time on restore
-			opts.wipeData             && args.push('-wipe-data');                          // reset the user data image (copy it from initdata)
-			opts.skindir              && args.push('-skindir', opts.skindir);              // search skins in <dir> (default <system>/skins)
-			opts.skin                 && args.push('-skin', opts.skin);                    // select a given skin
-			opts.noSkin               && args.push('-no-skin');                            // don't use any emulator skin
-			opts.dynamicSkin          && args.push('-dynamic-skin');                       // dynamically construct a skin of given size, requires -skin WxH option
-			opts.memory               && args.push('-memory', opts.memory);                // physical RAM size in MBs
-			opts.netspeed             && args.push('-netspeed', opts.netspeed);            // maximum network download/upload speeds
-			opts.netdelay             && args.push('-netdelay', opts.netdelay);            // network latency emulation
-			opts.netfast              && args.push('-netfast');                            // disable network shaping
-			opts.trace                && args.push('-trace', opts.trace);                  // enable code profiling (F9 to start)
-			opts.showKernel           && args.push('-show-kernel');                        // display kernel messages
-			opts.shell                && args.push('-shell');                              // enable root shell on current terminal
-			opts.noJNI                && args.push('-no-jni');                             // disable JNI checks in the Dalvik runtime
-			opts.noAudio              && args.push('-no-audio');                           // disable audio support
-			opts.audio                && args.push('-audio', opts.audio);                  // use specific audio backend
-			opts.rawKeys              && args.push('-raw-keys');                           // disable Unicode keyboard reverse-mapping
-			opts.radio                && args.push('-radio', opts.radio);                  // redirect radio modem interface to character device
-			opts.onion                && args.push('-onion', opts.onion);                  // use overlay PNG image over screen
-			opts.onionAlpha           && args.push('-onion-alpha', opts.onionAlpha);       // specify onion-skin translucency
-			opts.onionRotation        && args.push('-onion-rotation', opts.onionRotation); // specify onion-skin rotation 0|1|2|3
-			opts.scale                && args.push('-scale', opts.scale);                  // scale emulator window
-			opts.dpiDevice            && args.push('-dpi-device', opts.dpiDevice);         // specify device's resolution in dpi (default 165)
-			opts.httpProxy            && args.push('-http-proxy', opts.httpProxy);         // make TCP connections through a HTTP/HTTPS proxy
-			opts.timezone             && args.push('-timezone', opts.timezone);            // use this timezone instead of the host's default
-			opts.dnsServer            && args.push('-dns-server', opts.dnsServer);         // use this DNS server(s) in the emulated system
-			opts.cpuDelay             && args.push('-cpu-delay', opts.cpuDelay);           // throttle CPU emulation
-			opts.noWindow             && args.push('-no-window');                          // disable graphical window display
-			opts.reportConsole        && args.push('-report-console', opts.reportConsole); // report console port to remote socket
-			opts.gps                  && args.push('-gps', opts.gps);                      // redirect NMEA GPS to character device
-			opts.keyset               && args.push('-keyset', opts.keyset);                // specify keyset file name
-			opts.shellSerial          && args.push('-shell-serial', opts.shellSerial);     // specific character device for root shell
-			opts.tcpdump              && args.push('-tcpdump', opts.tcpdump);              // capture network packets to file
-			opts.bootchart            && args.push('-bootchart', opts.bootchart);          // enable bootcharting
-			opts.charmap              && args.push('-charmap', opts.charmap);              // use specific key character map
-			opts.sharedNetId          && args.push('-shared-net-id', opts.sharedNetId);    // join the shared network, using IP address 10.1.2.<number>
-			opts.nandLimits           && args.push('-nand-limits', opts.nandLimits);       // enforce NAND/Flash read/write thresholds
-			opts.memcheck             && args.push('-memcheck', opts.memcheck);            // enable memory access checking
-			opts.gpu                  && args.push('-gpu', opts.gpu);                      // set hardware OpenGLES emulation mode
-			opts.cameraBack           && args.push('-camera-back', opts.cameraBack);       // set emulation mode for a camera facing back
-			opts.cameraFront          && args.push('-camera-front', opts.cameraFront);     // set emulation mode for a camera facing front
-			opts.screen               && args.push('-screen', opts.screen);                // set emulated screen mode
-			opts.force32bit           && args.push('-force-32bit');                        // always use 32-bit emulator
+			if (Array.isArray(opts.extraArgs)) {
+				args.push.apply(args, opts.extraArgs);
+			}
 
 			// set system property on boot
 			if (opts.props && typeof opts.props === 'object') {
-				Object.keys(opts.props).forEach(prop => {
+				for (let prop of Object.keys(opts.props)) {
 					args.push('-prop', `${prop} = ${opts.props[prop]}`);
-				});
+				}
 			}
 
 			// pass arguments to qemu
@@ -282,6 +234,10 @@ export function start(emu, opts = {}) {
  * @returns {Promise}
  */
 export function stop(deviceId, opts = {}) {
+	if (typeof deviceId !== 'string' || !deviceId) {
+		return Promise.reject(new TypeError('Expected device ID to be a string.'));
+	}
+
 	if (!emuRegExp.test(deviceId)) {
 		return Promise.reject(new Error(`Invalid emulator ID: "${deviceId}"`));
 	}
@@ -305,6 +261,10 @@ export function stop(deviceId, opts = {}) {
  * @returns {Promise}
  */
 function getAvdName(port) {
+	if (isNaN(port)) {
+		return Promise.reject(new TypeError('Expected port to be a number.'));
+	}
+
 	return new Promise((resolve, reject) => {
 		let state = 'connecting';
 		let avdName = null;
@@ -330,5 +290,46 @@ function getAvdName(port) {
 
 		socket.on('end', () => resolve(avdName));
 		socket.on('error', resolve);
+	});
+}
+
+/**
+ * Find a free port for the android emulator.
+ *
+ * @param {Number} port - The TCP port the emulator wants to listen on.
+ * @returns {Promise}
+ */
+function checkPort(port) {
+	if (isNaN(port)) {
+		return Promise.reject(new TypeError('Expected port to be a number.'));
+	}
+
+	if (port > PORTLIMIT) {
+		return Promise.reject(new Error('Unable to find a free port between 5554 and 5584'));
+	}
+
+	return new Promise((resolve, reject) => {
+		let socket = net.connect({ port: port }, () => {
+			socket.end();
+			resolve();
+		});
+
+		socket.on('end', err => {
+			if (socket) {
+				socket.end();
+				socket = null;
+			}
+		});
+
+		socket.on('error', err => {
+			// port available!
+			if ('ECONNREFUSED' === err.errno) {
+				if (socket) {
+					socket.end();
+					socket = null;
+				}
+				resolve(port);
+			}
+		});
 	});
 }

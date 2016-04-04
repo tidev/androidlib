@@ -3,7 +3,7 @@ import path from 'path';
 import { spawn } from 'child_process';
 
 import * as util from '../util';
-import { ADB } from '../adb';
+import ADB from '../adb';
 
 const exe = util.exe;
 const bat = util.bat;
@@ -241,7 +241,7 @@ function getVMInfo(opts, vboxmanage) {
 				return util.run(vboxmanage, ['guestproperty', 'enumerate', emu.guid])
 					.then(({ code, stdout, stderr }) => {
 						if (!code) {
-							stdout.split('\n').forEach(line => {
+							for (let line in stdout.split('\n')) {
 								const m = line.trim().match(/Name: (\S+), value: (\S*), timestamp:/);
 								if (m) {
 									switch (m[1]) {
@@ -265,7 +265,7 @@ function getVMInfo(opts, vboxmanage) {
 											break;
 									}
 								}
-							});
+							}
 						}
 
 						// if the virtual machine does not define the genymotion version, then
@@ -383,6 +383,17 @@ export function start(emu, opts = {}) {
  /**
  * Stops the specified Genymotion emulator.
  *
+ * @param {String} name - The name of the emulator
+ * @param {Object} device - Android device definition object
+ * @param {Object} opts - Emulator options object.
+ * @param {String} [opts.titaniumHomeDir="~/.titanium"] - The Titanium home directory.
+ * @param {Boolean} [opts.bypassCache=false] - Bypasses the Genymotion environment detection cache and re-queries the system.
+ * @param {String} [opts.cwd] - The current working directory to pass into spawn().
+ * @param {Array|String} [opts.stdio="ignore"] - The stdio configuration to pass into spawn().
+ * @param {Object} [opts.env] - The environment variables to pass into spawn().
+ * @param {Boolean} [opts.detached=true] - The detached flag to pass into spawn().
+ * @param {Number} [opts.uid] - The user id to pass into spawn().
+ * @param {Number} [opts.gid] - The group id to pass into spawn().
  * @returns {Promise}
  */
  export function stop(device, opts = {}) {

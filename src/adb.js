@@ -4,22 +4,24 @@ import mkdirp from 'mkdirp';
 import path from 'path';
 import { spawn } from 'child_process';
 
-import { Connection } from './connection';
+import Connection from './connection';
 import { EmulatorManager } from './emulator';
 import * as sdk from './sdk';
 import * as util from './util';
 
 /**
- * Creates an ADB object.
+ * Provides methods to interact with the Android Debug Bridge (ADB).
  *
  * @class
- * @extends EventEmitter
- * @classdesc Provides methods to interact with the Android Debug Bridge (ADB).
  * @constructor
  */
-export class ADB extends EventEmitter {
+export default class ADB {
+	/**
+	 * Creates an ADB object.
+	 *
+	 * @param {Object} opts - android sdk detection and emulator manager options.
+	 */
 	constructor(opts = {}) {
-		super();
 		this.opts = opts;
 	}
 
@@ -32,7 +34,13 @@ export class ADB extends EventEmitter {
 	version() {
 		return new Connection(this)
 			.exec('host:version')
-			.then(data => '1.0.' + parseInt(data, 16));
+			.then(data => {
+				if (data) {
+					return `1.0.${parseInt(data, 16)}`;
+				}
+
+				throw new Error('ADB version is not available.');
+			});
 	}
 
 	/**
@@ -55,7 +63,7 @@ export class ADB extends EventEmitter {
 		const conn = new Connection(this);
 		return conn
 			.exec('host:transport:' + deviceId)
-			.then(data => conn.exec(`shell: ${cmd.replace(/^shell\:/, '')}`, { bufferUntilClose: true, noLength: true }));
+			.then(data => conn.exec(`shell:${cmd.replace(/^shell\:/, '')}`, { bufferUntilClose: true, noLength: true }));
 	}
 
 	/**
@@ -96,6 +104,14 @@ export class ADB extends EventEmitter {
 			return Promise.reject(new TypeError('Expected device ID to be a string.'));
 		}
 
+		if (typeof src !== 'string' || !src) {
+			return Promise.reject(new TypeError('Expected source to be a string.'));
+		}
+
+		if (typeof dest !== 'string' || !dest) {
+			return Promise.reject(new TypeError('Expected dest to be a string.'));
+		}
+
 		src = util.expandPath(src);
 		if (!util.existsSync(src)) {
 			return Promise.reject(new TypeError(`Source file "${src}" does not exist.`));
@@ -118,6 +134,14 @@ export class ADB extends EventEmitter {
 	push(deviceId, src, dest) {
 		if (typeof deviceId !== 'string' || !deviceId) {
 			return Promise.reject(new TypeError('Expected device ID to be a string.'));
+		}
+
+		if (typeof src !== 'string' || !src) {
+			return Promise.reject(new TypeError('Expected source to be a string.'));
+		}
+
+		if (typeof dest !== 'string' || !dest) {
+			return Promise.reject(new TypeError('Expected dest to be a string.'));
 		}
 
 		src = util.expandPath(src);
@@ -146,6 +170,10 @@ export class ADB extends EventEmitter {
 
 		if (typeof dest !== 'string' || !dest) {
 			return Promise.reject(new TypeError('Expected destination to be a string.'));
+		}
+
+		if (typeof src !== 'string' || !src) {
+			return Promise.reject(new TypeError('Expected source to be a string.'));
 		}
 
 		src = util.expandPath(src);
@@ -184,15 +212,15 @@ export class ADB extends EventEmitter {
 			.shell(deviceId, 'ps')
 			.then(data => {
 				if (data) {
-					const lines = data.toString().split('\n');
-					for (let i = 0, j = lines.length; i < j; i++ ) {
-						let columns = lines[i].trim().split(/\s+/);
+					for (let line of data.toString().split('\n')) {
+						let columns = line.trim().split(/\s+/);
 						if (columns.pop() === appId) {
 							return parseInt(columns[1]);
 						}
 					}
 				}
-				return 0;
+
+				throw new Error(`The pid for "${appId}" on "${deviceId}" is not available.`);
 			});
 	}
 
@@ -201,18 +229,21 @@ export class ADB extends EventEmitter {
 	 *
 	 * @param {String} deviceId - The id of the device or emulator.
 	 * @param {String} apkFile - The application apk file to install.
-	 * @param {Object} [opts] - Install options.
 	 * @returns {Promise}
 	 * @access public
 	 */
-	installApp(deviceId, apkFile, opts = {}) {
+	installApp(deviceId, apkFile) {
 		if (typeof deviceId !== 'string' || !deviceId) {
 			return Promise.reject(new TypeError('Expected device ID to be a string.'));
 		}
 
+		if (typeof apkFile !== 'string' || !apkFile) {
+			return Promise.reject(new TypeError('Expected apk file path to be a string.'));
+		}
+
 		apkFile = util.expandPath(apkFile);
 		if (!util.existsSync(apkFile)) {
-			return Promise.reject(new TypeError(`APK file "${apkFile}" does not exist.`));
+			return Promise.reject(new Error(`APK file "${apkFile}" does not exist.`));
 		}
 
 		return this
@@ -222,7 +253,7 @@ export class ADB extends EventEmitter {
 					return Promise.reject(new Error('Device not found.'));
 				}
 			})
-			.then(sdk.detect)
+			.then(() => sdk.detect(this.opts))
 			.then(result => util.run(result.sdk.executables.adb, ['-s', deviceId, 'install', '-r', apkFile]));
 	}
 
@@ -268,9 +299,28 @@ export class ADB extends EventEmitter {
 			return Promise.reject(new TypeError('Expected app ID to be a string.'));
 		}
 
-		return this
-			.getPid(deviceId, appId)
-			.then(pid => this.shell(deviceId, `am force-stop ${appId}`));
+		return new Promise((resolve, reject) => {
+			this
+				.getPid(deviceId, appId)
+				.then(pid => {
+					return this
+						.shell(deviceId, `am force-stop ${appId}`)
+						.then(data => {
+							if (data && data.toString().indexOf('Unknown command: force-stop') !== -1) {
+								return this
+									.shell(deviceId, `kill ${pid}`)
+									.then(data => {
+										if (data.toString().indexOf('Operation not permitted') !== -1) {
+											return reject(new Error('Unable to stop the application.'));
+										}
+										return resolve(data);
+									});
+							}
+							return resolve(data);
+						});
+				})
+				.catch(err => reject(err));
+		});
 	}
 
 	/**
@@ -281,7 +331,7 @@ export class ADB extends EventEmitter {
 	 */
 	devices() {
 		return new Connection(this)
-			.exec('host:devices')
+			.exec('host:device')
 			.then(data => this.parseDevices(data));
 	}
 
@@ -295,10 +345,10 @@ export class ADB extends EventEmitter {
 	 */
 	logcat(deviceId) {
 		const emitter = new EventEmitter;
-		sdk
-			.detect(this.opts)
+		Promise.resolve()
+			.then(() => sdk.detect(this.opts))
 			.then(result => {
-				return new Promise((resolve, reject) => {
+				new Promise((resolve, reject) => {
 					const args = [
 						'-s',
 						deviceId,
@@ -331,7 +381,7 @@ export class ADB extends EventEmitter {
 		const devices = [];
 		const emuMgr = new EmulatorManager(this.opts);
 
-		data.toString().split('\n').forEach(item => {
+		for (let item of data.toString().split('\n')) {
 			let p = item.split(/\s+/);
 			if (p.length > 1) {
 				devices.push({
@@ -339,15 +389,15 @@ export class ADB extends EventEmitter {
 					state: p.shift()
 				});
 			}
-		});
+		}
 
 		return Promise
 			.all(devices.map(device => {
-				const deviceId = device.id;
 				return this
-					.shell(deviceId, 'cat /system/build.prop')
+					.shell(device.id, 'cat /system/build.prop')
 					.then(data => {
-						data.toString().split('\n').forEach(line => {
+						const lines = data.toString().split('\n');
+						for (let line of lines) {
 							const parts = line.split('=');
 							if (parts.length > 1) {
 								const key = parts[0].trim();
@@ -369,22 +419,22 @@ export class ADB extends EventEmitter {
 										device.genymotion = value;
 										break;
 									default:
-										if (key.indexOf('ro.product.cpu.abi') == 0) {
+										if (key.indexOf('ro.product.cpu.abi') === 0) {
 											Array.isArray(device.abi) || (device.abi = []);
-											value.split(',').forEach(abi => {
+											for (let abi of value.split(',')) {
 												abi = abi.trim();
 												if (device.abi.indexOf(abi) === -1) {
 													device.abi.push(abi);
 												}
-											});
+											}
 										}
 										break;
 								}
 							}
-						});
+						}
 
 						return emuMgr
-							.isEmulator(deviceId)
+							.isEmulator(device.id)
 							.then(emu => device.emulator = emu || null);
 					});
 			}))

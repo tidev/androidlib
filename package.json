@@ -35,14 +35,14 @@
     "babel-polyfill": "^6.6.1",
     "mkdirp": "^0.5.1",
     "source-map-support": "^0.4.0",
-    "which": "^1.2.4"
+    "which": "^1.2.4",
+    "xmldom": "^0.1.22"
   },
   "devDependencies": {
-    "babel-eslint": "^5.0.0",
+    "babel-eslint": "^6.0.0",
     "babel-preset-nodejs-lts": "^1.2.1",
     "chai": "^3.5.0",
     "del": "^2.2.0",
-    "eslint": "2.2.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-babel-istanbul": "^1.0.0",

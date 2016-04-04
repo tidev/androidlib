@@ -5,8 +5,8 @@ import which from 'which';
 import * as util from './util';
 
 const cmd = util.cmd;
-const ndkBuild = 'ndk-build' + cmd;
-const ndkGdb = 'ndk-gdb' + cmd;
+const ndkBuild = `ndk-build${cmd}`;
+const ndkGdb = `ndk-gdb${cmd}`;
 let cache = null;
 
 /**

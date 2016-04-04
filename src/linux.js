@@ -61,9 +61,9 @@ function findDpkg() {
 			return Promise.all(flags.map(f => {
 				return util.run(dpkg, [f])
 					.then((code, stdout, stderr) => {
-						stdout.split('\n').forEach(line => {
+						for (let line in stdout.split('\n')) {
 							(line = line.trim()) && (result[line] = 1);
-						});
+						}
 					});
 			}));
 		})
@@ -85,12 +85,11 @@ function findDpkgQuery() {
 					.then((code, out, err) => {
 						result[lib] = false;
 						if (!code) {
-							const lines = out.split('\n');
-							for (let i = 0, l = lines.length; i < l; i++) {
-								if (lines[i].indexOf(lib) !== -1) {
+							for (let line in out.split('\n')) {
+								if (line.indexOf(lib) !== -1) {
 									// we look for "ii" which means we want the "desired action"
 									// to be "installed" and the "status" to be "installed"
-									if (lines[i].indexOf('ii') === 0) {
+									if (line.indexOf('ii') === 0) {
 										result[lib] = true;
 									}
 									break;
@@ -115,7 +114,7 @@ function findRpm() {
 			return util
 				.run(rpm, ['-qa'])
 				.then((code, stdout, stderr) => {
-					stdout.split('\n').forEach(line => {
+					for (let line in stdout.split('\n')) {
 						if (/^glibc\-/.test(line)) {
 							if (/\.i[36]86$/.test(line)) {
 								result.glibc = true;
@@ -130,7 +129,7 @@ function findRpm() {
 								result.libstdcpp = false;
 							}
 						}
-					});
+					}
 					return result;
 				});
 		});

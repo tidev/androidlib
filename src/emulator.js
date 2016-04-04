@@ -2,31 +2,31 @@ import { EventEmitter } from 'events';
 import fs from 'fs';
 import path from 'path';
 
-import { ADB } from './adb';
+import ADB from './adb';
 import * as sdk from './sdk';
 import * as util from './util';
 import * as avd from './emulators/avd';
 import * as genymotion from './emulators/genymotion';
 
 /**
- * Creates an Emulator instance.
+ * Emulator that contains the avd settings and exposes event methods.
  *
  * @class
- * @extends EventEmitter
- * @classdesc Simple object that contains the avd settings and exposes event methods.
- * @constructor
+ * @extends {EventEmitter}
  */
 export class Emulator extends EventEmitter { }
 
 /**
- * Creates an EmulatorManager instance.
+ * Manages emulator implementations and responsible for launching and killing emulators.
  *
  * @class
- * @classdesc Manages emulator implementations and responsible for launching and killing emulators.
- * @constructor
- * @param {Object} [opts] - Various options.
  */
 export class EmulatorManager {
+	/**
+	 * Creates an Emulator Manager object.
+	 *
+	 * @param {Object} opts - emulator detection options.
+	 */
 	constructor(opts = {}) {
 		this.opts = opts;
 	}
@@ -34,7 +34,7 @@ export class EmulatorManager {
 	/**
 	 * Loads emulator implementation modules and detects all available emulators.
 	 *
-	 * @param {Object} [opts] - Detection options.
+	 * @param {Object} opts - Detection options.
 	 * @returns {Promise}
 	 * @access public
 	 */
@@ -136,8 +136,7 @@ export class EmulatorManager {
 				}
 
 				// emu is not running, start it
-				this
-					.detect(opts)
+				this.detect(opts)
 					.then(results => {
 						const emus = results.avds.avds.concat(results.genymotions.avds);
 						const emu = emus.filter(e => { return e && e.name === name; }).shift();
@@ -199,8 +198,18 @@ export class EmulatorManager {
 		let timeTaken = 0;
 		const wait = ms => new Promise(res => setTimeout(res, ms));
 		const adb = new ADB(opts);
+		let emuExisted = false;
+
+		emulator.on('exit', data => {
+			emuExisted = true;
+		});
 
 		function isBooted(adbExe){
+			if (emuExisted) {
+				emulator.emit('message', `"${emulator.name}" is closed.`);
+				return;
+			}
+
 			return wait(retryTimeout)
 				.then(() => {
 					if (timeTaken > bootTimeout) {
