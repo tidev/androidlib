@@ -334,16 +334,7 @@ export default class ADB {
 	 * @access public
 	 */
 	devices() {
-		const conn = new Connection(this);
-		conn.on('debug', data => {
-			console.log(data);
-		});
-
-		conn.on('error', data => console.log);
-		conn.on('end', data => console.log);
-
-		// return new Connection(this)
-		return conn
+		return new Connection(this)
 			.exec('host:devices')
 			.then(data => this.parseDevices(data));
 	}

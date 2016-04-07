@@ -44,7 +44,7 @@ export default class AndroidManifest {
 	 * @param {String} [file] - An optional AndroidManifest.xml file path.
 	 */
 	constructor(file) {
-		if (file !== undefined || file !== null) {
+		if (file !== undefined && file !== null) {
 			this.load(file);
 		}
 	}
