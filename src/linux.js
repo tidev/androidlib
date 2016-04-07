@@ -60,14 +60,15 @@ function findDpkg() {
 			const flags = ['--print-architecture', '--print-foreign-architectures'];
 			return Promise.all(flags.map(f => {
 				return util.run(dpkg, [f])
-					.then((code, stdout, stderr) => {
+					.then(({code, stdout, stderr}) => {
 						for (let line of stdout.split('\n')) {
 							(line = line.trim()) && (result[line] = 1);
 						}
 					});
 			}));
 		})
-		.then(() => result);
+		.then(() => result)
+		.catch(err => Promise.resolve());
 }
 
 function findDpkgQuery() {
@@ -82,10 +83,10 @@ function findDpkgQuery() {
 			const libs = ['libc6:i386', 'libncurses5:i386', 'libstdc++6:i386', 'zlib1g:i386'];
 			return Promise.all(libs.map(lib => {
 				return util.run(dpkgquery, ['-l', lib])
-					.then((code, out, err) => {
+					.then(({code, stdout, stderr}) => {
 						result[lib] = false;
 						if (!code) {
-							for (const line of out.split('\n')) {
+							for (const line of stdout.split('\n')) {
 								if (line.indexOf(lib) !== -1) {
 									// we look for "ii" which means we want the "desired action"
 									// to be "installed" and the "status" to be "installed"
@@ -99,7 +100,8 @@ function findDpkgQuery() {
 					});
 			}));
 		})
-		.then(() => result);
+		.then(() => result)
+		.catch(err => Promise.resolve());
 }
 
 function findRpm() {
@@ -113,7 +115,7 @@ function findRpm() {
 			let result = {};
 			return util
 				.run(rpm, ['-qa'])
-				.then((code, stdout, stderr) => {
+				.then(({code, stdout, stderr}) => {
 					for (const line of stdout.split('\n')) {
 						if (/^glibc\-/.test(line)) {
 							if (/\.i[36]86$/.test(line)) {
@@ -132,5 +134,6 @@ function findRpm() {
 					}
 					return result;
 				});
-		});
+		})
+		.catch(err => Promise.resolve());
 }
