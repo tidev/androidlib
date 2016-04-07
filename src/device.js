@@ -1,33 +1,58 @@
 import ADB from './adb';
 
 /**
- * Detects connected devices.
+ * Provides methods to interact with the Android devices.
  *
- * @param {Object} [opts] - Detection options.
- * @returns {Promise}
+ * @class
+ * @constructor
  */
-export function detect(opts = {}) {
-	return new ADB(opts)
-		.devices()
-		.then(result => result.filter(n => { return !n.emulator; }));
-}
-
-
-/**
- * Installs the specified app to the specified device.
- *
- * @param {String} deviceId - The id of the device or emulator.
- * @param {String} apkFile - The application apk file to install.
- * @returns {Promise}
- */
-export function install(deviceId, apkFile) {
-	if (typeof deviceId !== 'string' || !deviceId) {
-		return Promise.reject(new TypeError('Expected device ID to be a string.'));
+export default class Device {
+	/**
+	 * Creates an Android Device object.
+	 *
+	 * @param {Object} options - the android device properties.
+	 */
+	constructor(options) {
+		Object.assign(this, options);
 	}
 
-	if (typeof apkFile !== 'string' || !apkFile) {
-		return Promise.reject(new TypeError('Expected apk file path to be a string.'));
+	/**
+	 * Detects connected devices.
+	 *
+	 * @param {Object} [opts] - Detection options.
+	 * @returns {Promise}
+	 */
+	static detect(opts = {}) {
+		return new ADB(opts)
+			.devices()
+			.then(result => {
+				result = result.filter(n => n instanceof Device);
+				const devices = [];
+				for (const d of result) {
+					devices.push(new Device(d));
+				}
+				return devices;
+			});
 	}
-	
-	return new ADB().installApp(deviceId, apkFile);
+
+	/**
+	 * Installs the specified app to the specified device.
+	 *
+	 * @param {String} deviceId - The id of the device or emulator.
+	 * @param {String} apkFile - The application apk file to install.
+	 * @returns {Promise}
+	 */
+	static installById(deviceId, apkFile) {
+		return new ADB().installApp(deviceId, apkFile);
+	}
+
+	/**
+	 * Installs the specified app to the device instance.
+	 *
+	 * @param {String} apkFile - The application apk file to install.
+	 * @returns {Promise}
+	 */
+	install(apkFile) {
+		return new ADB().installApp(this.deviceId, apkFile);
+	}
 }

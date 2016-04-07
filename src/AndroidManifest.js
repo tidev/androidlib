@@ -6,7 +6,7 @@ import { DOMParser } from 'xmldom';
 import * as util from './util';
 
 const androidAttrPrefixRegExp = /^android\:/;
-const defaultDOMParserArgs = { errorHandler: function(){} };
+const defaultDOMParserArgs = { errorHandler: () => {} };
 
 const tags = {
 	// according to http://developer.android.com/guide/topics/manifest/meta-data-element.html,
@@ -41,15 +41,12 @@ export default class AndroidManifest {
 	/**
 	 * Creates an Android Manifest object.
 	 *
-	 * @param {String} file - The path of the AndroidManifest.xml file.
+	 * @param {String} [file] - An optional AndroidManifest.xml file path.
 	 */
 	constructor(file) {
-		file = util.expandPath(file);
-		if (!util.existsSync(file)) {
-			throw new Error('AndroidManifest.xml file does not exist.');
+		if (file !== undefined || file !== null) {
+			this.load(file);
 		}
-
-		this.load(file);
 	}
 
 	/**
@@ -64,11 +61,13 @@ export default class AndroidManifest {
 			throw new TypeError('Expected file to be a string.');
 		}
 
-		if (!fs.existsSync(file)) {
+		file = util.expandPath(file);
+
+		if (!util.existsSync(file)) {
 			throw new Error('AndroidManifest.xml file does not exist.');
 		}
 
-		this.toJS((new DOMParser(defaultDOMParserArgs).parseFromString(fs.readFileSync(file).toString(), 'text/xml')).documentElement);
+		this.parse(fs.readFileSync(file).toString());
 		return this;
 	}
 
@@ -96,13 +95,11 @@ export default class AndroidManifest {
 	 * @access public
 	 */
 	merge(src) {
-		if (!src) return this;
-
 		if (!(src instanceof AndroidManifest)) {
-			throw new Error('Failed to merge, source must be an AndroidManifest object.');
+			throw new TypeError('Failed to merge, source must be an AndroidManifest object.');
 		}
 
-		Object.keys(src).forEach(tag => {
+		for (const tag of Object.keys(src)) {
 			const tmp = {};
 			switch (tag) {
 				case '__attr__':
@@ -195,7 +192,7 @@ export default class AndroidManifest {
 					}
 					break;
 			}
-		});
+		}
 
 		return this;
 	}
@@ -209,7 +206,7 @@ export default class AndroidManifest {
 	 */
 	toString(fmt) {
 		if (fmt === 'xml') {
-			let dom = new DOMParser(defaultDOMParserArgs).parseFromString('<manifest>', 'text/xml');
+			const dom = new DOMParser(defaultDOMParserArgs).parseFromString('<manifest>', 'text/xml');
 
 			dom.create = (tag, attrs, parent) => {
 				let node = dom.createElement(tag);
@@ -274,7 +271,7 @@ export default class AndroidManifest {
 	}
 
 	/**
-	 * Creates and XML node with the specifed node name and value.
+	 * Creates an XML node with the specifed node name and value.
 	 *
 	 * @param {Object} dom - An XMLDocument.
 	 * @param {String} name - The node name.
@@ -287,36 +284,36 @@ export default class AndroidManifest {
 
 		switch (name) {
 			case '__attr__':
-				for (let attr of Object.keys(value)) {
+				for (const attr of Object.keys(value)) {
 					parent.setAttribute(attr, value[attr]);
 				}
 				break;
 
 			case 'application':
 				node = dom.create(name, null, parent);
-				for (let attr of Object.keys(value)) {
-					let tag = attr;
+				for (const attr of Object.keys(value)) {
+					const tag = attr;
 					let children = 0;
 					if (tags.application.test(tag)) {
 						if (tag === 'provider') {
 							for (let name of Object.keys(value[tag])) {
-								let providerNode = dom.create(tag, null, node);
-								for (let attr of Object.keys(value[tag][name])) {
-									let val = value[tag][name][attr];
+								const providerNode = dom.create(tag, null, node);
+								for (const attr of Object.keys(value[tag][name])) {
+									const val = value[tag][name][attr];
 									if (tagAttrs.provider.test(attr)) {
 										providerNode.setAttribute('android:' + attr, val);
 									} else if ((attr === 'grant-uri-permission' || attr === 'path-permission') && Array.isArray(val)) {
-										val.forEach(perm => {
+										for (const perm of val) {
 											var childNode = dom.create(attr, null, providerNode);
 
 											for (let attr of Object.keys(perm)) {
 												childNode.setAttribute('android:' + attr, perm[attr]);
 											}
 											children++;
-										});
+										}
 									} else if (attr === 'meta-data') {
-										for (let name of Object.keys(val)) {
-											let metaDataNode = dom.create('meta-data', null, providerNode);
+										for (const name of Object.keys(val)) {
+											const metaDataNode = dom.create('meta-data', null, providerNode);
 											for (let attr of Object.keys(val[name])) {
 												if (tagAttrs['meta-data'].test(attr)) {
 													metaDataNode.setAttribute('android:' + attr, val[name][attr]);
@@ -340,7 +337,7 @@ export default class AndroidManifest {
 							}
 						} else if (tag === 'uses-library') {
 							for (let name of Object.keys(value['uses-library'])) {
-								let usesLibraryNode = dom.create('uses-library', null, node);
+								const usesLibraryNode = dom.create('uses-library', null, node);
 								for (let attr of Object.keys(value['uses-library'][name])) {
 									if (tagAttrs['uses-library'].test(attr)) {
 										usesLibraryNode.setAttribute('android:' + attr, value['uses-library'][name][attr]);
@@ -386,7 +383,7 @@ export default class AndroidManifest {
 										}
 									} else if (attr === 'meta-data') {
 										for (let key of Object.keys(val)) {
-											let metaDataNode = dom.create('meta-data', null, childNode);
+											const metaDataNode = dom.create('meta-data', null, childNode);
 											for (let attr of Object.keys(val[key])) {
 												if (tagAttrs['meta-data'].test(attr)) {
 													metaDataNode.setAttribute('android:' + attr, val[key][attr]);
@@ -727,7 +724,7 @@ export default class AndroidManifest {
 	 * boolean, null, or a number.
 	 *
 	 * @param {String} value - The value of the XML node.
-	 * @returns {String|Number|Boolean|Null} The parsed value.
+	 * @returns {String|Number|Boolean|null} The parsed value.
 	 * @access private
 	 */
 	xmlParse(value) {

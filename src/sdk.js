@@ -17,25 +17,23 @@ const requiredSdkTools = {
 	'dx': bat
 };
 
-let cache = null;
+export class SDK {
+	constructor(options) {
+		Object.assign(this, options);
+	}
+}
 
 /**
  * Detects installed Android SDK.
  *
  * @param {Object} [opts] - An object with various params.
- * @param {Boolean} [opts.bypassCache=false] - When true, forces scan for all Paths.
  * @param {String} [opts.sdkPath] - Path to a known Android SDK directory.
  * @param {String} [opts.buildToolVersion] - Specify the version of build tools.
  * @returns {Promise}
  */
 export function detect(opts = {}) {
-	if (cache && !opts.bypassCache) {
-		return Promise.resolve(cache);
-	}
-
-	const results = cache = {
-		sdk: {},
-		targets: null,
+	const results = {
+		sdks: null,
 		linux64bit: null
 	};
 
@@ -60,9 +58,7 @@ export function detect(opts = {}) {
 
 	return Promise
 		.all(sdkPaths.map(p => isSDK(p, opts)))
-		.then(values => results.sdk = values.filter(a => { return a; }).shift())
-		.then(sdk => getAndroidTargets(sdk))
-		.then(targets => results.targets = targets)
+		.then(values => results.sdks = values.filter(a => a))
 		.then(linux.detect)
 		.then(linux64bit => results.linux64bit = linux64bit)
 		.then(() => results);
@@ -181,15 +177,19 @@ function isSDK(dir, opts = {}) {
 		}
 
 		let searchTools = [];
-		Object.keys(requiredSdkTools).forEach(tool => {
+		for (const tool of Object.keys(requiredSdkTools)) {
 			searchTools.push(
 				util.findExecutable(result.executables[tool])
 			);
-		});
+		}
 
 		Promise
 			.all(searchTools)
-			.then(values => resolve(result))
+			.then(paths => getAndroidTargets(result))
+			.then(targets => {
+				result.targets = targets;
+				return resolve(new SDK(result));
+			})
 			// something went wrong, one of the required sdk tools might be missing
 			// so not a sdk folder
 			.catch(resolve);
@@ -248,13 +248,14 @@ function getAndroidTargets(sdk) {
 
 			let apiLevelMap = {};
 			let targets = {};
-			stdout.split(/\-\-\-\-\-\-+\n/).forEach(t => {
-				t.split('\n\w').forEach(chunk => {
+
+			for (const t of stdout.split(/\-\-\-\-\-\-+\n/)) {
+				for (let chunk of t.split('\n\w')) {
 					chunk = chunk.trim();
-					if (!chunk) return;
+					if (!chunk) continue;
 					const lines = chunk.split('\n');
 					let m = lines.shift().match(idRegex);
-					if (!m) return;
+					if (!m) continue;
 
 					let info = targets[m[1]] = { id: m[2], abis: [], skins: [] };
 					for (let i = 0, len = lines.length; i < len; i++) {
@@ -291,7 +292,7 @@ function getAndroidTargets(sdk) {
 								switch (key) {
 									case 'abis':
 									case 'skins':
-										for (let v in value.split(',')) {
+										for (let v of value.split(',')) {
 											v = v.replace('(default)', '').trim();
 											if (info[key].indexOf(v) === -1) {
 												info[key].push(v);
@@ -300,7 +301,7 @@ function getAndroidTargets(sdk) {
 										break;
 									case 'tag/abis':
 										// note: introduced in android sdk tools 22.6
-										for (let v in value.split(',')) {
+										for (let v of value.split(',')) {
 											let p = v.indexOf('/');
 											v = (p === -1 ? v : v.substring(p + 1)).trim();
 											if (info.abis.indexOf(v) === -1) {
@@ -339,11 +340,11 @@ function getAndroidTargets(sdk) {
 						info.version = info['based-on']['android-version'];
 						info.androidJar = null;
 					}
-				});
-			});
+				}
+			}
 
 			// all targets are processed, now try to fill in aidl & androidJar paths for  add-ons
-			for (let id of Object.keys(targets)) {
+			for (const id of Object.keys(targets)) {
 				let basedOn = targets[id]['based-on'];
 				if (targets[id].type === 'add-on' && basedOn && apiLevelMap[basedOn['api-level']]) {
 					targets[id].androidJar = apiLevelMap[basedOn['api-level']].androidJar;

@@ -1,12 +1,22 @@
 import 'babel-polyfill';
 import 'source-map-support/register';
 import * as jdklib from 'jdklib';
-import * as sdk from './sdk';
-import * as ndk from './ndk';
-import * as device from './device';
-import { EmulatorManager } from './emulator';
 
-let cache = null;
+import ADB from './adb';
+import Device from './device';
+import * as Emulator from './emulator';
+import * as SDK from './sdk';
+import * as NDK from './ndk';
+import AndroidManifest from './AndroidManifest';
+
+export {
+	ADB,
+	AndroidManifest,
+	Device,
+	Emulator,
+	SDK as androidSDK,
+	NDK as androidNDK
+};
 
 /**
  * Detects current Android environment.
@@ -21,10 +31,10 @@ let cache = null;
 export function detect(opts = {}) {
 	return Promise.all([
 		getAndroidHome(opts),
-		sdk.detect(opts),
-		ndk.detect(opts),
-		device.detect(opts),
-		new EmulatorManager().detect(opts)
+		SDK.detect(opts),
+		NDK.detect(opts),
+		Device.detect(opts),
+		Emulator.detect(opts)
 	])
 	.then(([home, sdk, ndk, devices, emulators]) => {
 		const result = {

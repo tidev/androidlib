@@ -5,7 +5,8 @@ import path from 'path';
 import { spawn } from 'child_process';
 
 import Connection from './connection';
-import { EmulatorManager } from './emulator';
+import Device from './device';
+import * as Emulator from './emulator';
 import * as sdk from './sdk';
 import * as util from './util';
 
@@ -75,7 +76,8 @@ export default class ADB {
 	startServer() {
 		return sdk
 			.detect(this.opts)
-			.then(result => util.run(result.sdk.executables.adb, ['start-server']));
+			.then(results => results.sdks.shift())
+			.then(sdk => util.run(sdk.executables.adb, ['start-server']));
 	}
 
 	/**
@@ -87,7 +89,8 @@ export default class ADB {
 	stopServer() {
 		return sdk
 			.detect(this.opts)
-			.then(result => util.run(result.sdk.executables.adb, ['kill-server']));
+			.then(results => results.sdks.shift())
+			.then(sdk => util.run(sdk.executables.adb, ['kill-server']));
 	}
 
 	/**
@@ -119,7 +122,8 @@ export default class ADB {
 
 		return sdk
 			.detect(this.opts)
-			.then(result => util.run(result.sdk.executables.adb, ['-s', deviceId, 'forward', src, dest]));
+			.then(results => results.sdks.shift())
+			.then(sdk => util.run(sdk.executables.adb, ['-s', deviceId, 'forward', src, dest]));
 	}
 
 	/**
@@ -140,18 +144,19 @@ export default class ADB {
 			return Promise.reject(new TypeError('Expected source to be a string.'));
 		}
 
-		if (typeof dest !== 'string' || !dest) {
-			return Promise.reject(new TypeError('Expected dest to be a string.'));
-		}
-
 		src = util.expandPath(src);
 		if (!util.existsSync(src)) {
 			return Promise.reject(new TypeError(`Source file "${src}" does not exist.`));
 		}
 
+		if (typeof dest !== 'string' || !dest) {
+			return Promise.reject(new TypeError('Expected dest to be a string.'));
+		}
+
 		return sdk
 			.detect(this.opts)
-			.then(result => util.run(result.sdk.executables.adb, ['-s', deviceId, 'push', src, dest]));
+			.then(results => results.sdks.shift())
+			.then(sdk => util.run(sdk.executables.adb, ['-s', deviceId, 'push', src, dest]));
 	}
 
 	/**
@@ -168,12 +173,12 @@ export default class ADB {
 			return Promise.reject(new TypeError('Expected device ID to be a string.'));
 		}
 
-		if (typeof dest !== 'string' || !dest) {
-			return Promise.reject(new TypeError('Expected destination to be a string.'));
-		}
-
 		if (typeof src !== 'string' || !src) {
 			return Promise.reject(new TypeError('Expected source to be a string.'));
+		}
+
+		if (typeof dest !== 'string' || !dest) {
+			return Promise.reject(new TypeError('Expected destination to be a string.'));
 		}
 
 		src = util.expandPath(src);
@@ -182,13 +187,12 @@ export default class ADB {
 		}
 
 		dest = util.expandPath(dest);
-		const destDir = path.dirname(dest);
-
-		mkdirp.sync(destDir);
+		mkdirp.sync(path.dirname(dest));
 
 		return sdk
 			.detect(this.opts)
-			.then(result => util.run(result.sdk.executables.adb, ['-s', deviceId, 'pull', src, dest]));
+			.then(results => results.sdks.shift())
+			.then(sdk => util.run(sdk.executables.adb, ['-s', deviceId, 'pull', src, dest]));
 	}
 
 	/**
@@ -212,7 +216,7 @@ export default class ADB {
 			.shell(deviceId, 'ps')
 			.then(data => {
 				if (data) {
-					for (let line of data.toString().split('\n')) {
+					for (const line of data.toString().split('\n')) {
 						let columns = line.trim().split(/\s+/);
 						if (columns.pop() === appId) {
 							return parseInt(columns[1]);
@@ -254,7 +258,8 @@ export default class ADB {
 				}
 			})
 			.then(() => sdk.detect(this.opts))
-			.then(result => util.run(result.sdk.executables.adb, ['-s', deviceId, 'install', '-r', apkFile]));
+			.then(results => results.sdks.shift())
+			.then(sdk => util.run(sdk.executables.adb, ['-s', deviceId, 'install', '-r', apkFile]));
 	}
 
 	/**
@@ -299,28 +304,27 @@ export default class ADB {
 			return Promise.reject(new TypeError('Expected app ID to be a string.'));
 		}
 
-		return new Promise((resolve, reject) => {
-			this
-				.getPid(deviceId, appId)
-				.then(pid => {
+		let pid;
+		return this
+			.getPid(deviceId, appId)
+			.then(result => {
+				pid = result;
+				return this.shell(deviceId, `am force-stop ${appId}`);
+			})
+			.then(data => {
+				if (data && data.toString().indexOf('unknown command') !== -1) {
 					return this
-						.shell(deviceId, `am force-stop ${appId}`)
+						.shell(deviceId, `kill ${pid}`)
 						.then(data => {
-							if (data && data.toString().indexOf('Unknown command: force-stop') !== -1) {
-								return this
-									.shell(deviceId, `kill ${pid}`)
-									.then(data => {
-										if (data.toString().indexOf('Operation not permitted') !== -1) {
-											return reject(new Error('Unable to stop the application.'));
-										}
-										return resolve(data);
-									});
+							if (data.toString().indexOf('Operation not permitted') !== -1) {
+								return Promise.reject(new Error('Unable to stop the application.'));
 							}
-							return resolve(data);
+							return Promise.resolve();
 						});
-				})
-				.catch(err => reject(err));
-		});
+				} else {
+					return Promise.resolve();
+				}
+			});
 	}
 
 	/**
@@ -330,8 +334,17 @@ export default class ADB {
 	 * @access public
 	 */
 	devices() {
-		return new Connection(this)
-			.exec('host:device')
+		const conn = new Connection(this);
+		conn.on('debug', data => {
+			console.log(data);
+		});
+
+		conn.on('error', data => console.log);
+		conn.on('end', data => console.log);
+
+		// return new Connection(this)
+		return conn
+			.exec('host:devices')
 			.then(data => this.parseDevices(data));
 	}
 
@@ -347,7 +360,8 @@ export default class ADB {
 		const emitter = new EventEmitter;
 		Promise.resolve()
 			.then(() => sdk.detect(this.opts))
-			.then(result => {
+			.then(results => results.sdks.shift())
+			.then(sdk => {
 				new Promise((resolve, reject) => {
 					const args = [
 						'-s',
@@ -358,7 +372,7 @@ export default class ADB {
 						'-b',
 						'main'
 					];
-					const child = spawn(result.sdk.executables.adb, args);
+					const child = spawn(sdk.executables.adb, args);
 
 					child.stdout.on('data', data => emitter.emit('message', data.toString()));
 					child.stderr.on('data', data => emitter.emit('error', data.toString()));
@@ -379,9 +393,8 @@ export default class ADB {
 	 */
 	parseDevices(data = '') {
 		const devices = [];
-		const emuMgr = new EmulatorManager(this.opts);
-
-		for (let item of data.toString().split('\n')) {
+		const final = [];
+		for (const item of data.toString().split('\n')) {
 			let p = item.split(/\s+/);
 			if (p.length > 1) {
 				devices.push({
@@ -397,7 +410,7 @@ export default class ADB {
 					.shell(device.id, 'cat /system/build.prop')
 					.then(data => {
 						const lines = data.toString().split('\n');
-						for (let line of lines) {
+						for (const line of lines) {
 							const parts = line.split('=');
 							if (parts.length > 1) {
 								const key = parts[0].trim();
@@ -432,12 +445,19 @@ export default class ADB {
 								}
 							}
 						}
-
-						return emuMgr
+						return Emulator
 							.isEmulator(device.id)
-							.then(emu => device.emulator = emu || null);
+							.then(emu => {
+								if (emu) {
+									delete device.name;
+									Object.assign(emu, device);
+									final.push(emu);
+								} else {
+									final.push(new Device(device));
+								}
+							});
 					});
 			}))
-			.then(() => devices);
+			.then(() => final);
 	}
 }

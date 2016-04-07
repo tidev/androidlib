@@ -61,7 +61,7 @@ function findDpkg() {
 			return Promise.all(flags.map(f => {
 				return util.run(dpkg, [f])
 					.then((code, stdout, stderr) => {
-						for (let line in stdout.split('\n')) {
+						for (let line of stdout.split('\n')) {
 							(line = line.trim()) && (result[line] = 1);
 						}
 					});
@@ -85,7 +85,7 @@ function findDpkgQuery() {
 					.then((code, out, err) => {
 						result[lib] = false;
 						if (!code) {
-							for (let line in out.split('\n')) {
+							for (const line of out.split('\n')) {
 								if (line.indexOf(lib) !== -1) {
 									// we look for "ii" which means we want the "desired action"
 									// to be "installed" and the "status" to be "installed"
@@ -114,7 +114,7 @@ function findRpm() {
 			return util
 				.run(rpm, ['-qa'])
 				.then((code, stdout, stderr) => {
-					for (let line in stdout.split('\n')) {
+					for (const line of stdout.split('\n')) {
 						if (/^glibc\-/.test(line)) {
 							if (/\.i[36]86$/.test(line)) {
 								result.glibc = true;

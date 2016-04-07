@@ -7,23 +7,17 @@ import * as util from './util';
 const cmd = util.cmd;
 const ndkBuild = `ndk-build${cmd}`;
 const ndkGdb = `ndk-gdb${cmd}`;
-let cache = null;
 
-/**
- * Detects installed Android NDK.
- *
- * @param {Object} [opts] - An object with various params.
- * @param {Boolean} [opts.bypassCache=false] - When true, forces scan for all Paths.
- * @param {String} [opts.ndkPath] - Path to a known Android NDK directory.
- * @returns {Promise}
- */
-export function detect(opts = {}) {
-	if (cache && !opts.bypassCache) {
-		return Promise.resolve(cache);
+
+export class NDK {
+	constructor(options) {
+		Object.assign(this, options);
 	}
+}
 
-	const results = cache = {
-		ndk: {}
+export function detect(opts = {}) {
+	const results = {
+		ndks: null
 	};
 
 	let ndkDir = opts.ndkPath || process.env.ANDROID_NDK;
@@ -49,7 +43,7 @@ export function detect(opts = {}) {
 
 	return Promise
 		.all(ndkPaths.map(p => isNDK(p)))
-		.then(values => results.ndk = values.filter(a => { return a; }).shift())
+		.then(values => results.ndks = values.filter(a => a))
 		.then(() => results);
 }
 
@@ -60,7 +54,7 @@ export function detect(opts = {}) {
  * @param {String} dir - The directory to check.
  * @returns {Promise}
  */
-function isNDK(dir) {
+export function isNDK(dir) {
 	return new Promise((resolve, reject) => {
 		if (!dir) {
 			return resolve();
@@ -91,7 +85,7 @@ function isNDK(dir) {
 			}
 		}
 
-		const nkdInfo = {
+		const ndkInfo = {
 			path: dir,
 			executables: {
 				ndkbuild: path.join(dir, ndkBuild),
@@ -99,7 +93,8 @@ function isNDK(dir) {
 			},
 			version: version
 		};
-		return resolve(nkdInfo);
+
+		return resolve(new NDK(ndkInfo));
 	});
 }
 

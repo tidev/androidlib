@@ -34,7 +34,7 @@ const BUFFER_UNTIL_CLOSE = 3;
  * Manages the connection and communcations with the ADB server.
  *
  * @class
- * @extends {EventEmitter} Emits events `data`, `end` and 'error'.
+ * @extends {EventEmitter} Emits events `debug`, `end` and `error`.
  */
 export default class Connection extends EventEmitter {
 	/**
@@ -71,7 +71,7 @@ export default class Connection extends EventEmitter {
 			let buffer = null;
 			let len = null;
 			let send = () => {
-				this.emit('data', `[${this.connNum}] SENDING ${cmd}`);
+				this.emit('debug', `[${this.connNum}] SENDING ${cmd}`);
 				this.state = WAIT_FOR_COMMAND_RESULT;
 				buffer = null;
 				this.socket.write(('0000' + cmd.length.toString(16)).substr(-4).toUpperCase() + cmd);
@@ -81,23 +81,23 @@ export default class Connection extends EventEmitter {
 				this.socket = net.connect({
 					port: this.port
 				}, () => {
-					this.emit('data', `[${this.connNum}] CONNECTED`);
+					this.emit('debug', `[${this.connNum}] CONNECTED`);
 					send();
 				});
 
 				this.socket.setKeepAlive(true);
 				this.socket.setNoDelay(true);
 			} else {
-				this.emit('data', `[${this.connNum}] SOCKET ALREADY OPEN, RE-LISTENING AND SENDING NEW COMMAND "${cmd}"`);
+				this.emit('debug', `[${this.connNum}] SOCKET ALREADY OPEN, RE-LISTENING AND SENDING NEW COMMAND "${cmd}"`);
 				this.socket.removeAllListeners('data');
 				this.socket.removeAllListeners('end');
 				this.socket.removeAllListeners('error');
 			}
 
 			this.socket.on('data', data => {
-				this.emit('data', `[${this.connNum}] RECEIVED ${data.length} BYTES (state=${this.state}) (cmd=${cmd})`);
-				this.emit('data', data);
-				this.emit('data', `[${this.connNum}] RECEIVED ${ data && data.toString()} BYTES (state=${this.state}) (cmd=${cmd})`);
+				this.emit('debug', `[${this.connNum}] RECEIVED ${data.length} BYTES (state=${this.state}) (cmd=${cmd})`);
+				this.emit('debug', data);
+				this.emit('debug', `[${this.connNum}] RECEIVED ${ data && data.toString()} BYTES (state=${this.state}) (cmd=${cmd})`);
 				if (this.state === DO_NOTHING) return;
 
 				if (!buffer || buffer.length === 0) {
@@ -106,14 +106,14 @@ export default class Connection extends EventEmitter {
 					buffer += data;
 				}
 
-				this.emit('data', `[${this.connNum}] BUFFER LENGTH = ${buffer.length}`);
+				this.emit('debug', `[${this.connNum}] BUFFER LENGTH = ${buffer.length}`);
 
 				while (true) {
 					let result;
 					switch (this.state) {
 						case WAIT_FOR_COMMAND_RESULT:
 							result = buffer.slice(0, 4).toString();
-							this.emit('data', `[${this.connNum}] RESULT "${result}"`);
+							this.emit('debug', `[${this.connNum}] RESULT "${result}"`);
 							if (!/^OKAY|FAIL$/.test(result)) {
 								return reject(new Error(`Unknown adb result "${result}"`));
 							}
@@ -128,7 +128,7 @@ export default class Connection extends EventEmitter {
 									buffer = buffer.slice(4);
 								}
 								len && (buffer = buffer.slice(0, len));
-								this.emit('data', `[${this.connNum}] ERROR! ${buffer.toString()}`);
+								this.emit('debug', `[${this.connNum}] ERROR! ${buffer.toString()}`);
 								this.state = DO_NOTHING;
 
 								// copy the buffer into an error so we can free up the buffer
@@ -141,10 +141,10 @@ export default class Connection extends EventEmitter {
 							// if there's no more data, then we're done
 							if (buffer.length === 0) {
 								if (opts.bufferUntilClose) {
-									this.emit('data', `[${this.connNum}] DONE, SETTING STATE TO BUFFER_UNTIL_CLOSE`);
+									this.emit('debug', `[${this.connNum}] DONE, SETTING STATE TO BUFFER_UNTIL_CLOSE`);
 									this.state = BUFFER_UNTIL_CLOSE;
 								} else {
-									this.emit('data', `[${this.connNum}] DONE, SETTING STATE TO DO_NOTHING`);
+									this.emit('debug', `[${this.connNum}] DONE, SETTING STATE TO DO_NOTHING`);
 									this.state = DO_NOTHING;
 									resolve();
 								}
@@ -154,7 +154,7 @@ export default class Connection extends EventEmitter {
 							// if we aren't expecting the data to have a length (i.e. the shell command),
 							// then buffer immediately
 							if (opts.noLength) {
-								this.emit('data', `[${this.connNum}] PUSHING REMAINING DATA INTO BUFFER AND SETTING STATE TO BUFFER_UNTIL_CLOSE`);
+								this.emit('debug', `[${this.connNum}] PUSHING REMAINING DATA INTO BUFFER AND SETTING STATE TO BUFFER_UNTIL_CLOSE`);
 								this.state = BUFFER_UNTIL_CLOSE;
 								return;
 							}
@@ -167,22 +167,22 @@ export default class Connection extends EventEmitter {
 							// find how many bytes we are waiting for
 							if (len === null && buffer.length >= 4) {
 								len = parseInt(buffer.slice(0, 4), 16);
-								this.emit('data', `[${this.connNum}] DETERMINING EXPECTED LENGTH...`);
+								this.emit('debug', `[${this.connNum}] DETERMINING EXPECTED LENGTH...`);
 								isNaN(len) && (len = null);
 								buffer = buffer.slice(4);
 							}
 
 							// if there's no length, then let's fire the callback or wait until the socket closes
 							if (len === 0) {
-								this.emit('data', `[${this.connNum}] NO EXPECTED LENGTH, FIRING CALLBACK`);
+								this.emit('debug', `[${this.connNum}] NO EXPECTED LENGTH, FIRING CALLBACK`);
 								buffer = null;
 								len = null;
 								this.end();
 								return resolve();
 							} else if (len === null) {
-								this.emit('data', `[${this.connNum}] NO EXPECTED LENGTH`);
+								this.emit('debug', `[${this.connNum}] NO EXPECTED LENGTH`);
 								if (opts.bufferUntilClose) {
-									this.emit('data', `[${this.connNum}] BUFFERING DATA UNTIL SOCKET CLOSE`);
+									this.emit('debug', `[${this.connNum}] BUFFERING DATA UNTIL SOCKET CLOSE`);
 									this.state = BUFFER_UNTIL_CLOSE;
 								} else  {
 									buffer = null;
@@ -194,15 +194,15 @@ export default class Connection extends EventEmitter {
 								return;
 							}
 
-							this.emit('data', `[${this.connNum}] EXPECTED LENGTH = ${len}`);
-							this.emit('data', `[${this.connNum}] BUFFER LENGTH = ${buffer.length}`);
+							this.emit('debug', `[${this.connNum}] EXPECTED LENGTH = ${len}`);
+							this.emit('debug', `[${this.connNum}] BUFFER LENGTH = ${buffer.length}`);
 
 							// do we have enough bytes?
 							if (buffer.length >= len) {
 								// yup
 								let result = buffer.slice(0, len);
 								buffer = buffer.slice(len);
-								this.emit('data', `[${this.connNum}] SUCCESS AND JUST THE RIGHT AMOUNT OF BYTES (${len}) WITH ${buffer.length} BYTES LEFT`);
+								this.emit('debug', `[${this.connNum}] SUCCESS AND JUST THE RIGHT AMOUNT OF BYTES (${len}) WITH ${buffer.length} BYTES LEFT`);
 								if (opts.bufferUntilClose) {
 									this.state = BUFFER_UNTIL_CLOSE;
 								} else {
@@ -214,7 +214,7 @@ export default class Connection extends EventEmitter {
 								}
 							} else {
 								// we need more data!
-								this.emit('data', `[${this.connNum}] WAITING FOR MORE DATA`);
+								this.emit('debug', `[${this.connNum}] WAITING FOR MORE DATA`);
 							}
 							return;
 
@@ -226,7 +226,7 @@ export default class Connection extends EventEmitter {
 			});
 
 			this.socket.on('end', () => {
-				this.emit('data', `[${this.connNum}] SOCKET CLOSED BY SERVER, (${buffer} && ${buffer && buffer.length})`);
+				this.emit('debug', `[${this.connNum}] SOCKET CLOSED BY SERVER, (${buffer} && ${buffer && buffer.length})`);
 				this.end();
 
 				if (buffer && buffer.length) {
@@ -243,11 +243,11 @@ export default class Connection extends EventEmitter {
 				this.end();
 
 				if (!err.errno || err.errno !== 'ECONNREFUSED') {
-					this.emit('error', `[${this.connNum}] SOCKET error, (${err})`);
+					this.emit('debug', `[${this.connNum}] SOCKET error, (${err})`);
 					return reject(err);
 				}
 
-				this.emit('data', `[${this.connNum}] Restart ADB`);
+				this.emit('debug', `[${this.connNum}] Restart ADB`);
 				this.adb.startServer()
 					.then(({ code, stdout, stderr }) => {
 						if (!code) {
