@@ -31,6 +31,13 @@ const WAIT_FOR_NEW_DATA = 2;
 const BUFFER_UNTIL_CLOSE = 3;
 
 /**
+ * After a command is executed, this will keep the connection open and emit additional
+ * data when available. This is for "host:track-devices" commands where connection is
+ * not closed.
+ */
+const KEEP_CONNECTION = 4;
+
+/**
  * Manages the connection and communcations with the ADB server.
  *
  * @class
@@ -98,6 +105,7 @@ export default class Connection extends EventEmitter {
 				this.emit('debug', `[${this.connNum}] RECEIVED ${data.length} BYTES (state=${this.state}) (cmd=${cmd})`);
 				this.emit('debug', data);
 				this.emit('debug', `[${this.connNum}] RECEIVED ${ data && data.toString()} BYTES (state=${this.state}) (cmd=${cmd})`);
+
 				if (this.state === DO_NOTHING) return;
 
 				if (!buffer || buffer.length === 0) {
@@ -172,9 +180,17 @@ export default class Connection extends EventEmitter {
 								buffer = buffer.slice(4);
 							}
 
+							if (opts.keepConnection) {
+								this.emit('debug', `[${this.connNum}] SETTING STATE TO KEEP_CONNECTION`);
+								this.state = KEEP_CONNECTION;
+								this.emit('data', buffer);
+								buffer = null;
+								return;
+							}
+
 							// if there's no length, then let's fire the callback or wait until the socket closes
 							if (len === 0) {
-								this.emit('debug', `[${this.connNum}] NO EXPECTED LENGTH, FIRING CALLBACK`);
+								this.emit('debug', `[${this.connNum}] NO EXPECTED LENGTH, resolve`);
 								buffer = null;
 								len = null;
 								this.end();
@@ -200,7 +216,7 @@ export default class Connection extends EventEmitter {
 							// do we have enough bytes?
 							if (buffer.length >= len) {
 								// yup
-								let result = buffer.slice(0, len);
+								result = buffer.slice(0, len);
 								buffer = buffer.slice(len);
 								this.emit('debug', `[${this.connNum}] SUCCESS AND JUST THE RIGHT AMOUNT OF BYTES (${len}) WITH ${buffer.length} BYTES LEFT`);
 								if (opts.bufferUntilClose) {
@@ -220,6 +236,11 @@ export default class Connection extends EventEmitter {
 
 						case BUFFER_UNTIL_CLOSE:
 							// we've already added data to the buffer
+							return;
+
+						case KEEP_CONNECTION:
+							this.emit('data', buffer.slice(4));
+							buffer = null;
 							return;
 					}
 				}

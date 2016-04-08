@@ -340,6 +340,26 @@ export default class ADB {
 	}
 
 	/**
+	 * Retrieves a list of all devices and emulators, then listens for changes to device list.
+	 * Connection will emit an `update` event when the device list is changed.
+	 *
+	 * @returns {Connection} The connection so you can end() it.
+	 * @access public
+	 */
+	trackDevices() {
+		const conn = new Connection(this);
+
+		conn.on('data', data => {
+			this.parseDevices(data)
+				.then(devices => conn.emit('update', devices));
+		});
+
+		conn.exec('host:track-devices', { keepConnection: true });
+		return conn;
+	}
+
+
+	/**
 	 * Streams output from logcat into the specified handler until the adb logcat
 	 * process ends.
 	 *
