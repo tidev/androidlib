@@ -190,7 +190,7 @@ export default class Connection extends EventEmitter {
 
 							// if there's no length, then let's fire the callback or wait until the socket closes
 							if (len === 0) {
-								this.emit('debug', `[${this.connNum}] NO EXPECTED LENGTH, resolve`);
+								this.emit('debug', `[${this.connNum}] NO EXPECTED LENGTH, RESOLVE`);
 								buffer = null;
 								len = null;
 								this.end();

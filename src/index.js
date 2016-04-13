@@ -5,15 +5,18 @@ import * as jdklib from 'jdklib';
 import ADB from './adb';
 import Device from './device';
 import * as Emulator from './emulator';
+import * as Genymotion from './genymotion';
 import * as SDK from './sdk';
 import * as NDK from './ndk';
 import AndroidManifest from './AndroidManifest';
+import * as util from './util';
 
 export {
 	ADB,
 	AndroidManifest,
 	Device,
 	Emulator,
+	Genymotion,
 	SDK as androidSDK,
 	NDK as androidNDK
 };
@@ -30,15 +33,14 @@ export {
  */
 export function detect(opts = {}) {
 	return Promise.all([
-		getAndroidHome(opts),
 		SDK.detect(opts),
 		NDK.detect(opts),
 		Device.detect(opts),
 		Emulator.detect(opts)
 	])
-	.then(([home, sdk, ndk, devices, emulators]) => {
+	.then(([sdk, ndk, devices, emulators]) => {
 		const result = {
-			home: home,
+			home: util.expandPath(opts.androidHomePath || process.env.ANDROID_HOME || '~/.android'),
 			sdk: sdk,
 			ndk: ndk,
 			devices: devices,
@@ -47,9 +49,4 @@ export function detect(opts = {}) {
 
 		return result;
 	});
-}
-
-function getAndroidHome(opts = {}) {
-	let home = opts.androidHomePath || process.env.ANDROID_HOME || '~/.android';
-	return Promise.resolve(home);
 }

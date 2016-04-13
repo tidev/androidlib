@@ -4,6 +4,7 @@ import { spawn } from 'child_process';
 
 import ADB from '../adb';
 import EmulatorBase from './emulatorBase';
+import * as Genymotion from '../genymotion';
 import * as util from '../util';
 
 const exe = util.exe;
@@ -23,7 +24,19 @@ export default class GenymotionEmulator extends EmulatorBase {
 	 */
 	constructor(options) {
 		super();
-		Object.assign(this, options);
+		this.type 			= 'genymotion';
+		this.name 			= options.name;
+		this.id 			= options.ipaddress;
+		this.guid 			= options.guid;
+		this.abi 			= options.abi;
+		this.googleApis 	= options.googleApis;
+		this.sdkVersion 	= options['sdk-version'];
+		this.apiLevel 		= options['api-level'];
+		this.target 		= options.target;
+		this.genymotion 	= options.genymotion;
+		this.hardwareOpenGL = options.hardwareOpenGL;
+		this.dpi 			= options.dpi;
+		this.display 		= options.display;
 	}
 
 	/**
@@ -34,201 +47,26 @@ export default class GenymotionEmulator extends EmulatorBase {
 	 * @returns {Promise}
 	 */
 	static detect(opts = {}) {
-		const results = {
-			path : null,
-			home: null,
-			virtualbox: null,
-			executables: [],
-			avds: []
-		};
-
-		return Promise.all([
-			GenymotionEmulator.detectGenymotion(opts),
-			GenymotionEmulator.detectVirtualbox(opts)
-		])
-		.then(([genymotion, virtualbox]) => {
-			if (genymotion) {
-				results.path = genymotion.path;
-				results.executables = genymotion.executables;
-				results.home = genymotion.home;
-			}
-
-			if (virtualbox) {
-				results.executables.vboxmanage = virtualbox.vboxmanage;
-				results.virtualbox = virtualbox.version;
-				results.avds = virtualbox.avds;
-			}
-			return results;
-		});
-	}
-
-	static scan(parent, pattern, depth) {
-		const files = fs.readdirSync(parent);
-		for (const name of files) {
-			const file = path.join(parent, name);
-			const stat = fs.statSync(file);
-			let result;
-			if (stat.isFile() && name === pattern) {
-				return file;
-			} else if (stat.isDirectory()) {
-				try {
-					if (depth === undefined) {
-						result = GenymotionEmulator.scan(file, pattern);
-					} else if (depth > 0){
-						result = GenymotionEmulator.scan(file, pattern, depth - 1);
-					}
-				} catch (err) {
-					// skip
+		return Genymotion
+			.detect(opts)
+			.then(result => {
+				if (result && result.executables && result.executables.vboxmanage) {
+					return GenymotionEmulator.getVMInfo(result.executables.vboxmanage);
 				}
-
-				if (result) {
-					return result;
-				}
-			}
-		}
-	}
-
-	static detectGenymotion(opts = {}) {
-		const genyRegexp = /genymo(tion|bile)/i;
-		const executableName = 'genymotion' + exe;
-		const optsGenyPath = opts.genymotion && opts.genymotion.path;
-		let searchDirs = util.getSearchPaths();
-		let genyPaths = [];
-
-		if (optsGenyPath) {
-			searchDirs.unshift(optsGenyPath);
-		}
-
-		searchDirs
-			.map(dir => util.expandPath(dir))
-			.map(dir => {
-				util.existsSync(dir) && fs.readdirSync(dir).forEach(sub => {
-					let subdir = path.join(dir, sub);
-					if (genyRegexp.test(subdir) && sub[0] !== '.' && fs.statSync(subdir).isDirectory()) {
-						genyPaths.push(path.join(dir, sub));
-					}
-				});
-			});
-
-		return Promise
-			.all(genyPaths.map(p => {
-				const executable = GenymotionEmulator.scan(p, executableName);
-				if (!executable) {
-					return Promise.resolve();
-				}
-
-				// strip off the executable name to get the genymotion directory
-				const dir = path.dirname(executable);
-
-				let player = opts.genymotion && opts.genymotion.executables && opts.genymotion.executables.player;
-				if (!player || !util.existsSync(player)) {
-					player = path.join(dir, `player${exe}`);
-				}
-				if (!util.existsSync(player) && process.platform === 'darwin') {
-					player = path.join(dir, 'player.app', 'Contents', 'MacOS', 'player');
-				}
-				if (!util.existsSync(player)) {
-					player = null;
-				}
-				return {
-					path: dir,
-					executables: {
-						genymotion: executable,
-						player: player
-					}
-				};
-			}))
-			.then(results => {
-				let geny;
-				results.some(v => {
-					if (v) {
-						geny = v;
-						return true;
-					}
-				});
-
-				return geny;
+				throw new Error('Unable to find VBoxManage.');
 			})
-			.then(result => {
-				// attempt to find the Genymotion home directory
-				const genyHomeDir = opts.genymotion && opts.genymotion.home;
-				let genymotionHomeDirs = [];
-
-				if (util.existsSync(genyHomeDir)) {
-					genymotionHomeDirs.push(genyHomeDir);
-				}
-				if (process.platform === 'win32') {
-					genymotionHomeDirs.push('~/AppData/Local/Genymobile/Genymotion');
-				} else {
-					genymotionHomeDirs.push('~/.Genymobile/Genymotion', '~/.Genymotion');
-				}
-
-				for (const genyHome of genymotionHomeDirs) {
-					const dir = util.expandPath(genyHome);
-					if (util.existsSync(dir) && fs.statSync(dir).isDirectory()) {
-						result.home = dir;
-						break;
-					}
-				}
-				return result;
-			});
+			.then(avds => avds);
 	}
 
-	static detectVirtualbox(opts = {}) {
-		const executableName = 'VBoxManage' + exe;
-		const vboxManagePath = opts.genymotion && opts.genymotion.executables && opts.genymotion.executables.vboxmanage;
-		let exePaths = [executableName];
-
-		if (vboxManagePath && util.existsSync(vboxManagePath)) {
-			exePaths.unshift(vboxManagePath);
-		}
-
-		return Promise
-			.race(exePaths.map(e => {
-				return util.findExecutable(e)
-					.catch(err => Promise.resolve());
-			}))
-			.then(result => {
-				if (!result) {
-					const searchDirs = util.getSearchPaths();
-					return Promise.race(searchDirs.map(dir => {
-						dir = util.expandPath(dir);
-						if (!util.existsSync(dir)) {
-							return Promise.resolve();
-						}
-						const executable = GenymotionEmulator.scan(dir, executableName, 3);
-						return Promise.resolve(executable);
-					}));
-				}
-
-				return result;
-			})
-			.then(result => {
-				return util.run(result, ['--version'])
-					.then(({ code, stdout, stderr }) => {
-						return {
-							vboxmanage: result,
-							version: code ? null : stdout.trim()
-						};
-					});
-			})
-			.then(result => {
-				// find all AVDs
-				const vboxmanage = result.vboxmanage;
-				if (vboxmanage) {
-					return GenymotionEmulator
-						.getVMInfo(opts, vboxmanage)
-						.then(emus => {
-							result.avds = emus;
-							return result;
-						});
-				}
-				return result;
-			});
-	}
-
-	static getVMInfo(opts, vboxmanage) {
-		return util.run(vboxmanage, ['list', 'vms'])
+	/**
+	 * Find all Genymotion emulators.
+	 *
+	 * @param {String} vboxmanage - VBoxManage path.
+	 * @returns {Promise}
+	 */
+	static getVMInfo(vboxmanage) {
+		return util
+			.run(vboxmanage, ['list', 'vms'])
 			.then(({ code, stdout, stderr }) => {
 				if (code) {
 					return Promise.resolve();
@@ -282,6 +120,7 @@ export default class GenymotionEmulator extends EmulatorBase {
 							// it's not a Genymotion virtual machine
 							if (!emu.genymotion) {
 								emu = null;
+								return emu;
 							}
 
 							// this is a hack, but by default new Genymotion emulators that have Google APIs will
@@ -307,8 +146,8 @@ export default class GenymotionEmulator extends EmulatorBase {
 	 */
 	static isEmulator(deviceId, opts = {}) {
 		return GenymotionEmulator
-			.detectVirtualbox()
-			.then(result => result && result.avds.filter(e => e && e.ipaddress && deviceId.includes(e.ipaddress)).shift());
+			.detect(opts)
+			.then(result => result.filter(e => e && e.id && deviceId.includes(e.id)).shift());
 	}
 
 	/**
@@ -319,11 +158,12 @@ export default class GenymotionEmulator extends EmulatorBase {
 	 * @returns {Promise}
 	 */
 	isRunning(opts = {}) {
-		return GenymotionEmulator.detectVirtualbox(opts)
+		return GenymotionEmulator
+			.detect(opts)
 			.then(result => {
-				const emus = result && result.avds.filter(e => e && e.name == this.name && !!this.ipaddress).shift();
+				const emus = result.filter(e => e && e.name == this.name && !!this.id).shift();
 				if (emus) {
-					emus.id = `${this.ipaddress}:5555`;
+					emus.id = `${this.id}:5555`;
 					return emus;
 				}
 				return false;
@@ -350,7 +190,9 @@ export default class GenymotionEmulator extends EmulatorBase {
 			return Promise.reject(new Error('Expected the emulator object to have a "name" property.'));
 		}
 
-		return GenymotionEmulator.detect(opts)
+		// get Genymotion player
+		return Genymotion
+			.detect(opts)
 			.then(results => {
 				if (!results) return Promise.resolve();
 

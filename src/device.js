@@ -13,7 +13,15 @@ export default class Device {
 	 * @param {Object} options - the android device properties.
 	 */
 	constructor(options) {
-		Object.assign(this, options);
+		this.type 			= 'device';
+		this.id 			= options.id;
+		this.name 			= options.name;
+		this.sdk 			= options.sdk;
+		this.release 		= options.release;
+		this.model 			= options.model;
+		this.brand 			= options.brand;
+		this.abi 			= options.abi;
+		this.manufacturer 	= options.manufacturer;
 	}
 
 	/**
@@ -25,14 +33,7 @@ export default class Device {
 	static detect(opts = {}) {
 		return new ADB(opts)
 			.devices()
-			.then(result => {
-				result = result.filter(n => n instanceof Device);
-				const devices = [];
-				for (const d of result) {
-					devices.push(new Device(d));
-				}
-				return devices;
-			});
+			.then(result => result.filter(n => n instanceof Device));
 	}
 
 	/**

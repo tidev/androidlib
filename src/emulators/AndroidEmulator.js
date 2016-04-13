@@ -26,7 +26,17 @@ export default class AndroidEmulator extends EmulatorBase {
 	 */
 	constructor(options) {
 		super();
-		Object.assign(this, options);
+		this.type 		= 'avd';
+		this.id 		= options.id;
+		this.name 		= options.name;
+		this.device 	= options.device;
+		this.path 		= options.path;
+		this.target 	= options.target;
+		this.abi 		= options.abi;
+		this.skin 		= options.skin;
+		this.googleApis = options.googleApis;
+		this.sdkVersion = options['sdk-version'];
+		this.apiLevel 	= options['api-level'];
 	}
 
 	/**
@@ -37,9 +47,7 @@ export default class AndroidEmulator extends EmulatorBase {
 	 * @access public
 	 */
 	static detect(opts = {}) {
-		const results = {
-			avds: []
-		};
+		let results = [];
 
 		return sdk
 			.detect(opts)
@@ -94,7 +102,7 @@ export default class AndroidEmulator extends EmulatorBase {
 							}
 						}
 
-						results.avds.push(new AndroidEmulator(info));
+						results.push(new AndroidEmulator(info));
 					}
 				}
 			})
@@ -139,7 +147,6 @@ export default class AndroidEmulator extends EmulatorBase {
 			.then(devices => {
 				// if there are no devices, then it can't possibly be running
 				if (!devices || !devices.length) return Promise.resolve(false);
-				// return devices.filter(e => { return e && e.emulator.name === this.name; }).shift() || false;
 				return devices.filter(e => e && e.name === this.name).shift() || false;
 			});
 	}

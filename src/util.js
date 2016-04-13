@@ -54,7 +54,8 @@ export function findExecutable(executable) {
  * @returns {String}
  */
 export function expandPath(...segments) {
-	segments[0] = segments[0].replace(homeDirRegExp, (process.env.HOME || process.env.USERPROFILE) + '$1');
+	segments[0] = segments[0].replace(homeDirRegExp, (process.env.HOME || process.env.USERPROFILE) + '$2');
+
 	if (isWindows) {
 		return path.resolve(path.join.apply(null, segments).replace(winEnvVarRegExp, (s, m, n) => {
 			return process.env[n] || m;
@@ -91,6 +92,7 @@ export function run(cmd, args) {
 
 /**
  * Determines if a file or directory exists.
+ *
  * @param {String} file - The full path to check if exists.
  * @returns {Boolean}
  */
@@ -100,5 +102,39 @@ export function existsSync(file) {
 		return true;
 	} catch (e) {
 		return false;
+	}
+}
+
+/**
+ * Scan the directory for a specified file.
+ *
+ * @param {String} parent - The directory to start searching from.
+ * @param {String} pattern - The name of the file to look for.
+ * @param {Number} depth - Optional search depth, default 1 level.
+ * @returns {String}
+ */
+export function scan(parent, pattern, depth) {
+	try {
+		const files = fs.readdirSync(parent);
+		for (const name of files) {
+			const file = path.join(parent, name);
+			const stat = fs.statSync(file);
+			let result;
+			if (stat.isFile() && name === pattern) {
+				return file;
+			} else if (stat.isDirectory()) {
+				if (depth === undefined) {
+					result = scan(file, pattern);
+				} else if (depth > 0){
+					result = scan(file, pattern, depth - 1);
+				}
+
+				if (result) {
+					return result;
+				}
+			}
+		}
+	} catch (err) {
+		// skip
 	}
 }

@@ -358,7 +358,6 @@ export default class ADB {
 		return conn;
 	}
 
-
 	/**
 	 * Streams output from logcat into the specified handler until the adb logcat
 	 * process ends.
@@ -456,6 +455,7 @@ export default class ADB {
 								}
 							}
 						}
+
 						return Emulator
 							.isEmulator(device.id)
 							.then(emu => {

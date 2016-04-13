@@ -1,7 +1,6 @@
 import ADB from './adb';
-import AndroidEmulator from './emulators/avd';
-import GenymotionEmulator from './emulators/genymotion';
-
+import AndroidEmulator from './emulators/AndroidEmulator';
+import GenymotionEmulator from './emulators/GenymotionEmulator';
 
 /**
  * Detects all available emulators.
@@ -10,21 +9,12 @@ import GenymotionEmulator from './emulators/genymotion';
  * @returns {Promise}
  */
 export function detect(opts = {}) {
-	const results = {
-		avds: [],
-		genymotions: {}
-	};
-
 	return Promise
 		.all([
 			AndroidEmulator.detect(opts),
 			GenymotionEmulator.detect(opts)
 		])
-		.then(([avds, genys]) => {
-			results.avds = avds;
-			results.genymotions = genys;
-		})
-		.then(() => results);
+		.then(([avds, genys]) => avds.concat(genys));
 }
 
 /**
@@ -33,7 +23,6 @@ export function detect(opts = {}) {
  * @param {String} deviceId - The id of the emulator returned from 'adb devices'.
  * @param {Object} [opts] - Detection options.
  * @returns {Promise}
- * @access public
  */
 export function isEmulator(deviceId, opts = {}) {
 	if (typeof deviceId !== 'string' || !deviceId) {
@@ -65,8 +54,7 @@ export function isRunning(name, opts = {}) {
 	// check avd, genymotion
 	return detect(opts)
 		.then(results => {
-			const emus = results.avds.avds.concat(results.genymotions.avds);
-			const emu = emus.filter(e => { return e && e.name === name; }).shift();
+			const emu = results.filter(e => e && e.name === name).shift();
 			if (!emu) {
 				return Promise.reject(new Error(`Invalid emulator: "${name}"`));
 			}
@@ -98,8 +86,7 @@ export function launch(name, opts = {}) {
 			// emu is not running
 			return detect(opts)
 				.then(results => {
-					const emus = results.avds.avds.concat(results.genymotions.avds);
-					const emu = emus.filter(e => e && e.name === name).shift();
+					const emu = results.filter(e => e && e.name === name).shift();
 					if (!emu) {
 						throw new Error(`Invalid emulator: "${name}"`);
 					}

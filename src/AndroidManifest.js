@@ -134,11 +134,11 @@ export default class AndroidManifest {
 
 				case 'compatible-screens':
 					Array.isArray(this[tag]) || (this[tag] = []);
-					for (let s of this[tag]) {
+					for (const s of this[tag]) {
 						tmp[s.screenSize + '|' + s.screenDensity] = 1;
 					}
 
-					for (let s of src[tag]) {
+					for (const s of src[tag]) {
 						const n = s.screenSize + '|' + s.screenDensity;
 						if (!tmp[n]) {
 							tmp[n] = 1;
@@ -154,7 +154,7 @@ export default class AndroidManifest {
 				case 'uses-feature':
 				case 'uses-library':
 					this[tag] || (this[tag] = {});
-					for (let name of Object.keys(src[tag])) {
+					for (const name of Object.keys(src[tag])) {
 						this[tag][name] = src[tag][name];
 					}
 					break;
@@ -162,18 +162,18 @@ export default class AndroidManifest {
 				case 'supports-screens':
 				case 'uses-sdk':
 					this[tag] || (this[tag] = {});
-					for (let attr of Object.keys(src[tag])) {
+					for (const attr of Object.keys(src[tag])) {
 						this[tag][attr] = src[tag][attr];
 					}
 					break;
 
 				case 'uses-configuration':
 					Array.isArray(this[tag]) || (this[tag] = []);
-					for (let s of this[tag]) {
+					for (const s of this[tag]) {
 						tmp[s.reqFiveWayNav + '|' + s.reqTouchScreen + '|' + s.reqKeyboardType] = 1;
 					}
 
-					for (let s of src[tag]) {
+					for (const s of src[tag]) {
 						const n = s.reqFiveWayNav + '|' + s.reqTouchScreen + '|' + s.reqKeyboardType;
 						if (!tmp[n]) {
 							tmp[n] = 1;
@@ -185,7 +185,7 @@ export default class AndroidManifest {
 				case 'supports-gl-texture':
 				case 'uses-permission':
 					Array.isArray(this[tag]) || (this[tag] = []);
-					for (let s of src[tag]) {
+					for (const s of src[tag]) {
 						if (this[tag].indexOf(s) === -1) {
 							this[tag].push(s);
 						}
@@ -209,12 +209,12 @@ export default class AndroidManifest {
 			const dom = new DOMParser(defaultDOMParserArgs).parseFromString('<manifest>', 'text/xml');
 
 			dom.create = (tag, attrs, parent) => {
-				let node = dom.createElement(tag);
+				const node = dom.createElement(tag);
 				let i = 0;
 				let p = parent;
 
 				if (attrs) {
-					for (let attr of Object.keys(attrs)) {
+					for (const attr of Object.keys(attrs)) {
 						if (attr === 'nodeValue') {
 							node.appendChild(dom.createTextNode(''+attrs[attr]));
 						} else {
@@ -235,7 +235,7 @@ export default class AndroidManifest {
 				return node;
 			};
 
-			for (let key of Object.keys(this)) {
+			for (const key of Object.keys(this)) {
 				this.toXml(dom, key, this[key]);
 			}
 
@@ -296,7 +296,7 @@ export default class AndroidManifest {
 					let children = 0;
 					if (tags.application.test(tag)) {
 						if (tag === 'provider') {
-							for (let name of Object.keys(value[tag])) {
+							for (const name of Object.keys(value[tag])) {
 								const providerNode = dom.create(tag, null, node);
 								for (const attr of Object.keys(value[tag][name])) {
 									const val = value[tag][name][attr];
@@ -314,7 +314,7 @@ export default class AndroidManifest {
 									} else if (attr === 'meta-data') {
 										for (const name of Object.keys(val)) {
 											const metaDataNode = dom.create('meta-data', null, providerNode);
-											for (let attr of Object.keys(val[name])) {
+											for (const attr of Object.keys(val[name])) {
 												if (tagAttrs['meta-data'].test(attr)) {
 													metaDataNode.setAttribute('android:' + attr, val[name][attr]);
 												}
@@ -327,8 +327,8 @@ export default class AndroidManifest {
 							}
 						} else if (tag === 'meta-data') {
 							for (let name of Object.keys(value['meta-data'])) {
-								let metaDataNode = dom.create('meta-data', null, node);
-								for (let attr of Object.keys(value['meta-data'][name])) {
+								const metaDataNode = dom.create('meta-data', null, node);
+								for (const attr of Object.keys(value['meta-data'][name])) {
 									if (tagAttrs['meta-data'].test(attr)) {
 										metaDataNode.setAttribute('android:' + attr, value['meta-data'][name][attr]);
 									}
@@ -336,9 +336,9 @@ export default class AndroidManifest {
 								children++;
 							}
 						} else if (tag === 'uses-library') {
-							for (let name of Object.keys(value['uses-library'])) {
+							for (const name of Object.keys(value['uses-library'])) {
 								const usesLibraryNode = dom.create('uses-library', null, node);
-								for (let attr of Object.keys(value['uses-library'][name])) {
+								for (const attr of Object.keys(value['uses-library'][name])) {
 									if (tagAttrs['uses-library'].test(attr)) {
 										usesLibraryNode.setAttribute('android:' + attr, value['uses-library'][name][attr]);
 									}
@@ -346,10 +346,10 @@ export default class AndroidManifest {
 							}
 						} else {
 							// activity, activity-alias, receiver, service
-							for (let name of Object.keys(value[tag])) {
-								let childNode = dom.create(tag, null, node);
+							for (const name of Object.keys(value[tag])) {
+								const childNode = dom.create(tag, null, node);
 								let children = 0;
-								for (let attr of Object.keys(value[tag][name])) {
+								for (const attr of Object.keys(value[tag][name])) {
 									let val = value[tag][name][attr];
 
 									if (tagAttrs[tag].test(attr)) {
@@ -358,19 +358,19 @@ export default class AndroidManifest {
 										}
 										childNode.setAttribute('android:' + attr, val);
 									} else if (attr === 'intent-filter' && Array.isArray(val)) {
-										for (let intentFilter of val) {
+										for (const intentFilter of val) {
 											let intentFilterNode = dom.create('intent-filter', null, childNode);
-											for (let attr of Object.keys(intentFilter)) {
+											for (const attr of Object.keys(intentFilter)) {
 												if (tagAttrs['intent-filter'].test(attr)) {
 													intentFilterNode.setAttribute('android:' + attr, intentFilter[attr]);
 												} else if ((attr === 'action' || attr === 'category') && Array.isArray(intentFilter[attr])) {
-													for (let name of intentFilter[attr]) {
+													for (const name of intentFilter[attr]) {
 														dom.create(attr, { 'android:name': name }, intentFilterNode);
 													}
 												} else if (attr === 'data' && Array.isArray(intentFilter.data)) {
-													for (let obj of intentFilter[attr]) {
+													for (const obj of intentFilter[attr]) {
 														let dataNode = dom.create('data', null, intentFilterNode);
-														for (let key of Object.keys(obj)) {
+														for (const key of Object.keys(obj)) {
 															if (tagAttrs.data.test(key)) {
 																dataNode.setAttribute('android:' + key, obj[key]);
 															}
@@ -382,9 +382,9 @@ export default class AndroidManifest {
 											children++;
 										}
 									} else if (attr === 'meta-data') {
-										for (let key of Object.keys(val)) {
+										for (const key of Object.keys(val)) {
 											const metaDataNode = dom.create('meta-data', null, childNode);
-											for (let attr of Object.keys(val[key])) {
+											for (const attr of Object.keys(val[key])) {
 												if (tagAttrs['meta-data'].test(attr)) {
 													metaDataNode.setAttribute('android:' + attr, val[key][attr]);
 												}
@@ -406,9 +406,9 @@ export default class AndroidManifest {
 			case 'compatible-screens':
 				node = dom.create(name, null, parent);
 				if (Array.isArray(value)) {
-					for (let screen of value) {
-						let screenNode = dom.create('screen', null, node);
-						for (let key of Object.keys(screen)) {
+					for (const screen of value) {
+						const screenNode = dom.create('screen', null, node);
+						for (const key of Object.keys(screen)) {
 							screenNode.setAttribute('android:' + key, screen[key]);
 						}
 					}
@@ -420,9 +420,9 @@ export default class AndroidManifest {
 			case 'permission-group':
 			case 'permission-tree':
 			case 'uses-feature':
-				for (let key of Object.keys(value)) {
-					let childNode = dom.create(name, null, parent);
-					for (let attr of Object.keys(value[key])) {
+				for (const key of Object.keys(value)) {
+					const childNode = dom.create(name, null, parent);
+					for (const attr of Object.keys(value[key])) {
 						childNode.setAttribute('android:' + attr, value[key][attr]);
 					}
 				}
@@ -431,7 +431,7 @@ export default class AndroidManifest {
 			case 'supports-gl-texture':
 			case 'uses-permission':
 				if (Array.isArray(value)) {
-					for (let n of value) {
+					for (const n of value) {
 						dom.create(name, { 'android:name': n }, parent);
 					}
 				}
@@ -440,15 +440,15 @@ export default class AndroidManifest {
 			case 'supports-screens':
 			case 'uses-sdk':
 				node = dom.create(name, null, parent);
-				for (let attr of Object.keys(value)) {
+				for (const attr of Object.keys(value)) {
 					node.setAttribute('android:' + attr, value[attr]);
 				}
 				break;
 
 			case 'uses-configuration':
-				for (let uses of value) {
-					let usesNode = dom.create('uses-configuration', null, parent);
-					for (let attr of Object.keys(uses)) {
+				for (const uses of value) {
+					const usesNode = dom.create('uses-configuration', null, parent);
+					for (const attr of Object.keys(uses)) {
 						usesNode.setAttribute('android:' + attr, uses[attr]);
 					}
 				}
