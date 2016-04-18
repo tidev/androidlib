@@ -11,7 +11,9 @@ const ndkGdb = `ndk-gdb${cmd}`;
 
 export class NDK {
 	constructor(options) {
-		Object.assign(this, options);
+		this.path 			= options.path;
+		this.executables 	= options.executables;
+		this.version 		= options.version;
 	}
 }
 
@@ -60,7 +62,7 @@ export function isNDK(dir) {
 			return resolve();
 		}
 
-		const things = [ndkBuild, ndkGdb, 'build', 'prebuilt', 'platforms'];
+		const things = [ndkBuild, ndkGdb, 'build', 'platforms'];
 		if (!things.every(thing => util.existsSync(path.join(dir, thing)))) {
 			return resolve();
 		}

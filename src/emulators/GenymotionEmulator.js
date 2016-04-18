@@ -53,9 +53,8 @@ export default class GenymotionEmulator extends EmulatorBase {
 				if (result && result.executables && result.executables.vboxmanage) {
 					return GenymotionEmulator.getVMInfo(result.executables.vboxmanage);
 				}
-				throw new Error('Unable to find VBoxManage.');
 			})
-			.then(avds => avds);
+			.then(avds => avds ? avds : []);
 	}
 
 	/**

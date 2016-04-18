@@ -35,14 +35,16 @@ export function detect(opts = {}) {
 	return Promise.all([
 		SDK.detect(opts),
 		NDK.detect(opts),
+		Genymotion.detect(opts),
 		Device.detect(opts),
 		Emulator.detect(opts)
 	])
-	.then(([sdk, ndk, devices, emulators]) => {
+	.then(([sdk, ndk, genyenv, devices, emulators]) => {
 		const result = {
 			home: util.expandPath(opts.androidHomePath || process.env.ANDROID_HOME || '~/.android'),
 			sdk: sdk,
 			ndk: ndk,
+			genymotion: genyenv,
 			devices: devices,
 			emulators: emulators
 		};

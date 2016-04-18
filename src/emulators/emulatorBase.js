@@ -42,18 +42,19 @@ export default class EmulatorBase extends EventEmitter {
 
 					if (this.id) {
 						return util.run(adbExe, ['-s', this.id, 'shell', 'getprop', 'sys.boot_completed']);
-					} else {
-						return adb
-							.devices()
-							.then(result => {
-								result = result.filter(d => d && d.name === this.name).shift();
-								if (result) {
-									this.id = result.id;
-									return util.run(adbExe, ['-s', result.id, 'shell', 'getprop', 'sys.boot_completed']);
-								}
-								return isBooted(adbExe);
-							});
 					}
+
+					return adb
+						.devices()
+						.then(result => {
+							result = result.filter(d => d && d.name === this.name).shift();
+							if (result) {
+								this.id = result.id;
+								return util.run(adbExe, ['-s', result.id, 'shell', 'getprop', 'sys.boot_completed']);
+							}
+							return isBooted(adbExe);
+						});
+
 				})
 				.then(({ code, stdout, stderr }) => {
 					if (stdout.trim() === '1') {

@@ -131,7 +131,7 @@ export default class AndroidEmulator extends EmulatorBase {
 			AndroidEmulator.getAvdName(+port[1]),
 			AndroidEmulator.detect(opts)
 		])
-		.then(([avdName, avdInfo]) => avdInfo && avdInfo.avds.filter(a => a.name === avdName).shift());
+		.then(([avdName, avds]) => avds && avds.filter(a => a.name === avdName).shift());
 	}
 
 	/**

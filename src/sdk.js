@@ -19,7 +19,14 @@ const requiredSdkTools = {
 
 export class SDK {
 	constructor(options) {
-		Object.assign(this, options);
+		this.path 			= options.path;
+		this.executables 	= options.executables;
+		this.dx 			= options.dx;
+		this.proguard 		= options.proguard;
+		this.tools 			= options.tools;
+		this.platformTools 	= options.platformTools;
+		this.buildTools 	= options.buildTools;
+		this.targets 		= options.targets;
 	}
 }
 
