@@ -23,12 +23,3 @@ install:
   
 script:
   - npm test
-  
-deploy:
-  provider: npm
-  email: npmjs@appcelerator.com
-  api_key:
-    secure: awK0WET+u9OOlVtg+hwe0AToeFcMKqJfxv8EnJJg0vttj0aNDwVGaGfl/MGpip9lG02d7vsVL+TzERL4+xLyratt0zjggFM7vI2puHsnPHTZkJ209h4K+L1sNiomJdwpXIsO4fHbmpZEKpzIRGdI0gqqgSI5D20OEvQl2MM9ygg=
-  on:
-    tags: true
-    repo: appcelerator/androidlib
