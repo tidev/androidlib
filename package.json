@@ -31,7 +31,7 @@
     "test": "gulp test"
   },
   "dependencies": {
-    "jdklib": "^0.1.2",
+    "jdklib": "^1.0.0",
     "babel-polyfill": "^6.6.1",
     "mkdirp": "^0.5.1",
     "source-map-support": "^0.4.0",
@@ -40,20 +40,25 @@
   },
   "devDependencies": {
     "babel-eslint": "^6.0.0",
-    "babel-preset-nodejs-lts": "^1.2.1",
+    "babel-plugin-transform-class-properties": "^6.6.0",
+    "babel-preset-nodejs-lts": "^2.0.0",
     "chai": "^3.5.0",
     "del": "^2.2.0",
+    "esdoc-es7-plugin": "^0.0.3",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-babel-istanbul": "^1.0.0",
     "gulp-debug": "^2.1.2",
+    "gulp-esdoc": "^0.2.0",
     "gulp-eslint": "^2.0.0",
     "gulp-filter": "^4.0.0",
     "gulp-inject-modules": "^0.1.0",
     "gulp-load-plugins": "^1.2.0",
     "gulp-mocha": "^2.2.0",
     "gulp-plumber": "^1.1.0",
-    "gulp-sourcemaps": "^1.6.0"
+    "gulp-sourcemaps": "^2.0.0-alpha",
+    "sinon": "^1.17.3",
+    "sinon-chai": "^2.8.0"
   },
   "homepage": "https://github.com/appcelerator/androidlib",
   "bugs": "https://github.com/appcelerator/androidlib/issues",

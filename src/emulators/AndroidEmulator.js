@@ -3,7 +3,7 @@ import path from 'path';
 import * as net from 'net';
 
 import ADB from '../adb';
-import EmulatorBase from './emulatorBase';
+import EmulatorBase from './EmulatorBase';
 import * as sdk from '../sdk';
 import * as util from '../util';
 

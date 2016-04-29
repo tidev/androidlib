@@ -3,22 +3,22 @@ import 'source-map-support/register';
 import * as jdklib from 'jdklib';
 
 import ADB from './adb';
-import Device from './device';
-import * as Emulator from './emulator';
-import * as Genymotion from './genymotion';
-import * as SDK from './sdk';
-import * as NDK from './ndk';
+import * as device from './device';
+import * as emulator from './emulator';
+import * as genymotion from './genymotion';
+import * as sdk from './sdk';
+import * as ndk from './ndk';
 import AndroidManifest from './AndroidManifest';
 import * as util from './util';
 
 export {
 	ADB,
 	AndroidManifest,
-	Device,
-	Emulator,
-	Genymotion,
-	SDK as androidSDK,
-	NDK as androidNDK
+	device,
+	emulator,
+	genymotion,
+	sdk,
+	ndk
 };
 
 /**
@@ -33,11 +33,11 @@ export {
  */
 export function detect(opts = {}) {
 	return Promise.all([
-		SDK.detect(opts),
-		NDK.detect(opts),
-		Genymotion.detect(opts),
-		Device.detect(opts),
-		Emulator.detect(opts)
+		sdk.detect(opts),
+		ndk.detect(opts),
+		genymotion.detect(opts),
+		device.detect(opts),
+		emulator.detect(opts)
 	])
 	.then(([sdk, ndk, genyenv, devices, emulators]) => {
 		const result = {

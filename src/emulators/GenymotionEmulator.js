@@ -3,7 +3,7 @@ import path from 'path';
 import { spawn } from 'child_process';
 
 import ADB from '../adb';
-import EmulatorBase from './emulatorBase';
+import EmulatorBase from './EmulatorBase';
 import * as Genymotion from '../genymotion';
 import * as util from '../util';
 

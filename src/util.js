@@ -9,25 +9,20 @@ export const exe = isWindows ? '.exe' : '';
 export const cmd = isWindows ? '.cmd' : '';
 export const bat = isWindows ? '.bat' : '';
 
-const homeDirRegExp = /^(~)([\\/].*)?$/;
-const winEnvVarRegExp = /(%([^%]*)%)/g;
-
-/**
- * Returns a list of search directory according to platform.
- *
- * @returns {String}
- */
-export function getSearchPaths() {
-	let searchDirs;
-
+export const searchPaths = (function () {
 	if (isWindows) {
-		searchDirs = ['%SystemDrive%', '%ProgramFiles%', '%ProgramFiles(x86)%', '%ProgramW6432%'];
-	} else {
-		searchDirs = ['/Applications', '/opt', '/opt/local', '/usr', '/usr/local'];
+		return ['%SystemDrive%', '%ProgramFiles%', '%ProgramFiles(x86)%', '%ProgramW6432%'];
 	}
 
+	let searchDirs = ['/opt', '/opt/local', '/usr', '/usr/local', '~'];
+	if (process.platform === 'darwin') {
+		searchDirs.push('/Applications', '~/Applications', '~/Library');
+	}
 	return searchDirs;
-}
+}());
+
+const homeDirRegExp = /^(~)([\\/].*)?$/;
+const winEnvVarRegExp = /(%([^%]*)%)/g;
 
 /**
  * Wraps `which()` with a promise.
@@ -54,16 +49,14 @@ export function findExecutable(executable) {
  * @returns {String}
  */
 export function expandPath(...segments) {
-	segments[0] = segments[0].replace(homeDirRegExp, (process.env.HOME || process.env.USERPROFILE) + '$2');
-
-	if (isWindows) {
+	segments[0] = segments[0].replace(homeDirRegExp, (process.env.HOME || process.env.USERPROFILE) + '$1');
+	if (process.platform === 'win32') {
 		return path.resolve(path.join.apply(null, segments).replace(winEnvVarRegExp, (s, m, n) => {
 			return process.env[n] || m;
 		}));
 	}
 	return path.resolve.apply(null, segments);
 }
-
 
 /**
  * Runs a specified command and returns the result.

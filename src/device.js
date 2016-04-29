@@ -6,7 +6,7 @@ import ADB from './adb';
  * @class
  * @constructor
  */
-export default class Device {
+export class Device {
 	/**
 	 * Creates an Android Device object.
 	 *
@@ -25,29 +25,6 @@ export default class Device {
 	}
 
 	/**
-	 * Detects connected devices.
-	 *
-	 * @param {Object} [opts] - Detection options.
-	 * @returns {Promise}
-	 */
-	static detect(opts = {}) {
-		return new ADB(opts)
-			.devices()
-			.then(result => result.filter(n => n instanceof Device));
-	}
-
-	/**
-	 * Installs the specified app to the specified device.
-	 *
-	 * @param {String} deviceId - The id of the device or emulator.
-	 * @param {String} apkFile - The application apk file to install.
-	 * @returns {Promise}
-	 */
-	static installById(deviceId, apkFile) {
-		return new ADB().installApp(deviceId, apkFile);
-	}
-
-	/**
 	 * Installs the specified app to the device instance.
 	 *
 	 * @param {String} apkFile - The application apk file to install.
@@ -56,4 +33,27 @@ export default class Device {
 	install(apkFile) {
 		return new ADB().installApp(this.deviceId, apkFile);
 	}
+}
+
+/**
+ * Detects connected devices.
+ *
+ * @param {Object} [opts] - Detection options.
+ * @returns {Promise}
+ */
+export function detect(opts = {}) {
+	return new ADB(opts)
+		.devices()
+		.then(result => result.filter(n => n instanceof Device));
+}
+
+/**
+ * Installs the specified app to the specified device.
+ *
+ * @param {String} deviceId - The id of the device or emulator.
+ * @param {String} apkFile - The application apk file to install.
+ * @returns {Promise}
+ */
+export function installById(deviceId, apkFile) {
+	return new ADB().installApp(deviceId, apkFile);
 }
