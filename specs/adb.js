@@ -8,16 +8,16 @@ var should = require('should'),
 	adb = require('../lib/adb');
 
 describe("adb", function(){
-	it("should have launch", function(){
+	(process.env.JENKINS ? it.skip : it)("should have launch", function(){
 		should(adb.launch).be.a.function;
 	});
 
-	it("should be able to launch example app",function(done){
+	(process.env.JENKINS ? it.skip : it)("should be able to launch example app",function(done){
 		this.timeout(30000);
 
 		var project_dir = path.join(__dirname,'..','example'),
 			cwd = process.cwd();
-		
+
 		process.chdir(project_dir);
 		try {
 			var child = spawn('ant',['debug']);
@@ -36,7 +36,7 @@ describe("adb", function(){
 				var apk = path.join(project_dir,'bin','TestApp-debug.apk');
 				should(fs.existsSync(apk)).be.true;
 
-				function callback (err){ 
+				function callback (err){
 					done(err);
 				}
 
