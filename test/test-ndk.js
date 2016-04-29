@@ -16,71 +16,90 @@ describe('NDK detect', () => {
 		process.env.ANDROID_NDK = this.androidNDKEnv;
 	});
 
-	it('should detect NDK version r9d 64-bit', function (done) {
-		const ndkPath = path.resolve(`./test/mocks/mockNDKs/mock-android-ndk-r9d${win}`);
+	it('should detect NDK version r9d 32-bit', function (done) {
+		const ndkPath = path.resolve(`./test/mocks/mockNDKs/32-bit/mock-android-ndk-r9d${win}`);
 		ndk.detect({ bypassCache: true, ndkPath, searchPaths: null })
 			.then(ndks => {
-				expect(ndks).to.be.an.Array;
-				expect(ndks).to.have.lengthOf(1);
+				checkResult(ndks, {
+					ndkPath,
+					name: 'r9d',
+					version: '9.3',
+					arch: '32-bit'
+				});
+				done();
+			})
+			.catch(done);
+	});
 
-				const ndk = ndks[0];
-				expect(ndk).to.have.keys('path', 'name', 'version', 'arch', 'executables');
+	it('should detect NDK version r9d 64-bit', function (done) {
+		const ndkPath = path.resolve(`./test/mocks/mockNDKs/64-bit/mock-android-ndk-r9d${win}`);
+		ndk.detect({ bypassCache: true, ndkPath, searchPaths: null })
+			.then(ndks => {
+				checkResult(ndks, {
+					ndkPath,
+					name: 'r9d',
+					version: '9.3',
+					arch: '64-bit'
+				});
+				done();
+			})
+			.catch(done);
+	});
 
-				expect(ndk.path).to.be.a.String;
-				expect(ndk.path).to.equal(ndkPath);
-
-				expect(ndk.name).to.be.a.String;
-				expect(ndk.name).to.equal('r9d');
-
-				expect(ndk.version).to.be.a.String;
-				expect(ndk.version).to.equal('9.3');
-
-				expect(ndk.arch).to.be.a.String;
-				expect(ndk.arch).to.equal('64-bit');
-
-				expect(ndk.executables).to.be.an.Object;
-				for (const name of Object.keys(ndk.executables)) {
-					expect(ndk.executables[name]).to.be.a.String;
-					expect(ndk.executables[name]).to.not.equal('');
-					expect(() => fs.statSync(ndk.executables[name])).to.not.throw(Error);
-				}
-
+	it('should detect NDK version r11b 32-bit', done => {
+		const ndkPath = path.resolve(`./test/mocks/mockNDKs/32-bit/mock-android-ndk-r11b${win}`);
+		ndk.detect({ bypassCache: true, ndkPath, searchPaths: null })
+			.then(ndks => {
+				checkResult(ndks, {
+					ndkPath,
+					name: 'r11b',
+					version: '11.1.2683735',
+					arch: '32-bit'
+				});
 				done();
 			})
 			.catch(done);
 	});
 
 	it('should detect NDK version r11b 64-bit', done => {
-		const ndkPath = path.resolve(`./test/mocks/mockNDKs/mock-android-ndk-r11b${win}`);
+		const ndkPath = path.resolve(`./test/mocks/mockNDKs/64-bit/mock-android-ndk-r11b${win}`);
 		ndk.detect({ bypassCache: true, ndkPath, searchPaths: null })
 			.then(ndks => {
-				expect(ndks).to.be.an.Array;
-				expect(ndks).to.have.lengthOf(1);
-
-				const ndk = ndks[0];
-				expect(ndk).to.have.keys('path', 'name', 'version', 'arch', 'executables');
-
-				expect(ndk.path).to.be.a.String;
-				expect(ndk.path).to.equal(ndkPath);
-
-				expect(ndk.name).to.be.a.String;
-				expect(ndk.name).to.equal('r11b');
-
-				expect(ndk.version).to.be.a.String;
-				expect(ndk.version).to.equal('11.1.2683735');
-
-				expect(ndk.arch).to.be.a.String;
-				expect(ndk.arch).to.equal('64-bit');
-
-				expect(ndk.executables).to.be.an.Object;
-				for (const name of Object.keys(ndk.executables)) {
-					expect(ndk.executables[name]).to.be.a.String;
-					expect(ndk.executables[name]).to.not.equal('');
-					expect(() => fs.statSync(ndk.executables[name])).to.not.throw(Error);
-				}
-
+				checkResult(ndks, {
+					ndkPath,
+					name: 'r11b',
+					version: '11.1.2683735',
+					arch: '64-bit'
+				});
 				done();
 			})
 			.catch(done);
 	});
 });
+
+function checkResult(ndks, expected) {
+	expect(ndks).to.be.an.Array;
+	expect(ndks).to.have.lengthOf(1);
+
+	const ndk = ndks[0];
+	expect(ndk).to.have.keys('path', 'name', 'version', 'arch', 'executables');
+
+	expect(ndk.path).to.be.a.String;
+	expect(ndk.path).to.equal(expected.ndkPath);
+
+	expect(ndk.name).to.be.a.String;
+	expect(ndk.name).to.equal(expected.name);
+
+	expect(ndk.version).to.be.a.String;
+	expect(ndk.version).to.equal(expected.version);
+
+	expect(ndk.arch).to.be.a.String;
+	expect(ndk.arch).to.equal(expected.arch);
+
+	expect(ndk.executables).to.be.an.Object;
+	for (const name of Object.keys(ndk.executables)) {
+		expect(ndk.executables[name]).to.be.a.String;
+		expect(ndk.executables[name]).to.not.equal('');
+		expect(() => fs.statSync(ndk.executables[name])).to.not.throw(Error);
+	}
+}
