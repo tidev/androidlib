@@ -1,26 +1,22 @@
-import { EventEmitter } from 'events';
-import fs from 'fs';
-import mkdirp from 'mkdirp';
-import path from 'path';
-import { spawn } from 'child_process';
-
 import Connection from './connection';
 import Device from './device';
-import * as Emulator from './emulator';
-import * as sdk from './sdk';
+import { EventEmitter } from 'events';
+import fs from 'fs';
+import { isEmulator } from './emulator';
+import mkdirp from 'mkdirp';
+import path from 'path';
+import { sdk as sdkDetect } from './sdk';
+import { spawn } from 'child_process';
 import * as util from './util';
 
 /**
  * Provides methods to interact with the Android Debug Bridge (ADB).
- *
- * @class
- * @constructor
  */
 export default class ADB {
 	/**
 	 * Creates an ADB object.
 	 *
-	 * @param {Object} opts - android sdk detection and emulator manager options.
+	 * @param {Object} opts - Android SDK detection and emulator manager options.
 	 */
 	constructor(opts = {}) {
 		this.opts = opts;
@@ -74,8 +70,7 @@ export default class ADB {
 	 * @access public
 	 */
 	startServer() {
-		return sdk
-			.detect(this.opts)
+		return sdkDetect(this.opts)
 			.then(results => results.sdks.shift())
 			.then(sdk => util.run(sdk.executables.adb, ['start-server']));
 	}
@@ -87,8 +82,7 @@ export default class ADB {
 	 * @access public
 	 */
 	stopServer() {
-		return sdk
-			.detect(this.opts)
+		return sdkDetect(this.opts)
 			.then(results => results.sdks.shift())
 			.then(sdk => util.run(sdk.executables.adb, ['kill-server']));
 	}
@@ -120,8 +114,7 @@ export default class ADB {
 			return Promise.reject(new TypeError(`Source file "${src}" does not exist.`));
 		}
 
-		return sdk
-			.detect(this.opts)
+		return sdkDetect(this.opts)
 			.then(results => results.sdks.shift())
 			.then(sdk => util.run(sdk.executables.adb, ['-s', deviceId, 'forward', src, dest]));
 	}
@@ -153,8 +146,7 @@ export default class ADB {
 			return Promise.reject(new TypeError('Expected dest to be a string.'));
 		}
 
-		return sdk
-			.detect(this.opts)
+		return sdkDetect(this.opts)
 			.then(results => results.sdks.shift())
 			.then(sdk => util.run(sdk.executables.adb, ['-s', deviceId, 'push', src, dest]));
 	}
@@ -189,8 +181,7 @@ export default class ADB {
 		dest = util.expandPath(dest);
 		mkdirp.sync(path.dirname(dest));
 
-		return sdk
-			.detect(this.opts)
+		return sdkDetect(this.opts)
 			.then(results => results.sdks.shift())
 			.then(sdk => util.run(sdk.executables.adb, ['-s', deviceId, 'pull', src, dest]));
 	}
@@ -257,7 +248,7 @@ export default class ADB {
 					return Promise.reject(new Error('Device not found.'));
 				}
 			})
-			.then(() => sdk.detect(this.opts))
+			.then(() => sdkDetect(this.opts))
 			.then(results => results.sdks.shift())
 			.then(sdk => util.run(sdk.executables.adb, ['-s', deviceId, 'install', '-r', apkFile]));
 	}
@@ -369,7 +360,7 @@ export default class ADB {
 	logcat(deviceId) {
 		const emitter = new EventEmitter;
 		Promise.resolve()
-			.then(() => sdk.detect(this.opts))
+			.then(() => sdkDetect(this.opts))
 			.then(results => results.sdks.shift())
 			.then(sdk => {
 				new Promise((resolve, reject) => {
@@ -456,8 +447,7 @@ export default class ADB {
 							}
 						}
 
-						return Emulator
-							.isEmulator(device.id)
+						return isEmulator(device.id)
 							.then(emu => {
 								if (emu) {
 									delete device.name;

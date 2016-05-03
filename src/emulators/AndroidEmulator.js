@@ -14,9 +14,6 @@ const emuRegExp = /^emulator\-(\d+)$/;
 
 /**
  * Provides methods to detect and interact with Android Emulator.
- *
- * @class
- * @constructor
  */
 export default class AndroidEmulator extends EmulatorBase {
 	/**

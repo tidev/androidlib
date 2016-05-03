@@ -1,7 +1,5 @@
-import { expect } from 'chai';
+import { AndroidManifest } from '../src/index';
 import path from 'path';
-
-import AndroidManifest from '../src/AndroidManifest';
 
 describe('AndroidManifest', () => {
 

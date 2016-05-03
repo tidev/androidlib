@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import Connection from '../src/connection';
 import MockAdbServer from './mocks/mockAdbServer';
 

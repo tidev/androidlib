@@ -1,4 +1,4 @@
-import * as net from 'net';
+import net from 'net';
 
 const HOST = '127.0.0.1';
 const PORT = 9999;
@@ -15,10 +15,10 @@ export default class MockAdbServer {
 		this.server = net.createServer(socket => {
 			socket.setNoDelay(true);
 
-			console.log('CONNECTED: ' + socket.remoteAddress +':'+ socket.remotePort);
+			//console.log('CONNECTED: ' + socket.remoteAddress +':'+ socket.remotePort);
 
 			socket.on('data', data => {
-				console.log('DATA ' + socket.remoteAddress + ': ' + data);
+				//console.log('DATA ' + socket.remoteAddress + ': ' + data);
 
 				if (data.indexOf('host:fake') !== -1) {
 					socket.write('FAIL0014unknown host service');
@@ -49,12 +49,12 @@ export default class MockAdbServer {
 			});
 
 			socket.on('close', data => {
-				console.log('CLOSED: ' + socket.remoteAddress +' '+ socket.remotePort);
+				//console.log('CLOSED: ' + socket.remoteAddress +' '+ socket.remotePort);
 			});
 
 		}).listen(PORT, HOST);
 
-		console.log('Server listening on ' + HOST +':'+ PORT);
+		//console.log('Server listening on ' + HOST +':'+ PORT);
 	}
 
 	stop() {

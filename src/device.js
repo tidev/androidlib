@@ -2,9 +2,6 @@ import ADB from './adb';
 
 /**
  * Provides methods to interact with the Android devices.
- *
- * @class
- * @constructor
  */
 export class Device {
 	/**

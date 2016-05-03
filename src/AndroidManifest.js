@@ -30,12 +30,8 @@ const tagAttrs = {
 	'uses-sdk': /^(name|required)$/
 };
 
-
 /**
  * Provides methods to process the AndroidManifest.xml file.
- *
- * @class
- * @constructor
  */
 export default class AndroidManifest {
 	/**

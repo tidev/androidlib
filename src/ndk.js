@@ -1,66 +1,52 @@
 import fs from 'fs';
+import { GawkArray, GawkObject } from 'gawk';
 import path from 'path';
 import which from 'which';
 import * as util from './util';
 
-const ndkBuild = `ndk-build${util.cmd}`;
-const ndkGdb = `ndk-gdb${util.cmd}`;
-const requiredFiles = [ ndkBuild, ndkGdb, 'ndk-which', 'build', 'platforms' ];
 const archRegExp = /\w\-x86_64[\/\\]/m;
 const releaseRegExp = /^(r(\d+)([A-Za-z])?)(?:\s+\(([^)]+)\))?$/;
-const sourcePropsRegExp = /Pkg\.Revision\s*=\s*(.+)/m;
+const pgkVersionRegex = /Pkg\.Revision\s*=\s*(.+)/;
 const versionRegExp = /^(\d+)(?:\.(\d+))?/;
-
-let detectCache = null;
-let detectPending = false;
-let detectRequests = [];
 
 /**
  * Android NDK descriptor.
  */
-export class NDK {
-	/**
-	 * The path to the Android NDK.
-	 * @type {String}
-	 */
-	path = null;
-
-	/**
-	 * The name of the Android NDK such as "r9d" or "r11c".
-	 * @type {String}
-	 */
-	name = null;
-
-	/**
-	 * The version of the Android NDK.
-	 * @type {String}
-	 */
-	version = null;
-
-	/**
-	 * The archtecture of the Android NDK. Value is "32-bit" or "64-bit".
-	 * @type {String}
-	 */
-	arch = '32-bit';
-
-	/**
-	 * A map of common NDK executables.
-	 * @type {Object}
-	 */
-	executables = {};
-
+export class NDK extends GawkObject {
 	/**
 	 * Creates the Android NDK descriptor instance.
 	 *
-	 * @param {String} dir - The path to an Android NDK. This path MUST be valid.
+	 * @param {String} dir - The path to an Android NDK.
 	 */
 	constructor(dir) {
-		this.path = dir;
+		if (typeof dir !== 'string' || !dir) {
+			throw new TypeError('Expected dir to be a string');
+		}
 
-		this.executables = {
-			ndkbuild: path.join(dir, ndkBuild),
-			ndkgdb:   path.join(dir, ndkGdb),
-			ndkwhich: path.join(dir, 'ndk-which')
+		dir = util.expandPath(dir);
+		if (!util.existsSync(dir)) {
+			throw new Error('Directory does not exist');
+		}
+
+		const ndkbuild = path.join(dir, `ndk-build${util.cmd}`);
+		const ndkgdb   = path.join(dir, `ndk-gdb${util.cmd}`);
+		const ndkwhich = path.join(dir, 'ndk-which');
+		for (const file of [ ndkbuild, ndkgdb, ndkwhich, path.join(dir, 'build'), path.join(dir, 'platforms') ]) {
+			if (!util.existsSync(file)) {
+				throw new Error('Directory does not contain an Android NDK');
+			}
+		}
+
+		const values = {
+			path: dir,
+			name: null,
+			version: null,
+			arch: '32-bit',
+			executables: {
+				ndkbuild,
+				ndkgdb,
+				ndkwhich
+			}
 		};
 
 		// first try to get the version from the RELEASE.TXT
@@ -71,11 +57,11 @@ export class NDK {
 				// to extract a meaningful version number from that
 				const m = release.match(releaseRegExp) || null;
 				if (m) {
-					this.name = m[1];
+					values.name = m[1];
 					const minor = (m[3] ? m[3].toLowerCase() : 'a').charCodeAt() - 'a'.charCodeAt();
-					this.version = `${m[2]}.${minor}`;
+					values.version = `${m[2]}.${minor}`;
 					if (m[4] && m[4].toLowerCase() === '64-bit') {
-						this.arch = '64-bit';
+						values.arch = '64-bit';
 					}
 				}
 				break;
@@ -84,25 +70,54 @@ export class NDK {
 
 		// android NDK r11, release.txt file is removed
 		// ndk version is in source.properties
-		if (!this.version) {
+		if (!values.version) {
 			const sourceProps = path.join(dir, 'source.properties');
 			if (util.existsSync(sourceProps)) {
-				const m = fs.readFileSync(sourceProps).toString().match(sourcePropsRegExp);
+				const m = fs.readFileSync(sourceProps).toString().match(pgkVersionRegex);
 				if (m && m[1]) {
-					this.version = m[1].trim();
-					const v = this.version.match(versionRegExp);
+					values.version = m[1].trim();
+					const v = values.version.match(versionRegExp);
 					if (v) {
-						this.name = `r${v[1]}` + (v[2] ? String.fromCharCode('a'.charCodeAt() + ~~v[2]) : 'a');
+						values.name = `r${v[1]}` + (v[2] ? String.fromCharCode('a'.charCodeAt() + ~~v[2]) : 'a');
 					}
 				}
 
 				// try to determine the archtecture
-				if (archRegExp.test(fs.readFileSync(this.executables.ndkwhich).toString())) {
-					this.arch = '64-bit';
+				if (archRegExp.test(fs.readFileSync(values.executables.ndkwhich).toString())) {
+					values.arch = '64-bit';
 				}
 			}
 		}
+
+		super(values);
 	}
+}
+
+/**
+ * Constructs an array of resolved paths to search.
+ *
+ * @param {Object} [opts] - Various options
+ * @param {String} [opts.ndkPath] - A path to an Android NDK.
+ * @param {Array} [opts.searchPaths] - An array of paths to search for NDKs.
+ * This overrides the built-in list of search paths. Set to `null` when you
+ * don't want any paths searched.
+ * @returns {Array}
+ */
+function getSearchPaths(opts = {}) {
+	const searchPaths = [ opts.ndkPath, process.env.ANDROID_NDK ];
+	const finalPaths = [];
+
+	if (opts.searchPaths === undefined) {
+		searchPaths.push.apply(searchPaths, util.searchPaths);
+	} else if (Array.isArray(opts.searchPaths)) {
+		searchPaths.push.apply(searchPaths, opts.searchPaths);
+	}
+
+	for (let dir of searchPaths) {
+		dir && finalPaths.push(util.expandPath(dir));
+	}
+
+	return finalPaths;
 }
 
 /**
@@ -114,87 +129,80 @@ export class NDK {
  * @returns {Promise}
  */
 export function detect(opts = {}) {
-	if (detectCache && !opts.bypassCache) {
-		return Promise.resolve(detectCache);
-	}
+	return util.cache('ndk', opts.bypassCache, () => {
+		const results = new GawkArray;
+		const visited = {};
 
-	if (detectPending) {
-		return new Promise(resolve => {
-			detectRequests.push(resolve);
-		});
-	}
+		opts.searchPaths = getSearchPaths(opts);
 
-	detectPending = true;
+		return Promise
+			.all(opts.searchPaths.map(dir => new Promise((resolve, reject) => {
+				if (visited[dir]) {
+					return resolve();
+				}
+				visited[dir] = 1;
 
-	// always check the ndkPath and environment paths
-	const searchPaths = [
-		opts.ndkPath,
-		process.env.ANDROID_NDK
-	];
+				isNDK(dir)
+					.then(ndk => ndk && results.push(ndk))
+					.then(resolve)
+					// not an ndk, but the directory exists, so scan all of its
+					// subdirectories
+					.catch(() => Promise
+						.all(fs.readdirSync(dir).map(name => {
+							const subdir = path.join(dir, name);
+							if (visited[subdir]) {
+								return Promise.resolve();
+							}
+							visited[subdir] = 1;
 
-	if (opts.searchPaths === undefined) {
-		searchPaths.push.apply(searchPaths, util.searchPaths);
-	} else if (Array.isArray(opts.searchPaths)) {
-		searchPaths.push.apply(searchPaths, opts.searchPaths);
-	}
-
-	const results = [];
-
-	return Promise
-		.all(searchPaths.map(dir => new Promise((resolve, reject) => {
-			isNDK(dir)
-				.then(ndk => ndk && results.push(ndk))
-				.then(resolve)
-				.catch(() => {
-					// scan all subdirectories
-					Promise
-						.all(fs.readdirSync(dir)
-							.map(name => path.join(dir, name))
-							.map(subdir => {
-								return isNDK(subdir)
-									.then(ndk => ndk && results.push(ndk))
-									.catch(() => Promise.resolve());
-							})
-						)
+							return isNDK(subdir)
+								.then(ndk => ndk && results.push(ndk))
+								.catch(() => Promise.resolve());
+						}))
 						.then(resolve)
-						.catch(resolve);
-				});
-		})))
-		.then(() => {
-			detectCache = results;
-			detectPending = false;
-			for (const resolve of detectRequests) {
-				resolve(results);
-			}
-			detectRequests = [];
-		})
-		.then(() => results);
+						.catch(resolve)
+					);
+			})))
+			.then(() => results);
+	});
 }
 
 /**
- * Determines if the specified directory contains ndk-build and if so, returns
- * the Android NDK info.
+ * Watches for changes and re-detects NDKs.
+ *
+ * @param {Object} [opts] - Various search path and chokidar options.
+ * @returns {Promise}
+ */
+export function watch(opts = {}) {
+	opts.bypassCache = true;
+	opts.depth = 0;
+
+	return detect(opts)
+		.then(results => {
+			return new util.Watcher(opts, (listener, info) => {
+				detect(Object.assign({}, opts, { searchPaths: [ info.originalPath ] }))
+					.then(listener);
+			}).on('ready', listener => listener(results));
+		});
+}
+
+/**
+ * Determines if the specified directory contains an Android NDK and if so,
+ * returns and NDK object.
  *
  * @param {String} dir - The directory to check.
  * @returns {Promise}
  */
 function isNDK(dir) {
 	return new Promise((resolve, reject) => {
-		if (!dir) {
+		if (!dir || !util.existsSync(dir)) {
 			return resolve();
 		}
 
-		dir = util.expandPath(dir);
-		if (!util.existsSync(dir)) {
-			return resolve();
+		try {
+			resolve(new NDK(dir));
+		} catch (e) {
+			reject();
 		}
-
-		for (const name of requiredFiles) {
-			if (!util.existsSync(path.join(dir, name))) {
-				return reject();
-			}
-		}
-
-		resolve(new NDK(dir));
 	});
 }

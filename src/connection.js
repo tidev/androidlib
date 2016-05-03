@@ -40,7 +40,6 @@ const KEEP_CONNECTION = 4;
 /**
  * Manages the connection and communcations with the ADB server.
  *
- * @class
  * @extends {EventEmitter} Emits events `debug`, `end` and `error`.
  */
 export default class Connection extends EventEmitter {

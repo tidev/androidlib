@@ -1,28 +1,29 @@
 import fs from 'fs';
 import path from 'path';
-
 import * as util from './util';
 
 /**
  * Detect if we're using a 64-bit Linux OS that's missing 32-bit libraries.
  *
  * @param {Object} [opts] - An object with various params.
+ * @param {Boolean} [opts.bypassCache=false] - When true, re-detects installed
+ * Android SDKs.
  * @returns {Promise}
  */
 export function detect(opts = {}) {
-	if (process.platform !== 'linux' ||  process.arch !== 'x64') {
+	if (process.platform !== 'linux' || process.arch !== 'x64') {
 		return Promise.resolve();
 	}
 
 	const result = {
-		libGL: util.existsSync('/usr/lib/libGL.so'),
-		i386arch: null,
+		'libGL': util.existsSync('/usr/lib/libGL.so'),
+		'i386arch': null,
 		'libc6:i386': null,
 		'libncurses5:i386': null,
 		'libstdc++6:i386': null,
 		'zlib1g:i386': null,
-		glibc: null,
-		libstdcpp: null
+		'glibc': null,
+		'libstdcpp': null
 	};
 
 	return Promise

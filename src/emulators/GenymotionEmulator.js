@@ -12,9 +12,6 @@ const bat = util.bat;
 
 /**
  * Provides methods to detect and interact with Genymotion Emulator.
- *
- * @class
- * @constructor
  */
 export default class GenymotionEmulator extends EmulatorBase {
 	/**
