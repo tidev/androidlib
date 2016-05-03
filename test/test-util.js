@@ -1,16 +1,16 @@
-import * as util from '../dist/util';
+import * as util from '../src/util';
 
 describe('util', () => {
 	describe('findExecutable', () => {
 	});
 
 	describe('expandPath', () => {
-		it('should resolve the home directory', function () {
+		it('should resolve the home directory', () => {
 			const path = util.expandPath('~/foo');
 			expect(path).to.match(/^.*\/foo$/);
 		});
 
-		it('should collapse relative segments', function () {
+		it('should collapse relative segments', () => {
 			const path = util.expandPath('/path/./to/../foo');
 			expect(path).to.equal('/path/foo');
 		});
@@ -32,6 +32,12 @@ describe('util', () => {
 	});
 
 	describe('scan', () => {
+	});
+
+	describe('cache', () => {
+	});
+
+	describe('Watcher', () => {
 	});
 
 });

@@ -23,7 +23,7 @@ export const searchPaths = (function () {
 }());
 
 const cacheStore = {};
-const homeDirRegExp = /^(~)([\\/].*)?$/;
+const homeDirRegExp = /^~([\\|/].*)?$/;
 const winEnvVarRegExp = /(%([^%]*)%)/g;
 
 /**
@@ -174,64 +174,6 @@ export function cache(name, bypassCache, fn) {
 		return value;
 	});
 }
-
-/*
-const watchHandles = {};
-
-export function watch(paths, opts = {}, listener) {
-	let stopped = false;
-
-	if (!Array.isArray(paths)) {
-		throw new TypeError('Expected paths to be an array');
-	}
-
-	if (typeof listener !== 'function') {
-		throw new TypeError('Expected listener to be a function');
-	}
-
-	return Promise.all(paths.map(originalPath => new Promise((resolve, reject) => {
-		let timer;
-		const notify = (evt, path, details) => {
-			if (path.indexOf(fs.realpathSync(originalPath)) === 0) {
-				// console.log('***************************************');
-				// console.log('event:       ', evt);
-				// console.log('originalPath:', originalPath);
-				// console.log('path:        ', path);
-				// console.log('details:     ', details);
-				// console.log();
-				clearTimeout(timer);
-				timer = setTimeout(() => listener({ originalPath, evt, path, details }), opts.wait || 1000);
-			}
-		};
-
-		let handle = watchHandles[originalPath];
-		if (!handle) {
-			console.log('Watching ' + originalPath);
-			handle = watchHandles[originalPath] = chokidar.watch(originalPath, opts);
-			handle.listenerCount = 0;
-		}
-		handle.listenerCount++;
-		handle.on('ready', () => {
-			handle.on('raw', notify);
-
-			resolve({
-				stop: () => {
-					if (stopped) {
-						return;
-					}
-					stopped = true;
-
-					handle.removeListener('raw', notify);
-					if (--handle.listenerCount <= 0) {
-						handle.close();
-						delete watchHandles[originalPath];
-					}
-				}
-			});
-		});
-	})));
-}
-*/
 
 /**
  * Watches multiple directories for changes. Multiple Watcher instances share the same
