@@ -1,0 +1,232 @@
+{
+	"xmlns:android": "http://schemas.android.com/apk/res/android",
+	"package": "com.appcelerator.testapp2",
+	"android:versionCode": 1,
+	"android:versionName": "1",
+	"application": {
+		"android:debuggable": false,
+		"android:icon": "@drawable/appicon",
+		"android:label": "testapp2",
+		"android:name": "Testapp2Application",
+		"activity": [
+			{
+				"android:alwaysRetainTaskState": true,
+				"android:configChanges": "keyboardHidden|orientation",
+				"android:label": "testapp",
+				"android:name": ".TestappActivity",
+				"android:theme": "@style/Theme.Titanium",
+				"intent-filter": [
+					{
+						"action": [
+							{
+								"android:name": "android.intent.action.MAIN"
+							}
+						],
+						"category": [
+							{
+								"android:name": "android.intent.category.LAUNCHER"
+							}
+						]
+					}
+				]
+			},
+			{
+				"android:configChanges": "keyboardHidden|orientation",
+				"android:label": "testapp2",
+				"android:name": ".Testapp2Activity",
+				"android:theme": "@style/Theme.Titanium",
+				"intent-filter": [
+					{
+						"action": [
+							{
+								"android:name": "android.intent.action.MAIN"
+							}
+						],
+						"category": [
+							{
+								"android:name": "android.intent.category.LAUNCHER"
+							}
+						]
+					}
+				]
+			},
+			{
+				"android:configChanges": "keyboardHidden|orientation",
+				"android:name": "com.appcelerator.testapp2.TestactivityActivity"
+			},
+			{
+				"android:configChanges": "keyboardHidden|orientation",
+				"android:name": "org.appcelerator.titanium.TiActivity",
+				"android:screenOrientation": "landscape"
+			},
+			{
+				"android:configChanges": "keyboardHidden|orientation",
+				"android:name": "org.appcelerator.titanium.TiTranslucentActivity",
+				"android:theme": "@android:style/Theme.Translucent"
+			},
+			{
+				"android:name": "ti.modules.titanium.ui.android.TiPreferencesActivity"
+			},
+			{
+				"android:name": "ti.modules.titanium.facebook.FBActivity",
+				"android:screenOrientation": "landscape",
+				"android:theme": "@android:style/Theme.Translucent.NoTitleBar"
+			},
+			{
+				"android:configChanges": "keyboardHidden|orientation",
+				"android:name": "org.appcelerator.titanium.TiModalActivity",
+				"android:screenOrientation": "landscape",
+				"android:theme": "@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+			},
+			{
+				"android:configChanges": "keyboardHidden|orientation",
+				"android:name": "ti.modules.titanium.ui.TiTabActivity",
+				"android:screenOrientation": "landscape"
+			},
+			{
+				"android:configChanges": "keyboardHidden|orientation",
+				"android:name": "ti.modules.titanium.media.TiVideoActivity",
+				"android:screenOrientation": "landscape",
+				"android:theme": "@android:style/Theme.NoTitleBar.Fullscreen"
+			}
+		],
+		"service": [
+			{
+				"android:name": "com.appcelerator.cloud.push.PushService"
+			},
+			{
+				"android:exported": false,
+				"android:name": "org.appcelerator.titanium.analytics.TiAnalyticsService"
+			},
+			{
+				"android:name": "com.appcelerator.testapp2.TestserviceService"
+			}
+		],
+		"receiver": [
+			{
+				"android:name": "ti.cloudpush.IntentReceiver"
+			},
+			{
+				"android:name": "ti.cloudpush.MQTTReceiver",
+				"intent-filter": [
+					{
+						"action": [
+							{
+								"android:name": "android.intent.action.BOOT_COMPLETED"
+							},
+							{
+								"android:name": "android.intent.action.USER_PRESENT"
+							},
+							{
+								"android:name": "com.appcelerator.cloud.push.PushService.MSG_ARRIVAL"
+							}
+						],
+						"category": [
+							{
+								"android:name": "android.intent.category.HOME"
+							}
+						]
+					}
+				],
+				"meta-data": [
+					{
+						"android:name": "com.appcelerator.cloud.push.BroadcastReceiver.ArrivalActivity",
+						"android:value": "ti.cloudpush.MQTTReceiver"
+					}
+				]
+			},
+			{
+				"android:name": "ti.cloudpush.GCMReceiver",
+				"android:permission": "com.google.android.c2dm.permission.SEND",
+				"intent-filter": [
+					{
+						"action": [
+							{
+								"android:name": "com.google.android.c2dm.intent.RECEIVE"
+							}
+						],
+						"category": [
+							{
+								"android:name": "${tiapp.properties['id']}"
+							}
+						]
+					}
+				]
+			},
+			{
+				"android:name": "com.appcelerator.cloud.push.PushBroadcastReceiver",
+				"android:permission": "com.google.android.c2dm.permission.SEND",
+				"intent-filter": [
+					{
+						"action": [
+							{
+								"android:name": "com.google.android.c2dm.intent.REGISTRATION"
+							}
+						],
+						"category": [
+							{
+								"android:name": "${tiapp.properties['id']}"
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	"permission": [
+		{
+			"android:name": "com.appcelerator.testapp2.permission.C2D_MESSAGE",
+			"android:protectionLevel": "signature"
+		},
+		{
+			"android:name": "${tiapp.properties['id']}.permission.C2D_MESSAGE",
+			"android:protectionLevel": "signature"
+		}
+	],
+	"uses-permission": [
+		{
+			"android:name": "android.permission.VIBRATE"
+		},
+		{
+			"android:name": "android.permission.ACCESS_NETWORK_STATE"
+		},
+		{
+			"android:name": "android.permission.WRITE_EXTERNAL_STORAGE"
+		},
+		{
+			"android:name": "com.google.android.c2dm.permission.RECEIVE"
+		},
+		{
+			"android:name": "android.permission.WAKE_LOCK"
+		},
+		{
+			"android:name": "android.permission.ACCESS_WIFI_STATE"
+		},
+		{
+			"android:name": "android.permission.RECEIVE_BOOT_COMPLETED"
+		},
+		{
+			"android:name": "com.appcelerator.testapp2.permission.C2D_MESSAGE"
+		},
+		{
+			"android:name": "android.permission.READ_PHONE_STATE"
+		},
+		{
+			"android:name": "android.permission.INTERNET"
+		},
+		{
+			"android:name": "android.permission.GET_ACCOUNTS"
+		},
+		{
+			"android:name": "${tiapp.properties['id']}.permission.C2D_MESSAGE"
+		}
+	],
+	"uses-sdk": {
+		"android:minSdkVersion": 10,
+		"android:targetSdkVersion": 17
+	},
+	"supports-screens": {
+		"android:xlargeScreens": true,
+		"android:anyDensity": false
+	}
+}

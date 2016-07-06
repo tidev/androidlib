@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest>
+  <instrumentation android:label="Local Sample" android:name=".app.LocalSampleInstrumentation" android:targetPackage="com.example.android.apis"/>
+  <instrumentation android:functionalTest="true" android:handleProfiling="true" android:icon="drawable resource" android:label="Local Test" android:name=".app.LocalTestInstrumentation" android:targetPackage="com.example.test.apis"/>
+</manifest>

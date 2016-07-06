@@ -1,0 +1,22 @@
+{
+	"permission-group": [
+		{
+			"android:description": "string resource",
+			"android:icon": "drawable resource",
+			"android:label": "string resource",
+			"android:name": "test1"
+		},
+		{
+			"android:description": "string resource",
+			"android:icon": "drawable resource",
+			"android:label": "string resource",
+			"android:name": "test2"
+		},
+		{
+			"android:description": "string resource",
+			"android:icon": "drawable resource",
+			"android:label": "string resource",
+			"android:name": "test3"
+		}
+	]
+}

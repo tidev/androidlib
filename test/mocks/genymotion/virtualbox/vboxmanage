@@ -1,0 +1,25 @@
+#!/bin/sh
+
+if [ "$1" = "-version" ]; then
+ 	echo "1.2.3r456789"
+elif [ "$1" = "list" ]; then
+	echo "\"Custom Phone - 6.0.0 - API 23 - 768x1280\" {5039c000-a249-49c8-9d12-e5e09aeaf7ff}"
+	echo "\"default\" {4f937359-520e-4c87-8071-7fed88f833ad}"
+elif [ "$1" = "guestproperty" ]; then
+	echo "Name: android_version, value: 6.0.0, timestamp: 1461614584808593000, flags: "
+	echo "Name: androvm_ip_management, value: , timestamp: 1461615840518793000, flags: "
+	echo "Name: genymotion_device_id, value: 000000000000000, timestamp: 1461614584908048000, flags: "
+	echo "Name: genymotion_force_navbar, value: 1, timestamp: 1461614584776234000, flags: "
+	echo "Name: genymotion_platform, value: p, timestamp: 1461614584874343000, flags: "
+	echo "Name: genymotion_player_version, value: 1, timestamp: 1461615840688115000, flags: "
+	echo "Name: genymotion_version, value: 2.6.0, timestamp: 1461614584841217000, flags: "
+	echo "Name: genymotion_vm_name, value: Custom Phone - 6.0.0 - API 23 - 768x1280, timestamp: 1461615840720684000, flags: "
+	echo "Name: hardware_opengl, value: 1, timestamp: 1461615840395361000, flags: "
+	echo "Name: hardware_opengl_disable_render, value: 0, timestamp: 1461615840429214000, flags: "
+	echo "Name: vbox_dpi, value: 320, timestamp: 1461614584743510000, flags: "
+	echo "Name: vbox_graph_mode, value: 768x1280-16, timestamp: 1461614584709561000, flags: "
+else
+	echo "mock vboxmanage"
+fi
+
+exit 0;

@@ -1,0 +1,28 @@
+{
+	"permission": [
+		{
+			"android:description": "test 1",
+			"android:icon": "drawable resource",
+			"android:label": "string resource",
+			"android:name": "test1",
+			"android:permissionGroup": "string",
+			"android:protectionLevel": "normal"
+		},
+		{
+			"android:description": "test 2",
+			"android:icon": "drawable resource",
+			"android:label": "string resource",
+			"android:name": "test2",
+			"android:permissionGroup": "string",
+			"android:protectionLevel": "normal"
+		},
+		{
+			"android:description": "test 3",
+			"android:icon": "drawable resource",
+			"android:label": "string resource",
+			"android:name": "test3",
+			"android:permissionGroup": "string",
+			"android:protectionLevel": "normal"
+		}
+	]
+}

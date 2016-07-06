@@ -1,107 +1,143 @@
-import ADB from './adb';
-import AndroidManifest from './AndroidManifest';
-import * as device from './device';
-import * as emulator from './emulator';
-import * as genymotion from './genymotion';
-import * as sdk from './sdk';
-import * as ndk from './ndk';
-import 'source-map-support/register';
-import { expandPath, searchPaths } from './util';
+import appc from 'node-appc';
+import fs from 'fs';
+import path from 'path';
 
-const version = require('../package.json').version;
+if (!Error.prepareStackTrace) {
+	require('source-map-support/register');
+}
 
-export {
-	ADB,
-	AndroidManifest,
-	device,
-	emulator,
-	genymotion,
-	sdk,
-	ndk,
-	searchPaths,
-	version
+if (!global.dump) {
+	var util = require('util');
+
+	/**
+	 * Prints an object, including deeply nested objects, to stderr.
+	 * @param {*} ... - Thing to dump
+	 */
+	global.dump = function dump() {
+		for (var i = 0; i < arguments.length; i++) {
+			console.error(util.inspect(arguments[i], false, null, true));
+		}
+	};
+}
+
+export const androidlib = {
+	version: require('../package.json').version,
+	detect,
+	watch,
+	getAVDHome,
+	resetCache
 };
+
+const modules = {
+	ADB:             './adb',
+	AndroidManifest: './AndroidManifest',
+	// device,
+	// emulator,
+	genymotion:      './genymotion',
+	linux:           './linux',
+	ndk:             './ndk',
+	sdk:             './sdk'
+};
+
+for (const name of Object.keys(modules)) {
+	Object.defineProperty(androidlib, name, {
+		enumerable: true,
+		configurable: true,
+		get: () => {
+			const module = require(modules[name]);
+			Object.defineProperty(androidlib, name, { enumerable: true, value: module });
+			return module;
+		}
+	});
+}
+
+export default androidlib;
 
 /**
  * Detects current Android environment.
  *
  * @param {Object} [opts] - An object with various params.
- * @param {Boolean} [opts.bypassCache=false] - Bypasses the Android environment detection cache and re-queries the system.
- * @param {String} [opts.androidHomePath] - Path to Android home directory.
+ * @param {Boolean} [opts.force=false] - Bypasses the Android environment detection cache and re-queries the system.
+ * @param {String} [opts.androidAVDPath] - Path to Android home directory.
  * @param {String} [opts.sdkPath] - Path to a known Android SDK directory.
  * @param {String} [opts.ndkPath] - Path to a known Android NDK directory.
  * @returns {Promise}
  */
-export function detect(opts = {}) {
+function detect(opts = {}) {
 	return Promise
 		.all([
-			sdk.detect(opts),
-			ndk.detect(opts),
-			genymotion.detect(opts),
-			device.detect(opts),
-			emulator.detect(opts)
+			androidlib.getAVDHome(opts.androidAVDPath),
+//			sdk.detect(opts),
+			androidlib.ndk.detect(opts)
+//			genymotion.detect(opts),
+//			device.detect(opts),
+//			emulator.detect(opts)
 		])
-		.then(([sdk, ndk, genyenv, devices, emulators]) => {
+		.then(([home, /*sdk,*/ ndk /*, genyenv, devices, emulators*/]) => {
 			const result = {
-				home: expandPath(opts.androidHomePath || process.env.ANDROID_HOME || '~/.android'),
-				sdk: sdk,
-				ndk: ndk,
-				genymotion: genyenv,
-				devices: devices,
-				emulators: emulators
+				home: home,
+//				sdk: sdk,
+				ndk: ndk
+//				genymotion: genyenv,
+//				devices: devices,
+//				emulators: emulators
 			};
 
 			return result;
 		});
 }
 
-let watchers = {};
-let listeners = [];
-let data = null;
+/**
+ * Watches the system for Android environment updates.
+ *
+ * @param {Object} [opts] - Various options.
+ * @returns {Watcher}
+ */
+export function watch(opts={}) {
+	const handle = new appc.detect.Watcher;
 
-export function watch(opts, fn) {
-	if (typeof opts === 'function') {
-		fn = opts;
-		opts = {};
-	}
+	return handle;
+}
 
-	return Promise.resolve()
-		.then(() => {
-			if (!data) {
-				return detect(opts).then(results => data = results);
+/**
+ * Resets each module's internal cache. This is intended for testing purposes
+ * only.
+ */
+function resetCache() {
+	androidlib.ndk.resetCache();
+}
+
+/**
+ * Resolves the Android AVD home directory where the Android Virtual Devices are
+ * stored.
+ *
+ * @param {String} androidAVDPath - A known path to the Android AVD directory.
+ * @returns {Promise}
+ */
+function getAVDHome(androidAVDPath) {
+	const paths = [
+		androidAVDPath,
+		process.env.ANDROID_AVD_HOME,
+		process.env.ANDROID_SDK_HOME && path.join(process.env.ANDROID_SDK_HOME, '.android', 'avd'),
+		'~/.android/avd'
+	];
+
+	return (function tryPath() {
+		return new Promise((resolve, reject) => {
+			let p = paths.shift();
+			if (!p) {
+				return paths.length ? tryPath().then(resolve).catch(reject) : resolve(null);
 			}
-		})
-		.then(() => {
-			listeners.push(fn);
 
-			if (!watchers.ndk) {
-				watchers.ndk = ndk.watch(results => {
-					data.ndk = results;
-					for (const listener of listeners) {
-						listener(data);
-					}
-				});
-			}
+			p = appc.path.expand(p);
 
-			// send the current results
-			setImmediate(() => {
-				fn(data);
+			fs.stat(p, (err, stat) => {
+				if (err || !stat.isDirectory()) {
+					tryPath().then(resolve).catch(reject);
+				} else {
+					fs.realpath(p, (err, rp) => resolve(err ? p : rp));
+				}
 			});
-
-			return () => {
-				for (let i = 0; i < listeners.length; i++) {
-					if (listeners[i] === fn) {
-						listeners.splice(i--, 1);
-					}
-				}
-
-				if (listeners.length === 0) {
-					for (const unwatch of Object.entries(watchers)) {
-						unwatch();
-					}
-					watchers = {};
-					data = null;
-				}
-			};
 		});
+	}());
 }

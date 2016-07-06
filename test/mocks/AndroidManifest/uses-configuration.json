@@ -1,0 +1,14 @@
+{
+	"uses-configuration": [
+		{
+			"android:reqFiveWayNav": true,
+			"android:reqKeyboardType": "qwerty",
+			"android:reqTouchScreen": "finger"
+		},
+		{
+			"android:reqFiveWayNav": true,
+			"android:reqKeyboardType": "twelvekey",
+			"android:reqTouchScreen": "finger"
+		}
+	]
+}

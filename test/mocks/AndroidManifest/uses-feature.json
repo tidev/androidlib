@@ -1,0 +1,27 @@
+{
+	"uses-feature": [
+		{
+			"android:name": "android.hardware.bluetooth",
+			"android:required": false,
+			"android:glEsVersion": 1
+		},
+		{
+			"android:name": "android.hardware.camera",
+			"android:required": true,
+			"android:glEsVersion": 2
+		},
+		{
+			"android:name": "android.hardware.camera",
+			"android:required": true,
+			"android:glEsVersion": 1
+		},
+		{
+			"android:required": true,
+			"android:glEsVersion": 131072
+		},
+		{
+			"android:required": true,
+			"android:glEsVersion": 196608
+		}
+	]
+}

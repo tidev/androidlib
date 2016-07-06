@@ -1,22 +1,33 @@
-import { ADB } from '../src/index';
+import androidlib from '../src/index';
+import MockAdbServer from './mocks/mockAdbServer';
+
+const port = 9999;
 
 describe('ADB', () => {
-
 	describe('version', () => {
-		it.only('should get the adb version', done => {
-			const adb = new ADB();
+		before(function () {
+			this.mockServer = new MockAdbServer(port);
+			this.mockServer.start();
+		});
+
+		after(function () {
+			this.mockServer.stop();
+		});
+
+		it('should get the adb version', done => {
+			const adb = new androidlib.ADB({ port });
 			adb.version()
 				.then(version => {
-					console.log(version);
+					expect(version).to.equal('1.0.48');
 					done();
 				})
 				.catch(done);
 		});
 	});
 
-	describe('parseDevices', () => {
+/*	describe('parseDevices', () => {
 		it('should not fail with empty device list', done => {
-			const adb = new ADB();
+			const adb = new androidlib.ADB();
 			adb.parseDevices('')
 				.then(result => {
 					expect(result).to.be.an.Array;
@@ -30,6 +41,5 @@ describe('ADB', () => {
 			//TODO
 			done();
 		});
-	});
-
+	});*/
 });

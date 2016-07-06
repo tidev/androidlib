@@ -1,0 +1,10 @@
+{
+	"uses-permission": [
+		{
+			"android:name": "android.permission.CAMERA"
+		},
+		{
+			"android:name": "android.permission.READ_CONTACTS"
+		}
+	]
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest android:versionName="1.0">
+  <application android:debuggable="true">
+    <activity android:alwaysRetainTaskState="true" android:configChanges="keyboardHidden|orientation" android:label="testapp" android:name=".TestappActivity" android:theme="@style/Theme.Titanium">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
+    <activity android:name="ti.modules.titanium.facebook.FBActivity" android:screenOrientation="landscape" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+    <activity android:configChanges="keyboardHidden|orientation" android:name="org.appcelerator.titanium.TiActivity" android:screenOrientation="landscape"/>
+    <activity android:configChanges="keyboardHidden|orientation" android:name="org.appcelerator.titanium.TiModalActivity" android:screenOrientation="landscape" android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"/>
+    <activity android:configChanges="keyboardHidden|orientation" android:name="ti.modules.titanium.ui.TiTabActivity" android:screenOrientation="landscape"/>
+    <activity android:configChanges="keyboardHidden|orientation" android:name="ti.modules.titanium.media.TiVideoActivity" android:screenOrientation="landscape" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
+    <activity android:name="ti.modules.titanium.ui.android.TiPreferencesActivity" android:screenOrientation="landscape"/>
+    <activity android:name="ti.modules.titanium.ui.android.TiPreferencesActivity"/>
+    <uses-library android:name="foo" android:required="true"/>
+  </application>
+  <supports-screens android:anyDensity="false" android:xlargeScreens="true"/>
+  <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="17"/>
+</manifest>

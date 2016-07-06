@@ -1,0 +1,14 @@
+{
+	"application": {
+		"uses-library": [
+			{
+				"android:name": "lib1",
+				"android:required": true
+			},
+			{
+				"android:name": "lib2",
+				"android:required": false
+			}
+		]
+	}
+}

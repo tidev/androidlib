@@ -1,0 +1,17 @@
+{
+	"instrumentation": [
+		{
+			"android:label": "Local Sample",
+			"android:name": ".app.LocalSampleInstrumentation",
+			"android:targetPackage": "com.example.android.apis"
+		},
+		{
+			"android:functionalTest": true,
+			"android:handleProfiling": true,
+			"android:icon": "drawable resource",
+			"android:label": "Local Test",
+			"android:name": ".app.LocalTestInstrumentation",
+			"android:targetPackage": "com.example.test.apis"
+		}
+	]
+}

@@ -1,139 +1,115 @@
+import appc from 'node-appc';
 import fs from 'fs';
+import { GawkObject } from 'gawk';
 import path from 'path';
-import * as util from './util';
 
 /**
- * Detect if we're using a 64-bit Linux OS that's missing 32-bit libraries.
+ * The Linux environment values.
+ * @type {GawkObject}
+ */
+const env = new GawkObject();
+
+/**
+ * Detect if we're using a 64-bit Linux OS and if it's missing 32-bit libraries.
  *
  * @param {Object} [opts] - An object with various params.
- * @param {Boolean} [opts.bypassCache=false] - When true, re-detects installed
- * Android SDKs.
- * @returns {Promise}
+ * @param {Boolean} [opts.force=false] - When true, re-detects the Linux
+ * environment.
+ * @returns {Promise} Resolves a GawkObject containing the Linux environment
+ * information.
  */
 export function detect(opts = {}) {
-	if (process.platform !== 'linux' || process.arch !== 'x64') {
-		return Promise.resolve();
+	if (process.platform !== 'linux') {
+		return Promise.resolve(null);
 	}
 
-	const result = {
-		'libGL': util.existsSync('/usr/lib/libGL.so'),
-		'i386arch': null,
-		'libc6:i386': null,
-		'libncurses5:i386': null,
-		'libstdc++6:i386': null,
-		'zlib1g:i386': null,
-		'glibc': null,
-		'libstdcpp': null
-	};
-
-	return Promise
-		.all([
-			findDpkg(),
-			findDpkgQuery(),
-			findRpm()
-		])
-		.then(([dpkg, dpkgquery, rpm]) => {
-			if (dpkg) {
-				result.i386arch = dpkg && !!dpkg.i386;
-			}
-
-			if (dpkgquery) {
-				Object.assign(result, dpkgquery);
-			}
-
-			if (rpm) {
-				result.glibc = rpm.glibc;
-				result.libstdcpp = rpm.libstdcpp;
-			}
-		})
-		.then(() => result);
+	return Promise.resolve()
+		.then(() => appc.util.cache('androidlib:linux', opts.force, () => {
+			return Promise.resolve()
+				.then(() => checkDpkg(opts.dpkgquery))
+				.catch(err => checkDnf(opts.dnf))
+				.catch(err => checkYum(opts.yum))
+				.catch(err => Promise.resolve())
+				.then(results => env.merge({ '32bit': results || null }));
+		}))
+		.then(results => opts.gawk ? results : results.toJS());
 }
 
-function findDpkg() {
-	let result = {};
-	return util
-		.findExecutable('dpkg')
-		.then(dpkg => {
-			if (!dpkg) {
-				return Promise.resolve();
-			}
+// lib32ncurses5 lib32stdc++6
+// 'libc6:i386', 'libncurses5:i386', 'libstdc++6:i386', 'zlib1g:i386'
 
-			const flags = ['--print-architecture', '--print-foreign-architectures'];
-			return Promise.all(flags.map(f => {
-				return util.run(dpkg, [f])
-					.then(({code, stdout, stderr}) => {
-						for (let line of stdout.split('\n')) {
-							(line = line.trim()) && (result[line] = 1);
-						}
-					});
-			}));
-		})
-		.then(() => result)
-		.catch(err => Promise.resolve());
-}
+// dnf list installed glibc.i686 libstdc++.i686
 
-function findDpkgQuery() {
-	let result = {};
-	return util
-		.findExecutable('dpkg-query')
+/**
+ * Determines if required 32-bit modules are installed in order for the Android
+ * emulator to be happy. This is Debian/Ubuntu specific.
+ *
+ * @param {String} [dpkg='dpkg-query'] - The path to the `dpkg-query` executable.
+ * @returns {Promise} Resolves an object of specific installed packages.
+ */
+function checkDpkg(dpkgquery = 'dpkg-query') {
+	return appc.subprocess.which(dpkgquery)
+		.catch(err => Promise.reject(err))
 		.then(dpkgquery => {
-			if (!dpkgquery) {
-				return Promise.resolve();
-			}
+			const required = {
+				'libc6-i386': false,
+				'lib32stdc++6': false
+//				'lib32ncurses5': false
+			};
 
-			const libs = ['libc6:i386', 'libncurses5:i386', 'libstdc++6:i386', 'zlib1g:i386'];
-			return Promise.all(libs.map(lib => {
-				return util.run(dpkgquery, ['-l', lib])
-					.then(({code, stdout, stderr}) => {
-						result[lib] = false;
-						if (!code) {
-							for (const line of stdout.split('\n')) {
-								if (line.indexOf(lib) !== -1) {
-									// we look for "ii" which means we want the "desired action"
-									// to be "installed" and the "status" to be "installed"
-									if (line.indexOf('ii') === 0) {
-										result[lib] = true;
-									}
-									break;
-								}
-							}
-						}
-					});
-			}));
-		})
-		.then(() => result)
-		.catch(err => Promise.resolve());
+			// if emulator executable is 32-bit, need to make sure we have the 32-bit libs installed
+
+			return appc.subprocess.run(dpkgquery, ['-l'].concat(Object.keys(required)))
+				.then(({ stdout }) => {
+					//
+				});
+		});
+		//
+		// 					for (const line of stdout.trim().split('\n')) {
+		// 						if (line.indexOf(lib) !== -1) {
+		// 							// we look for "ii" which means we want the "desired action"
+		// 							// to be "installed" and the "status" to be "installed"
+		// 							if (line.indexOf('ii') === 0) {
+		// 								results[lib] = true;
+		// 							}
+		// 							break;
+		// 						}
+		// 					}
+		// 				})
+		// 				.catch(err => Promise.resolve());
+		// 		}))
+		// 		.then(() => results);
+		// });
 }
 
-function findRpm() {
-	return util
-		.findExecutable('rpm')
-		.then(rpm => {
-			if (!rpm) {
-				return Promise.resolve();
-			}
+function checkDnf() {
+}
 
-			let result = {};
-			return util
-				.run(rpm, ['-qa'])
-				.then(({code, stdout, stderr}) => {
-					for (const line of stdout.split('\n')) {
-						if (/^glibc\-/.test(line)) {
-							if (/\.i[36]86$/.test(line)) {
-								result.glibc = true;
-							} else if (result.glibc !== true) {
-								result.glibc = false;
-							}
-						}
-						if (/^libstdc\+\+\-/.test(line)) {
-							if (/\.i[36]86$/.test(line)) {
-								result.libstdcpp = true;
-							} else if (result.libstdcpp !== true) {
-								result.libstdcpp = false;
-							}
+function checkYum() {
+}
+
+function findRpm(rpm = 'rpm') {
+	return appc.subprocess.which(rpm)
+		.then(rpm => {
+			return appc.subprocess.run(rpm, ['-qa', 'glibc', 'libstdc++'])
+				.then(({ stdout }) => {
+					const glibcRegExp = /^glibc\-/;
+					const libstdcppRegExp = /^libstdc\+\+\-/;
+					const i386RegExp = /\.i[36]86$/;
+					const results = {
+						'glibc:i386':     false,
+						'libstdcpp:i386': false
+					};
+
+					for (const line of stdout.trim().split('\n')) {
+						if (glibcRegExp.test(line) && i386RegExp.test(line)) {
+							results['glibc:i386'] = true;
+						} else if (libstdcppRegExp.test(line) && i386RegExp.test(line)) {
+							results['libstdcpp:i386'] = true;
 						}
 					}
-					return result;
+
+					return results;
 				});
 		})
 		.catch(err => Promise.resolve());

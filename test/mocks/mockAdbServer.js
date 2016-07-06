@@ -1,13 +1,9 @@
 import net from 'net';
 
-const HOST = '127.0.0.1';
-const PORT = 9999;
-
 export default class MockAdbServer {
-	constructor(opts = {}) {
+	constructor(port=9999) {
 		this.server = null;
-		this.opts = opts;
-		this.opts.port = PORT;
+		this.port = port;
 	}
 
 	start() {
@@ -41,6 +37,11 @@ export default class MockAdbServer {
 						socket.write('u0_a27    977   67    462792 24452 ffffffff b6e2cc9c S com.android.exchange');
 						socket.end();
 					}, 10);
+				} else if (data.indexOf('host:transport:emulator-5554') !== -1) {
+					toClose = false;
+					setTimeout(() => {
+						socket.write('OKAY');
+					}, 500);
 				}
 
 				if (toClose) {
@@ -52,7 +53,7 @@ export default class MockAdbServer {
 				//console.log('CLOSED: ' + socket.remoteAddress +' '+ socket.remotePort);
 			});
 
-		}).listen(PORT, HOST);
+		}).listen(9999, '127.0.0.1');
 
 		//console.log('Server listening on ' + HOST +':'+ PORT);
 	}

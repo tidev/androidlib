@@ -1,0 +1,19 @@
+{
+	"permission-tree": [
+		{
+			"android:icon": "drawable resource",
+			"android:label": "string resource",
+			"android:name": "test1"
+		},
+		{
+			"android:icon": "drawable resource",
+			"android:label": "string resource",
+			"android:name": "test2"
+		},
+		{
+			"android:icon": "drawable resource",
+			"android:label": "string resource",
+			"android:name": "test3"
+		}
+	]
+}

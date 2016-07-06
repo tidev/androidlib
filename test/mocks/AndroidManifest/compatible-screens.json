@@ -1,0 +1,38 @@
+{
+	"compatible-screens": {
+		"screen": [
+			{
+				"android:screenSize": "small",
+				"android:screenDensity": "ldpi"
+			},
+			{
+				"android:screenSize": "small",
+				"android:screenDensity": "mdpi"
+			},
+			{
+				"android:screenSize": "small",
+				"android:screenDensity": "hdpi"
+			},
+			{
+				"android:screenSize": "small",
+				"android:screenDensity": "xhdpi"
+			},
+			{
+				"android:screenSize": "normal",
+				"android:screenDensity": "ldpi"
+			},
+			{
+				"android:screenSize": "normal",
+				"android:screenDensity": "mdpi"
+			},
+			{
+				"android:screenSize": "normal",
+				"android:screenDensity": "hdpi"
+			},
+			{
+				"android:screenSize": "normal",
+				"android:screenDensity": "xhdpi"
+			}
+		]
+	}
+}

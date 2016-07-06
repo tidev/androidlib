@@ -1,0 +1,69 @@
+{
+	"application": {
+		"activity": [
+			{
+				"android:name": "TestActivity1",
+				"intent-filter": [
+					{
+						"android:icon": "@drawable/icon",
+						"android:label": "testFilter",
+						"android:priority": 123,
+						"action": [
+							{ "android:name": "android.intent.action.MAIN" }
+						],
+						"category": [
+							{ "android:name": "android.intent.category.LAUNCHER" }
+						]
+					},
+					{
+						"action": [
+							{ "android:name": "android.intent.action.VIEW" },
+							{ "android:name": "android.intent.action.EDIT" },
+							{ "android:name": "android.intent.action.PICK" }
+						],
+						"category": [
+							{ "android:name": "android.intent.category.DEFAULT" }
+						],
+						"data": [
+							{ "android:mimeType": "vnd.android.cursor.dir/vnd.google.note" }
+						]
+					},
+					{
+						"action": [
+							{ "android:name": "android.intent.action.GET_CONTENT" }
+						],
+						"category": [
+							{ "android:name": "android.intent.category.DEFAULT" }
+						],
+						"data": [
+							{ "android:mimeType": "vnd.android.cursor.item/vnd.google.note" }
+						]
+					},
+					{
+						"action": [
+							{ "android:name": "android.intent.action.SEND" },
+							{ "android:name": "android.intent.action.SEND_MULTIPLE" }
+						],
+						"category": [
+							{ "android:name": "android.intent.category.DEFAULT" }
+						],
+						"data": [
+							{ "android:mimeType": "application/vnd.google.panorama360+jpg" },
+							{ "android:mimeType": "image/*" },
+							{ "android:mimeType": "video/*" }
+						]
+					},
+					{
+						"action": [
+							{ "android:name": "android.intent.action.VIEW" }
+						],
+						"category": [
+							{ "android:name": "android.intent.category.DEFAULT" },
+							{ "android:name": "android.intent.category.BROWSABLE" }
+						]
+					}
+				]
+			}
+		]
+	}
+}

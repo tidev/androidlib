@@ -1,0 +1,13 @@
+{
+	"supports-screens": {
+		"android:resizeable": true,
+		"android:smallScreens": true,
+		"android:normalScreens": true,
+		"android:largeScreens": true,
+		"android:xlargeScreens": true,
+		"android:anyDensity": false,
+		"android:requiresSmallestWidthDp": 320,
+		"android:compatibleWidthLimitDp": 480,
+		"android:largestWidthLimitDp": 2048
+	}
+}

@@ -1,13 +1,37 @@
+import appc from 'node-appc';
 import Connection from './connection';
-import Device from './device';
+//import Device from './device';
 import { EventEmitter } from 'events';
 import fs from 'fs';
-import { isEmulator } from './emulator';
+//import { isEmulator } from './emulator';
 import mkdirp from 'mkdirp';
 import path from 'path';
-import { sdk as sdkDetect } from './sdk';
-import { spawn } from 'child_process';
-import * as util from './util';
+//import { sdk as sdkDetect } from './sdk';
+//import { spawn } from 'child_process';
+
+
+/*
+
+This code was in connection.js, but was ripped out since a connection should not
+start adb, but rather let whatever is creating the connection (the ADB class)
+handle the error and retry. We should probably add this code back in below.
+
+				if (!err.errno || err.errno !== 'ECONNREFUSED') {
+					// this.emit('debug', `[${this.connNum}] SOCKET error, (${err})`);
+					return reject(err);
+				}
+
+				// this.emit('debug', `[${this.connNum}] Restart ADB`);
+				this.adb.startServer()
+					.then(({ code, stdout, stderr }) => {
+						if (!code) {
+							return this
+								.exec(cmd, opts)
+								.then(data => resolve(data));
+						}
+						reject(new Error(`Unable to start Android Debug Bridge server (exit code ${code})`));
+					});
+*/
 
 /**
  * Provides methods to interact with the Android Debug Bridge (ADB).
@@ -20,6 +44,34 @@ export default class ADB {
 	 */
 	constructor(opts = {}) {
 		this.opts = opts;
+		if (!this.opts.port) {
+			this.opts.port = 5037;
+		}
+	}
+
+	/**
+	 * Executes a command. If it fails to connect, it starts the
+	 * @access private
+	 */
+	tryExec(cmd, conn) {
+		if (!conn) {
+			conn = new Connection(this.opts.port);
+		}
+
+		return conn
+			.exec(cmd)
+			.catch(err => {
+				if (err.errno !== 'ECONNREFUSED') {
+					return Promise.reject(err);
+				}
+
+				// try to start adb
+				return this.startServer()
+					.catch(({ code, stdout, stderr }) => {
+						return Promise.reject(new Error(`Unable to start Android Debug Bridge server (exit code ${code})`));
+					})
+					.then(() => conn.exec(cmd));
+			});
 	}
 
 	/**
@@ -29,14 +81,13 @@ export default class ADB {
 	 * @access public
 	 */
 	version() {
-		return new Connection(this)
-			.exec('host:version')
+		return this.tryExec('host:version')
 			.then(data => {
 				if (data) {
 					return `1.0.${parseInt(data, 16)}`;
 				}
 
-				throw new Error('ADB version is not available.');
+				throw new Error('ADB version is not available');
 			});
 	}
 
@@ -47,17 +98,17 @@ export default class ADB {
 	 * @param {String} cmd - The command to run.
 	 * @returns {Promise}
 	 * @access public
-	 */
+	 * /
 	shell(deviceId, cmd) {
 		if (typeof deviceId !== 'string' || !deviceId) {
-			return Promise.reject(new TypeError('Expected device ID to be a string.'));
+			return Promise.reject(new TypeError('Expected device ID to be a string'));
 		}
 
 		if (typeof cmd !== 'string' || !cmd) {
-			return Promise.reject(new TypeError('Expected command to be a string.'));
+			return Promise.reject(new TypeError('Expected command to be a string'));
 		}
 
-		const conn = new Connection(this);
+		const conn = new Connection(this.opts.port);
 		return conn
 			.exec('host:transport:' + deviceId)
 			.then(data => conn.exec(`shell:${cmd.replace(/^shell\:/, '')}`, { bufferUntilClose: true, noLength: true }));
@@ -70,9 +121,15 @@ export default class ADB {
 	 * @access public
 	 */
 	startServer() {
-		return sdkDetect(this.opts)
-			.then(results => results.sdks.shift())
-			.then(sdk => util.run(sdk.executables.adb, ['start-server']));
+		const args = [];
+		if (this.opts.port) {
+			args.push('-P', this.opts.port);
+		}
+		args.push('start-server');
+
+		// return sdkDetect(this.opts)
+		// 	.then(results => results.sdks[0])
+		// 	.then(sdk => appc.subprocess.run(sdk.executables.adb, args));
 	}
 
 	/**
@@ -80,11 +137,11 @@ export default class ADB {
 	 *
 	 * @returns {Promise}
 	 * @access public
-	 */
+	 * /
 	stopServer() {
 		return sdkDetect(this.opts)
 			.then(results => results.sdks.shift())
-			.then(sdk => util.run(sdk.executables.adb, ['kill-server']));
+			.then(sdk => appc.subprocess.run(sdk.executables.adb, ['kill-server']));
 	}
 
 	/**
@@ -95,28 +152,28 @@ export default class ADB {
 	 * @param {String} dest - The destination port in the format "tcp:<port>" or "jdwp:<pid>".
 	 * @returns {Promise}
 	 * @access public
-	 */
+	 * /
 	forward(deviceId, src, dest) {
 		if (typeof deviceId !== 'string' || !deviceId) {
-			return Promise.reject(new TypeError('Expected device ID to be a string.'));
+			return Promise.reject(new TypeError('Expected device ID to be a string'));
 		}
 
 		if (typeof src !== 'string' || !src) {
-			return Promise.reject(new TypeError('Expected source to be a string.'));
+			return Promise.reject(new TypeError('Expected source to be a string'));
 		}
 
 		if (typeof dest !== 'string' || !dest) {
-			return Promise.reject(new TypeError('Expected dest to be a string.'));
+			return Promise.reject(new TypeError('Expected dest to be a string'));
 		}
 
-		src = util.expandPath(src);
-		if (!util.existsSync(src)) {
-			return Promise.reject(new TypeError(`Source file "${src}" does not exist.`));
+		src = appc.path.expand(src);
+		if (!appc.fs.existsSync(src)) {
+			return Promise.reject(new TypeError(`Source file "${src}" does not exist`));
 		}
 
 		return sdkDetect(this.opts)
 			.then(results => results.sdks.shift())
-			.then(sdk => util.run(sdk.executables.adb, ['-s', deviceId, 'forward', src, dest]));
+			.then(sdk => appc.subprocess.run(sdk.executables.adb, ['-s', deviceId, 'forward', src, dest]));
 	}
 
 	/**
@@ -127,28 +184,28 @@ export default class ADB {
 	 * @param {String} dest - The destination to write the file.
 	 * @returns {Promise}
 	 * @access public
-	 */
+	 * /
 	push(deviceId, src, dest) {
 		if (typeof deviceId !== 'string' || !deviceId) {
-			return Promise.reject(new TypeError('Expected device ID to be a string.'));
+			return Promise.reject(new TypeError('Expected device ID to be a string'));
 		}
 
 		if (typeof src !== 'string' || !src) {
-			return Promise.reject(new TypeError('Expected source to be a string.'));
+			return Promise.reject(new TypeError('Expected source to be a string'));
 		}
 
-		src = util.expandPath(src);
-		if (!util.existsSync(src)) {
-			return Promise.reject(new TypeError(`Source file "${src}" does not exist.`));
+		src = appc.path.expand(src);
+		if (!appc.fs.existsSync(src)) {
+			return Promise.reject(new TypeError(`Source file "${src}" does not exist`));
 		}
 
 		if (typeof dest !== 'string' || !dest) {
-			return Promise.reject(new TypeError('Expected dest to be a string.'));
+			return Promise.reject(new TypeError('Expected dest to be a string'));
 		}
 
 		return sdkDetect(this.opts)
 			.then(results => results.sdks.shift())
-			.then(sdk => util.run(sdk.executables.adb, ['-s', deviceId, 'push', src, dest]));
+			.then(sdk => appc.subprocess.run(sdk.executables.adb, ['-s', deviceId, 'push', src, dest]));
 	}
 
 	/**
@@ -159,31 +216,31 @@ export default class ADB {
 	 * @param {String} dest - The destination to write the file.
 	 * @returns {Promise}
 	 * @access public
-	 */
+	 * /
 	pull(deviceId, src, dest) {
 		if (typeof deviceId !== 'string' || !deviceId) {
-			return Promise.reject(new TypeError('Expected device ID to be a string.'));
+			return Promise.reject(new TypeError('Expected device ID to be a string'));
 		}
 
 		if (typeof src !== 'string' || !src) {
-			return Promise.reject(new TypeError('Expected source to be a string.'));
+			return Promise.reject(new TypeError('Expected source to be a string'));
 		}
 
 		if (typeof dest !== 'string' || !dest) {
-			return Promise.reject(new TypeError('Expected destination to be a string.'));
+			return Promise.reject(new TypeError('Expected destination to be a string'));
 		}
 
-		src = util.expandPath(src);
-		if (!util.existsSync(src)) {
-			return Promise.reject(new TypeError(`Source file "${src}" does not exist.`));
+		src = appc.path.expand(src);
+		if (!appc.fs.existsSync(src)) {
+			return Promise.reject(new TypeError(`Source file "${src}" does not exist`));
 		}
 
-		dest = util.expandPath(dest);
+		dest = appc.path.expand(dest);
 		mkdirp.sync(path.dirname(dest));
 
 		return sdkDetect(this.opts)
 			.then(results => results.sdks.shift())
-			.then(sdk => util.run(sdk.executables.adb, ['-s', deviceId, 'pull', src, dest]));
+			.then(sdk => appc.subprocess.run(sdk.executables.adb, ['-s', deviceId, 'pull', src, dest]));
 	}
 
 	/**
@@ -193,14 +250,14 @@ export default class ADB {
 	 * @param {String} appId - The application's id.
 	 * @returns {Promise}
 	 * @access public
-	 */
+	 * /
 	getPid(deviceId, appId) {
 		if (typeof deviceId !== 'string' || !deviceId) {
-			return Promise.reject(new TypeError('Expected device ID to be a string.'));
+			return Promise.reject(new TypeError('Expected device ID to be a string'));
 		}
 
 		if (typeof appId !== 'string' || !appId) {
-			return Promise.reject(new TypeError('Expected app ID to be a string.'));
+			return Promise.reject(new TypeError('Expected app ID to be a string'));
 		}
 
 		return this
@@ -215,7 +272,7 @@ export default class ADB {
 					}
 				}
 
-				throw new Error(`The pid for "${appId}" on "${deviceId}" is not available.`);
+				throw new Error(`The pid for "${appId}" on "${deviceId}" is not available`);
 			});
 	}
 
@@ -226,31 +283,31 @@ export default class ADB {
 	 * @param {String} apkFile - The application apk file to install.
 	 * @returns {Promise}
 	 * @access public
-	 */
+	 * /
 	installApp(deviceId, apkFile) {
 		if (typeof deviceId !== 'string' || !deviceId) {
-			return Promise.reject(new TypeError('Expected device ID to be a string.'));
+			return Promise.reject(new TypeError('Expected device ID to be a string'));
 		}
 
 		if (typeof apkFile !== 'string' || !apkFile) {
-			return Promise.reject(new TypeError('Expected apk file path to be a string.'));
+			return Promise.reject(new TypeError('Expected apk file path to be a string'));
 		}
 
-		apkFile = util.expandPath(apkFile);
-		if (!util.existsSync(apkFile)) {
-			return Promise.reject(new Error(`APK file "${apkFile}" does not exist.`));
+		apkFile = appc.path.expand(apkFile);
+		if (!appc.fs.existsSync(apkFile)) {
+			return Promise.reject(new Error(`APK file "${apkFile}" does not exist`));
 		}
 
 		return this
 			.devices()
 			.then(devices => {
 				if (!devices.some(d => d.id === deviceId)) {
-					return Promise.reject(new Error('Device not found.'));
+					return Promise.reject(new Error('Device not found'));
 				}
 			})
 			.then(() => sdkDetect(this.opts))
 			.then(results => results.sdks.shift())
-			.then(sdk => util.run(sdk.executables.adb, ['-s', deviceId, 'install', '-r', apkFile]));
+			.then(sdk => appc.subprocess.run(sdk.executables.adb, ['-s', deviceId, 'install', '-r', apkFile]));
 	}
 
 	/**
@@ -261,18 +318,18 @@ export default class ADB {
 	 * @param {String} activity - The name of the activity to run.
 	 * @returns {Promise}
 	 * @access public
-	 */
+	 * /
 	startApp(deviceId, appId, activity) {
 		if (typeof deviceId !== 'string' || !deviceId) {
-			return Promise.reject(new TypeError('Expected device ID to be a string.'));
+			return Promise.reject(new TypeError('Expected device ID to be a string'));
 		}
 
 		if (typeof appId !== 'string' || !appId) {
-			return Promise.reject(new TypeError('Expected app ID to be a string.'));
+			return Promise.reject(new TypeError('Expected app ID to be a string'));
 		}
 
 		if (typeof activity !== 'string' || !activity) {
-			return Promise.reject(new TypeError('Expected activity name to be a string.'));
+			return Promise.reject(new TypeError('Expected activity name to be a string'));
 		}
 
 		return this.shell(deviceId, `am start -n ${appId} /. ${activity.replace(/^\./, '')}`);
@@ -285,14 +342,14 @@ export default class ADB {
 	 * @param {String} appId - The application's id.
 	 * @returns {Promise}
 	 * @access public
-	 */
+	 * /
 	stopApp(deviceId, appId) {
 		if (typeof deviceId !== 'string' || !deviceId) {
-			return Promise.reject(new TypeError('Expected device ID to be a string.'));
+			return Promise.reject(new TypeError('Expected device ID to be a string'));
 		}
 
 		if (typeof appId !== 'string' || !appId) {
-			return Promise.reject(new TypeError('Expected app ID to be a string.'));
+			return Promise.reject(new TypeError('Expected app ID to be a string'));
 		}
 
 		let pid;
@@ -308,7 +365,7 @@ export default class ADB {
 						.shell(deviceId, `kill ${pid}`)
 						.then(data => {
 							if (data.toString().indexOf('Operation not permitted') !== -1) {
-								return Promise.reject(new Error('Unable to stop the application.'));
+								return Promise.reject(new Error('Unable to stop the application'));
 							}
 							return Promise.resolve();
 						});
@@ -323,9 +380,9 @@ export default class ADB {
 	 *
 	 * @returns {Promise}
 	 * @access public
-	 */
+	 * /
 	devices() {
-		return new Connection(this)
+		return new Connection(this.opts.port)
 			.exec('host:devices')
 			.then(data => this.parseDevices(data));
 	}
@@ -336,9 +393,9 @@ export default class ADB {
 	 *
 	 * @returns {Connection} The connection so you can end() it.
 	 * @access public
-	 */
+	 * /
 	trackDevices() {
-		const conn = new Connection(this);
+		const conn = new Connection(this.opts.port);
 
 		conn.on('data', data => {
 			this.parseDevices(data)
@@ -356,7 +413,7 @@ export default class ADB {
 	 * @param {String} deviceId - The id of the device or emulator.
 	 * @returns {EventEmitter} Emits events `message`, `error` and `close`.
 	 * @access public
-	 */
+	 * /
 	logcat(deviceId) {
 		const emitter = new EventEmitter;
 		Promise.resolve()
@@ -391,7 +448,7 @@ export default class ADB {
 	 * @param {Buffer|String} data - The buffer containing the list of devices.
 	 * @returns {Promise}
 	 * @access private
-	 */
+	 * /
 	parseDevices(data = '') {
 		const devices = [];
 		const final = [];
@@ -461,4 +518,5 @@ export default class ADB {
 			}))
 			.then(() => final);
 	}
+	*/
 }

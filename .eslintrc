@@ -7,6 +7,9 @@
         "node": true
     },
     "extends": "eslint:recommended",
+    "globals": {
+        "dump": false
+    },
     "parser": "babel-eslint",
     "root": true,
     "rules": {

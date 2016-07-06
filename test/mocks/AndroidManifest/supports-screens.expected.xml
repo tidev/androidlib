@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest>
+  <supports-screens android:anyDensity="false" android:compatibleWidthLimitDp="480" android:largeScreens="true" android:largestWidthLimitDp="2048" android:normalScreens="true" android:requiresSmallestWidthDp="320" android:resizeable="true" android:smallScreens="true" android:xlargeScreens="true"/>
+</manifest>
