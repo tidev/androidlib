@@ -6,19 +6,19 @@ if (!Error.prepareStackTrace) {
 	require('source-map-support/register');
 }
 
-if (!global.dump) {
-	var util = require('util');
-
-	/**
-	 * Prints an object, including deeply nested objects, to stderr.
-	 * @param {*} ... - Thing to dump
-	 */
-	global.dump = function dump() {
-		for (var i = 0; i < arguments.length; i++) {
-			console.error(util.inspect(arguments[i], false, null, true));
-		}
-	};
-}
+// if (!global.dump) {
+// 	var util = require('util');
+//
+// 	/**
+// 	 * Prints an object, including deeply nested objects, to stderr.
+// 	 * @param {*} ... - Thing to dump
+// 	 */
+// 	global.dump = function dump() {
+// 		for (var i = 0; i < arguments.length; i++) {
+// 			console.error(util.inspect(arguments[i], false, null, true));
+// 		}
+// 	};
+// }
 
 export const androidlib = {
 	version: require('../package.json').version,
@@ -67,16 +67,16 @@ function detect(opts = {}) {
 	return Promise
 		.all([
 			androidlib.getAVDHome(opts.androidAVDPath),
-//			sdk.detect(opts),
+			androidlib.sdk.detect(opts),
 			androidlib.ndk.detect(opts)
 //			genymotion.detect(opts),
 //			device.detect(opts),
 //			emulator.detect(opts)
 		])
-		.then(([home, /*sdk,*/ ndk /*, genyenv, devices, emulators*/]) => {
+		.then(([home, sdk, ndk /*, genyenv, devices, emulators*/]) => {
 			const result = {
 				home: home,
-//				sdk: sdk,
+				sdk: sdk,
 				ndk: ndk
 //				genymotion: genyenv,
 //				devices: devices,

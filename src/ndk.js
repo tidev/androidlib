@@ -1,10 +1,10 @@
-import _ from 'lodash';
 import appc from 'node-appc';
-import { EventEmitter } from 'events';
+import debug from 'debug';
 import fs from 'fs';
-import { GawkArray, GawkObject } from 'gawk';
 import path from 'path';
 import systemPaths from './system-paths';
+
+const log = debug('androidlib:ndk');
 
 const platformPaths = {
 	darwin: [
@@ -99,8 +99,7 @@ export class NDK extends appc.gawk.GawkObject {
 				'ndk-build': ndkbuild,
 				'ndk-gdb':   ndkgdb,
 				'ndk-which': ndkwhich
-			},
-			default: false
+			}
 		};
 
 		// first try to get the version from the RELEASE.TXT
@@ -201,7 +200,10 @@ export function watch(opts = {}) {
 function checkDir(dir) {
 	return Promise.resolve()
 		.then(() => new NDK(dir))
-		.catch(err => Promise.resolve());
+		.catch(err => {
+			log('checkDir()', err, dir);
+			return Promise.resolve();
+		});
 }
 
 /**

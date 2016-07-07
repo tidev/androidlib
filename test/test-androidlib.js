@@ -136,7 +136,7 @@ describe('androidlib', () => {
 
 function validateResults(results) {
 	expect(results).to.be.an.Object;
-	expect(results).to.have.keys('home', 'ndk');
+	expect(results).to.have.keys('home', 'ndk', 'sdk');
 
 	//console.log(results);
 }

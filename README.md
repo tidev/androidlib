@@ -27,6 +27,13 @@ androidlib
     .catch(err => console.error);
 ```
 
+## Debugging
+
+androidlib uses [debug][debug-url] to display debug output. Set the following
+environment variable to see the debugging output:
+
+    DEBUG=androidlib:*
+
 ## Reporting Bugs or Submitting Fixes
 
 If you run into problems, and trust us, there are likely plenty of them at this

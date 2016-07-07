@@ -7,7 +7,7 @@ const bat = appc.subprocess.bat;
 const sdk = androidlib.sdk;
 
 describe('sdk', () => {
-	before(function () {
+	beforeEach(function () {
 		this.androidSDKRootEnv       = process.env.ANDROID_SDK_ROOT;
 		this.androidSDKEnv           = process.env.ANDROID_SDK;
 		this.pathEnv                 = process.env.PATH;
@@ -19,7 +19,7 @@ describe('sdk', () => {
 		process.env.NODE_APPC_SKIP_GLOBAL_EXECUTABLE_PATH = 1;
 	});
 
-	after(function () {
+	afterEach(function () {
 		process.env.ANDROID_SDK_ROOT = this.androidSDKRootEnv;
 		process.env.ANDROID_SDK      = this.androidSDKEnv;
 		process.env.PATH             = this.pathEnv;
@@ -47,13 +47,13 @@ describe('sdk', () => {
 		it('should error if directory does not exist', () => {
 			expect(() => {
 				new sdk.SDK(path.join(__dirname, 'mocks', 'doesnotexist'));
-			}).to.throw(Error, 'Directory does not exist');
+			}).to.throw(Error, 'Directory does not exist or is actually a file');
 		});
 
 		it('should error if tools source.properties is missing', () => {
 			expect(() => {
 				new sdk.SDK(path.resolve('./test/mocks/empty'));
-			}).to.throw(Error, 'Directory does not contain a valid Android SDK; bad source.properties');
+			}).to.throw(Error, 'Directory does not contain a valid Android SDK');
 		});
 
 		it('should error if required tool is missing', () => {
@@ -65,358 +65,371 @@ describe('sdk', () => {
 		it('should find vanilla SDK', () => {
 			const mockDir = path.resolve(`./test/mocks/sdk/${process.platform}/vanilla`);
 			const results = new sdk.SDK(mockDir).toJS();
-			validateResults(results, {
-				path: mockDir,
-				buildTools: [],
-				platformTools: { executables: {}, path: null, version: null },
-				proguard: path.join(mockDir, 'tools', 'proguard', 'lib', 'proguard.jar'),
-				targets: [],
-				tools: {
-					executables: {
-						android: path.join(mockDir, 'tools', `android${bat}`),
-						emulator: path.join(mockDir, 'tools', `emulator${exe}`),
-						mksdcard: path.join(mockDir, 'tools', `mksdcard${exe}`)
-					},
-					minPlatformToolsRev: 20,
-					path: path.join(mockDir, 'tools'),
-					version: '24.4.1'
+
+			validateResults([ results ], [
+				{
+					path: mockDir,
+					buildTools: [],
+					platformTools: { executables: {}, path: null, version: null },
+					proguard: path.join(mockDir, 'tools', 'proguard', 'lib', 'proguard.jar'),
+					targets: [],
+					tools: {
+						executables: {
+							android: path.join(mockDir, 'tools', `android${bat}`),
+							emulator: path.join(mockDir, 'tools', `emulator${exe}`),
+							mksdcard: path.join(mockDir, 'tools', `mksdcard${exe}`)
+						},
+						minPlatformToolsRev: 20,
+						path: path.join(mockDir, 'tools'),
+						version: '24.4.1'
+					}
 				}
-			});
+			]);
 		});
 
 		it('should find vanilla SDK without proguard', () => {
 			const mockDir = path.resolve(`./test/mocks/sdk/${process.platform}/vanilla-no-proguard`);
 			const results = new sdk.SDK(mockDir).toJS();
-			validateResults(results, {
-				path: mockDir,
-				buildTools: [],
-				platformTools: { executables: {}, path: null, version: null },
-				proguard: null,
-				targets: [],
-				tools: {
-					executables: {
-						android: path.join(mockDir, 'tools', `android${bat}`),
-						emulator: path.join(mockDir, 'tools', `emulator${exe}`),
-						mksdcard: path.join(mockDir, 'tools', `mksdcard${exe}`)
-					},
-					minPlatformToolsRev: 20,
-					path: path.join(mockDir, 'tools'),
-					version: '24.4.1'
+			validateResults([ results ], [
+				{
+					path: mockDir,
+					buildTools: [],
+					platformTools: { executables: {}, path: null, version: null },
+					proguard: null,
+					targets: [],
+					tools: {
+						executables: {
+							android: path.join(mockDir, 'tools', `android${bat}`),
+							emulator: path.join(mockDir, 'tools', `emulator${exe}`),
+							mksdcard: path.join(mockDir, 'tools', `mksdcard${exe}`)
+						},
+						minPlatformToolsRev: 20,
+						path: path.join(mockDir, 'tools'),
+						version: '24.4.1'
+					}
 				}
-			});
+			]);
 		});
 
 		it('should find single SDK', () => {
 			const mockDir = path.resolve(`./test/mocks/sdk/${process.platform}/single-sdk`);
 			const results = new sdk.SDK(mockDir).toJS();
-			validateResults(results, {
-				path: mockDir,
-				buildTools: [
-					{
-						dx: path.join(mockDir, 'build-tools', '23.0.3', 'lib', 'dx.jar'),
+			validateResults([ results ], [
+				{
+					path: mockDir,
+					buildTools: [
+						{
+							dx: path.join(mockDir, 'build-tools', '23.0.3', 'lib', 'dx.jar'),
+							executables: {
+								aapt: path.join(mockDir, 'build-tools', '23.0.3', `aapt${exe}`),
+								aidl: path.join(mockDir, 'build-tools', '23.0.3', `aidl${exe}`),
+								zipalign: path.join(mockDir, 'build-tools', '23.0.3', `zipalign${exe}`)
+							},
+							path: path.join(mockDir, 'build-tools', '23.0.3'),
+							version: '23.0.3'
+						}
+					],
+					platformTools: {
 						executables: {
-							aapt: path.join(mockDir, 'build-tools', '23.0.3', `aapt${exe}`),
-							aidl: path.join(mockDir, 'build-tools', '23.0.3', `aidl${exe}`),
-							zipalign: path.join(mockDir, 'build-tools', '23.0.3', `zipalign${exe}`)
+							adb: path.join(mockDir, 'platform-tools', `adb${exe}`)
 						},
-						path: path.join(mockDir, 'build-tools', '23.0.3'),
-						version: '23.0.3'
+						path: path.join(mockDir, 'platform-tools'),
+						version: '23.1'
+					},
+					proguard: path.join(mockDir, 'tools', 'proguard', 'lib', 'proguard.jar'),
+					targets: [
+						{
+							id: 'android-23',
+							name: 'Android 6.0',
+							type: 'platform',
+							apiLevel: 23,
+							codename: null,
+							revision: 3,
+							path: path.join(mockDir, 'platforms', 'android-23'),
+							version: '6.0',
+							abis: {
+								'android-tv':   [ 'armeabi-v7a', 'x86' ],
+								'android-wear': [ 'armeabi-v7a', 'x86' ],
+								'default':      [ 'armeabi-v7a', 'x86', 'x86_64' ],
+								'google_apis':  [ 'armeabi-v7a', 'x86', 'x86_64' ]
+							},
+							skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
+							defaultSkin: 'WVGA800',
+							minToolsRev: 22,
+							androidJar: path.join(mockDir, 'platforms', 'android-23', 'android.jar'),
+							aidl: path.join(mockDir, 'platforms', 'android-23', 'framework.aidl')
+						},
+						{
+							id: 'Google Inc.:Google APIs:23',
+							name: 'Google APIs',
+							type: 'add-on',
+							apiLevel: 23,
+							codename: null,
+							revision: 1,
+							path: path.join(mockDir, 'add-ons', 'addon-google_apis-google-23'),
+							basedOn: 'android-23',
+							abis: {
+								'android-tv':   [ 'armeabi-v7a', 'x86' ],
+								'android-wear': [ 'armeabi-v7a', 'x86' ],
+								'default':      [ 'armeabi-v7a', 'x86', 'x86_64' ],
+								'google_apis':  [ 'armeabi-v7a', 'x86', 'x86_64' ]
+							},
+							skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
+							defaultSkin: 'WVGA800',
+							minToolsRev: 22,
+							androidJar: path.join(mockDir, 'platforms', 'android-23', 'android.jar'),
+							aidl: path.join(mockDir, 'platforms', 'android-23', 'framework.aidl')
+						}
+					],
+					tools: {
+						executables: {
+							android: path.join(mockDir, 'tools', `android${bat}`),
+							emulator: path.join(mockDir, 'tools', `emulator${exe}`),
+							mksdcard: path.join(mockDir, 'tools', `mksdcard${exe}`)
+						},
+						minPlatformToolsRev: 20,
+						path: path.join(mockDir, 'tools'),
+						version: '25.1.7'
 					}
-				],
-				platformTools: {
-					executables: {
-						adb: path.join(mockDir, 'platform-tools', `adb${exe}`)
-					},
-					path: path.join(mockDir, 'platform-tools'),
-					version: '23.1'
-				},
-				proguard: path.join(mockDir, 'tools', 'proguard', 'lib', 'proguard.jar'),
-				targets: [
-					{
-						id: 'android-23',
-						name: 'Android 6.0',
-						type: 'platform',
-						apiLevel: 23,
-						codename: null,
-						revision: 3,
-						path: path.join(mockDir, 'platforms', 'android-23'),
-						version: '6.0',
-						abis: {
-							'android-tv':   [ 'armeabi-v7a', 'x86' ],
-							'android-wear': [ 'armeabi-v7a', 'x86' ],
-							'default':      [ 'armeabi-v7a', 'x86', 'x86_64' ],
-							'google_apis':  [ 'armeabi-v7a', 'x86', 'x86_64' ]
-						},
-						skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
-						defaultSkin: 'WVGA800',
-						minToolsRev: 22,
-						androidJar: path.join(mockDir, 'platforms', 'android-23', 'android.jar'),
-						aidl: path.join(mockDir, 'platforms', 'android-23', 'framework.aidl')
-					},
-					{
-						id: 'Google Inc.:Google APIs:23',
-						name: 'Google APIs',
-						type: 'add-on',
-						apiLevel: 23,
-						codename: null,
-						revision: 1,
-						path: path.join(mockDir, 'add-ons', 'addon-google_apis-google-23'),
-						basedOn: 'android-23',
-						abis: {
-							'android-tv':   [ 'armeabi-v7a', 'x86' ],
-							'android-wear': [ 'armeabi-v7a', 'x86' ],
-							'default':      [ 'armeabi-v7a', 'x86', 'x86_64' ],
-							'google_apis':  [ 'armeabi-v7a', 'x86', 'x86_64' ]
-						},
-						skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
-						defaultSkin: 'WVGA800',
-						minToolsRev: 22,
-						androidJar: path.join(mockDir, 'platforms', 'android-23', 'android.jar'),
-						aidl: path.join(mockDir, 'platforms', 'android-23', 'framework.aidl')
-					}
-				],
-				tools: {
-					executables: {
-						android: path.join(mockDir, 'tools', `android${bat}`),
-						emulator: path.join(mockDir, 'tools', `emulator${exe}`),
-						mksdcard: path.join(mockDir, 'tools', `mksdcard${exe}`)
-					},
-					minPlatformToolsRev: 20,
-					path: path.join(mockDir, 'tools'),
-					version: '25.1.7'
 				}
-			});
+			]);
 		});
 
 		it('should find single SDK with bad build source.properties', () => {
 			const mockDir = path.resolve(`./test/mocks/sdk/${process.platform}/single-sdk-bad-build-source-props`);
 			const results = new sdk.SDK(mockDir).toJS();
-			validateResults(results, {
-				path: mockDir,
-				buildTools: [
-					{
-						dx: path.join(mockDir, 'build-tools', '23.0.3', 'lib', 'dx.jar'),
-						executables: {
-							aapt: path.join(mockDir, 'build-tools', '23.0.3', `aapt${exe}`),
-							aidl: path.join(mockDir, 'build-tools', '23.0.3', `aidl${exe}`),
-							zipalign: path.join(mockDir, 'build-tools', '23.0.3', `zipalign${exe}`)
-						},
-						path: path.join(mockDir, 'build-tools', '23.0.3'),
+			validateResults([ results ], [
+				{
+					path: mockDir,
+					buildTools: [
+						{
+							dx: path.join(mockDir, 'build-tools', '23.0.3', 'lib', 'dx.jar'),
+							executables: {
+								aapt: path.join(mockDir, 'build-tools', '23.0.3', `aapt${exe}`),
+								aidl: path.join(mockDir, 'build-tools', '23.0.3', `aidl${exe}`),
+								zipalign: path.join(mockDir, 'build-tools', '23.0.3', `zipalign${exe}`)
+							},
+							path: path.join(mockDir, 'build-tools', '23.0.3'),
+							version: null
+						}
+					],
+					platformTools: {
+						executables: {},
+						path: null,
 						version: null
-					}
-				],
-				platformTools: {
-					executables: {},
-					path: null,
-					version: null
-				},
-				proguard: path.join(mockDir, 'tools', 'proguard', 'lib', 'proguard.jar'),
-				targets: [],
-				tools: {
-					executables: {
-						android: path.join(mockDir, 'tools', `android${bat}`),
-						emulator: path.join(mockDir, 'tools', `emulator${exe}`),
-						mksdcard: path.join(mockDir, 'tools', `mksdcard${exe}`)
 					},
-					minPlatformToolsRev: 20,
-					path: path.join(mockDir, 'tools'),
-					version: '25.1.7'
+					proguard: path.join(mockDir, 'tools', 'proguard', 'lib', 'proguard.jar'),
+					targets: [],
+					tools: {
+						executables: {
+							android: path.join(mockDir, 'tools', `android${bat}`),
+							emulator: path.join(mockDir, 'tools', `emulator${exe}`),
+							mksdcard: path.join(mockDir, 'tools', `mksdcard${exe}`)
+						},
+						minPlatformToolsRev: 20,
+						path: path.join(mockDir, 'tools'),
+						version: '25.1.7'
+					}
 				}
-			});
+			]);
 		});
 
 		it('should find single SDK with no dx.jar', () => {
 			const mockDir = path.resolve(`./test/mocks/sdk/${process.platform}/single-sdk-no-dx`);
 			const results = new sdk.SDK(mockDir).toJS();
-			validateResults(results, {
-				path: mockDir,
-				buildTools: [
-					{
-						dx: null,
+			validateResults([ results ], [
+				{
+					path: mockDir,
+					buildTools: [
+						{
+							dx: null,
+							executables: {
+								aapt: path.join(mockDir, 'build-tools', '23.0.3', `aapt${exe}`),
+								aidl: path.join(mockDir, 'build-tools', '23.0.3', `aidl${exe}`),
+								zipalign: path.join(mockDir, 'build-tools', '23.0.3', `zipalign${exe}`)
+							},
+							path: path.join(mockDir, 'build-tools', '23.0.3'),
+							version: '23.0.3'
+						}
+					],
+					platformTools: {
 						executables: {
-							aapt: path.join(mockDir, 'build-tools', '23.0.3', `aapt${exe}`),
-							aidl: path.join(mockDir, 'build-tools', '23.0.3', `aidl${exe}`),
-							zipalign: path.join(mockDir, 'build-tools', '23.0.3', `zipalign${exe}`)
+							adb: path.join(mockDir, 'platform-tools', `adb${exe}`)
 						},
-						path: path.join(mockDir, 'build-tools', '23.0.3'),
-						version: '23.0.3'
+						path: path.join(mockDir, 'platform-tools'),
+						version: '23.1'
+					},
+					proguard: path.join(mockDir, 'tools', 'proguard', 'lib', 'proguard.jar'),
+					targets: [
+						{
+							id: 'android-23',
+							name: 'Android 6.0',
+							type: 'platform',
+							apiLevel: 23,
+							codename: null,
+							revision: 3,
+							path: path.join(mockDir, 'platforms', 'android-23'),
+							version: '6.0',
+							abis: {
+								'android-tv':   [ 'armeabi-v7a', 'x86' ],
+								'android-wear': [ 'armeabi-v7a', 'x86' ],
+								'default':      [ 'armeabi-v7a', 'x86', 'x86_64' ],
+								'google_apis':  [ 'armeabi-v7a', 'x86', 'x86_64' ]
+							},
+							skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
+							defaultSkin: 'WVGA800',
+							minToolsRev: 22,
+							androidJar: path.join(mockDir, 'platforms', 'android-23', 'android.jar'),
+							aidl: path.join(mockDir, 'platforms', 'android-23', 'framework.aidl')
+						},
+						{
+							id: 'Google Inc.:Google APIs:23',
+							name: 'Google APIs',
+							type: 'add-on',
+							apiLevel: 23,
+							codename: null,
+							revision: 1,
+							path: path.join(mockDir, 'add-ons', 'addon-google_apis-google-23'),
+							basedOn: 'android-23',
+							abis: {
+								'android-tv':   [ 'armeabi-v7a', 'x86' ],
+								'android-wear': [ 'armeabi-v7a', 'x86' ],
+								'default':      [ 'armeabi-v7a', 'x86', 'x86_64' ],
+								'google_apis':  [ 'armeabi-v7a', 'x86', 'x86_64' ]
+							},
+							skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
+							defaultSkin: 'WVGA800',
+							minToolsRev: 22,
+							androidJar: path.join(mockDir, 'platforms', 'android-23', 'android.jar'),
+							aidl: path.join(mockDir, 'platforms', 'android-23', 'framework.aidl')
+						}
+					],
+					tools: {
+						executables: {
+							android: path.join(mockDir, 'tools', `android${bat}`),
+							emulator: path.join(mockDir, 'tools', `emulator${exe}`),
+							mksdcard: path.join(mockDir, 'tools', `mksdcard${exe}`)
+						},
+						minPlatformToolsRev: 20,
+						path: path.join(mockDir, 'tools'),
+						version: '25.1.7'
 					}
-				],
-				platformTools: {
-					executables: {
-						adb: path.join(mockDir, 'platform-tools', `adb${exe}`)
-					},
-					path: path.join(mockDir, 'platform-tools'),
-					version: '23.1'
-				},
-				proguard: path.join(mockDir, 'tools', 'proguard', 'lib', 'proguard.jar'),
-				targets: [
-					{
-						id: 'android-23',
-						name: 'Android 6.0',
-						type: 'platform',
-						apiLevel: 23,
-						codename: null,
-						revision: 3,
-						path: path.join(mockDir, 'platforms', 'android-23'),
-						version: '6.0',
-						abis: {
-							'android-tv':   [ 'armeabi-v7a', 'x86' ],
-							'android-wear': [ 'armeabi-v7a', 'x86' ],
-							'default':      [ 'armeabi-v7a', 'x86', 'x86_64' ],
-							'google_apis':  [ 'armeabi-v7a', 'x86', 'x86_64' ]
-						},
-						skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
-						defaultSkin: 'WVGA800',
-						minToolsRev: 22,
-						androidJar: path.join(mockDir, 'platforms', 'android-23', 'android.jar'),
-						aidl: path.join(mockDir, 'platforms', 'android-23', 'framework.aidl')
-					},
-					{
-						id: 'Google Inc.:Google APIs:23',
-						name: 'Google APIs',
-						type: 'add-on',
-						apiLevel: 23,
-						codename: null,
-						revision: 1,
-						path: path.join(mockDir, 'add-ons', 'addon-google_apis-google-23'),
-						basedOn: 'android-23',
-						abis: {
-							'android-tv':   [ 'armeabi-v7a', 'x86' ],
-							'android-wear': [ 'armeabi-v7a', 'x86' ],
-							'default':      [ 'armeabi-v7a', 'x86', 'x86_64' ],
-							'google_apis':  [ 'armeabi-v7a', 'x86', 'x86_64' ]
-						},
-						skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
-						defaultSkin: 'WVGA800',
-						minToolsRev: 22,
-						androidJar: path.join(mockDir, 'platforms', 'android-23', 'android.jar'),
-						aidl: path.join(mockDir, 'platforms', 'android-23', 'framework.aidl')
-					}
-				],
-				tools: {
-					executables: {
-						android: path.join(mockDir, 'tools', `android${bat}`),
-						emulator: path.join(mockDir, 'tools', `emulator${exe}`),
-						mksdcard: path.join(mockDir, 'tools', `mksdcard${exe}`)
-					},
-					minPlatformToolsRev: 20,
-					path: path.join(mockDir, 'tools'),
-					version: '25.1.7'
 				}
-			});
+			]);
 		});
 
 		it('should find multiple SDKs', () => {
 			const mockDir = path.resolve(`./test/mocks/sdk/${process.platform}/multiple-sdks`);
 			const results = new sdk.SDK(mockDir).toJS();
-			validateResults(results, {
-				path: mockDir,
-				buildTools: [
-					{
-						dx: path.join(mockDir, 'build-tools', '23.0.3', 'lib', 'dx.jar'),
+			validateResults([ results ], [
+				{
+					path: mockDir,
+					buildTools: [
+						{
+							dx: path.join(mockDir, 'build-tools', '23.0.3', 'lib', 'dx.jar'),
+							executables: {
+								aapt: path.join(mockDir, 'build-tools', '23.0.3', `aapt${exe}`),
+								aidl: path.join(mockDir, 'build-tools', '23.0.3', `aidl${exe}`),
+								zipalign: path.join(mockDir, 'build-tools', '23.0.3', `zipalign${exe}`)
+							},
+							path: path.join(mockDir, 'build-tools', '23.0.3'),
+							version: '23.0.3'
+						},
+						{
+							dx: path.join(mockDir, 'build-tools', '24.0.0-preview', 'lib', 'dx.jar'),
+							executables: {
+								aapt: path.join(mockDir, 'build-tools', '24.0.0-preview', `aapt${exe}`),
+								aidl: path.join(mockDir, 'build-tools', '24.0.0-preview', `aidl${exe}`),
+								zipalign: path.join(mockDir, 'build-tools', '24.0.0-preview', `zipalign${exe}`)
+							},
+							path: path.join(mockDir, 'build-tools', '24.0.0-preview'),
+							version: '24.0.0 rc4'
+						}
+					],
+					platformTools: {
 						executables: {
-							aapt: path.join(mockDir, 'build-tools', '23.0.3', `aapt${exe}`),
-							aidl: path.join(mockDir, 'build-tools', '23.0.3', `aidl${exe}`),
-							zipalign: path.join(mockDir, 'build-tools', '23.0.3', `zipalign${exe}`)
+							adb: path.join(mockDir, 'platform-tools', `adb${exe}`)
 						},
-						path: path.join(mockDir, 'build-tools', '23.0.3'),
-						version: '23.0.3'
+						path: path.join(mockDir, 'platform-tools'),
+						version: '23.1'
 					},
-					{
-						dx: path.join(mockDir, 'build-tools', '24.0.0-preview', 'lib', 'dx.jar'),
+					proguard: path.join(mockDir, 'tools', 'proguard', 'lib', 'proguard.jar'),
+					targets: [
+						{
+							id: 'android-23',
+							name: 'Android 6.0',
+							type: 'platform',
+							apiLevel: 23,
+							codename: null,
+							revision: 3,
+							path: path.join(mockDir, 'platforms', 'android-23'),
+							version: '6.0',
+							abis: {
+								'android-tv':   [ 'armeabi-v7a', 'x86' ],
+								'android-wear': [ 'armeabi-v7a', 'x86' ],
+								'default':      [ 'armeabi-v7a', 'x86', 'x86_64' ],
+								'google_apis':  [ 'armeabi-v7a', 'x86', 'x86_64' ]
+							},
+							skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
+							defaultSkin: 'WVGA800',
+							minToolsRev: 22,
+							androidJar: path.join(mockDir, 'platforms', 'android-23', 'android.jar'),
+							aidl: path.join(mockDir, 'platforms', 'android-23', 'framework.aidl')
+						},
+						{
+							id: 'android-N',
+							name: 'Android N (Preview)',
+							type: 'platform',
+							apiLevel: 23,
+							codename: 'N',
+							revision: 2,
+							path: path.join(mockDir, 'platforms', 'android-N'),
+							version: 'N',
+							abis: {
+								'android-tv':   [ 'x86' ],
+								'android-wear': [ 'armeabi-v7a', 'x86' ],
+								'default':      [ 'x86', 'x86_64' ]
+							},
+							skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
+							defaultSkin: 'WVGA800',
+							minToolsRev: 22,
+							androidJar: path.join(mockDir, 'platforms', 'android-N', 'android.jar'),
+							aidl: path.join(mockDir, 'platforms', 'android-N', 'framework.aidl')
+						},
+						{
+							id: 'Google Inc.:Google APIs:23',
+							name: 'Google APIs',
+							type: 'add-on',
+							apiLevel: 23,
+							codename: null,
+							revision: 1,
+							path: path.join(mockDir, 'add-ons', 'addon-google_apis-google-23'),
+							basedOn: 'android-23',
+							abis: {
+								'android-tv':   [ 'armeabi-v7a', 'x86' ],
+								'android-wear': [ 'armeabi-v7a', 'x86' ],
+								'default':      [ 'armeabi-v7a', 'x86', 'x86_64' ],
+								'google_apis':  [ 'armeabi-v7a', 'x86', 'x86_64' ]
+							},
+							skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
+							defaultSkin: 'WVGA800',
+							minToolsRev: 22,
+							androidJar: path.join(mockDir, 'platforms', 'android-23', 'android.jar'),
+							aidl: path.join(mockDir, 'platforms', 'android-23', 'framework.aidl')
+						}
+					],
+					tools: {
 						executables: {
-							aapt: path.join(mockDir, 'build-tools', '24.0.0-preview', `aapt${exe}`),
-							aidl: path.join(mockDir, 'build-tools', '24.0.0-preview', `aidl${exe}`),
-							zipalign: path.join(mockDir, 'build-tools', '24.0.0-preview', `zipalign${exe}`)
+							android: path.join(mockDir, 'tools', `android${bat}`),
+							emulator: path.join(mockDir, 'tools', `emulator${exe}`),
+							mksdcard: path.join(mockDir, 'tools', `mksdcard${exe}`)
 						},
-						path: path.join(mockDir, 'build-tools', '24.0.0-preview'),
-						version: '24.0.0 rc4'
+						minPlatformToolsRev: 20,
+						path: path.join(mockDir, 'tools'),
+						version: '25.1.7'
 					}
-				],
-				platformTools: {
-					executables: {
-						adb: path.join(mockDir, 'platform-tools', `adb${exe}`)
-					},
-					path: path.join(mockDir, 'platform-tools'),
-					version: '23.1'
-				},
-				proguard: path.join(mockDir, 'tools', 'proguard', 'lib', 'proguard.jar'),
-				targets: [
-					{
-						id: 'android-23',
-						name: 'Android 6.0',
-						type: 'platform',
-						apiLevel: 23,
-						codename: null,
-						revision: 3,
-						path: path.join(mockDir, 'platforms', 'android-23'),
-						version: '6.0',
-						abis: {
-							'android-tv':   [ 'armeabi-v7a', 'x86' ],
-							'android-wear': [ 'armeabi-v7a', 'x86' ],
-							'default':      [ 'armeabi-v7a', 'x86', 'x86_64' ],
-							'google_apis':  [ 'armeabi-v7a', 'x86', 'x86_64' ]
-						},
-						skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
-						defaultSkin: 'WVGA800',
-						minToolsRev: 22,
-						androidJar: path.join(mockDir, 'platforms', 'android-23', 'android.jar'),
-						aidl: path.join(mockDir, 'platforms', 'android-23', 'framework.aidl')
-					},
-					{
-						id: 'android-N',
-						name: 'Android N (Preview)',
-						type: 'platform',
-						apiLevel: 23,
-						codename: 'N',
-						revision: 2,
-						path: path.join(mockDir, 'platforms', 'android-N'),
-						version: 'N',
-						abis: {
-							'android-tv':   [ 'x86' ],
-							'android-wear': [ 'armeabi-v7a', 'x86' ],
-							'default':      [ 'x86', 'x86_64' ]
-						},
-						skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
-						defaultSkin: 'WVGA800',
-						minToolsRev: 22,
-						androidJar: path.join(mockDir, 'platforms', 'android-N', 'android.jar'),
-						aidl: path.join(mockDir, 'platforms', 'android-N', 'framework.aidl')
-					},
-					{
-						id: 'Google Inc.:Google APIs:23',
-						name: 'Google APIs',
-						type: 'add-on',
-						apiLevel: 23,
-						codename: null,
-						revision: 1,
-						path: path.join(mockDir, 'add-ons', 'addon-google_apis-google-23'),
-						basedOn: 'android-23',
-						abis: {
-							'android-tv':   [ 'armeabi-v7a', 'x86' ],
-							'android-wear': [ 'armeabi-v7a', 'x86' ],
-							'default':      [ 'armeabi-v7a', 'x86', 'x86_64' ],
-							'google_apis':  [ 'armeabi-v7a', 'x86', 'x86_64' ]
-						},
-						skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
-						defaultSkin: 'WVGA800',
-						minToolsRev: 22,
-						androidJar: path.join(mockDir, 'platforms', 'android-23', 'android.jar'),
-						aidl: path.join(mockDir, 'platforms', 'android-23', 'framework.aidl')
-					}
-				],
-				tools: {
-					executables: {
-						android: path.join(mockDir, 'tools', `android${bat}`),
-						emulator: path.join(mockDir, 'tools', `emulator${exe}`),
-						mksdcard: path.join(mockDir, 'tools', `mksdcard${exe}`)
-					},
-					minPlatformToolsRev: 20,
-					path: path.join(mockDir, 'tools'),
-					version: '25.1.7'
 				}
-			});
+			]);
 		});
 	});
 
@@ -428,6 +441,7 @@ describe('sdk', () => {
 			delete process.env.NODE_APPC_SKIP_GLOBAL_SEARCH_PATHS;
 			delete process.env.NODE_APPC_SKIP_GLOBAL_ENVIRONMENT_PATHS;
 			delete process.env.NODE_APPC_SKIP_GLOBAL_EXECUTABLE_PATH;
+			sdk.resetCache(true);
 
 			sdk.detect()
 				.then(results => {
@@ -437,21 +451,87 @@ describe('sdk', () => {
 				.catch(done);
 		});
 
-		/*
 		it('should detect single SDK', done => {
-			const ndkPath = path.resolve(`./test/mocks/ndk/32-bit/mock-android-ndk-r9d${win}`);
-			ndk.detect({ force: true, ignorePlatformPaths: true, paths: ndkPath })
+			const sdkPath = path.resolve(`./test/mocks/sdk/${process.platform}/single-sdk`);
+
+			sdk.detect({ paths: sdkPath })
 				.then(results => {
 					validateResults(results, [
 						{
-							path: ndkPath,
-							name: 'r9d',
-							version: '9.3',
-							arch: '32-bit',
-							executables: {
-								'ndk-build': path.join(ndkPath, `ndk-build${cmd}`),
-								'ndk-gdb':   path.join(ndkPath, `ndk-gdb${cmd}`),
-								'ndk-which': path.join(ndkPath, `ndk-which${cmd}`)
+							path: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk',
+							buildTools: [
+								{
+									dx: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/build-tools/23.0.3/lib/dx.jar',
+									executables: {
+										aapt: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/build-tools/23.0.3/aapt',
+										aidl: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/build-tools/23.0.3/aidl',
+										zipalign: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/build-tools/23.0.3/zipalign'
+									},
+									path: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/build-tools/23.0.3',
+									version: '23.0.3'
+								}
+							],
+							platformTools: {
+								executables: {
+									adb: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/platform-tools/adb'
+								},
+								path: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/platform-tools',
+								version: '23.1'
+							},
+							proguard: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/tools/proguard/lib/proguard.jar',
+							targets: [
+								{
+									id: 'android-23',
+									name: 'Android 6.0',
+									type: 'platform',
+									apiLevel: 23,
+									codename: null,
+									revision: 3,
+									path: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/platforms/android-23',
+									version: '6.0',
+									abis: {
+										'android-tv': [ 'armeabi-v7a', 'x86' ],
+										'android-wear': [ 'armeabi-v7a', 'x86' ],
+										default: [ 'armeabi-v7a', 'x86', 'x86_64' ],
+										google_apis: [ 'armeabi-v7a', 'x86', 'x86_64' ]
+									},
+									skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
+									defaultSkin: 'WVGA800',
+									minToolsRev: 22,
+									androidJar: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/platforms/android-23/android.jar',
+									aidl: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/platforms/android-23/framework.aidl'
+								},
+								{
+									id: 'Google Inc.:Google APIs:23',
+									name: 'Google APIs',
+									type: 'add-on',
+									apiLevel: 23,
+									revision: 1,
+									codename: null,
+									path: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/add-ons/addon-google_apis-google-23',
+									basedOn: 'android-23',
+									abis: {
+										'android-tv': [ 'armeabi-v7a', 'x86' ],
+										'android-wear': [ 'armeabi-v7a', 'x86' ],
+										default: [ 'armeabi-v7a', 'x86', 'x86_64' ],
+										google_apis: [ 'armeabi-v7a', 'x86', 'x86_64' ]
+									},
+									skins: [ 'HVGA', 'QVGA', 'WQVGA400', 'WQVGA432', 'WSVGA', 'WVGA800', 'WVGA854', 'WXGA720', 'WXGA800', 'WXGA800-7in', 'AndroidWearRound', 'AndroidWearRound360x360', 'AndroidWearRound400x400', 'AndroidWearRound480x480', 'AndroidWearRoundChin320x290', 'AndroidWearRoundChin360x325', 'AndroidWearRoundChin360x326', 'AndroidWearRoundChin360x330', 'AndroidWearSquare', 'AndroidWearSquare320x320' ],
+									defaultSkin: 'WVGA800',
+									minToolsRev: 22,
+									androidJar: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/platforms/android-23/android.jar',
+									aidl: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/platforms/android-23/framework.aidl'
+								}
+							],
+							tools: {
+								executables: {
+									android: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/tools/android',
+									emulator: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/tools/emulator',
+									mksdcard: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/tools/mksdcard'
+								},
+								minPlatformToolsRev: 20,
+								path: '/Users/chris/appc/androidlib/test/mocks/sdk/darwin/single-sdk/tools',
+								version: '25.1.7'
 							},
 							default: true
 						}
@@ -461,9 +541,10 @@ describe('sdk', () => {
 				.catch(done);
 		});
 
+		/*
 		it('should detect multiple SDKs', done => {
 			const ndkPath = path.resolve(`./test/mocks/ndk/32-bit/mock-android-ndk-r9d${win}`);
-			ndk.detect({ force: true, ignorePlatformPaths: true, paths: ndkPath })
+			sdk.detect({ force: true, ignorePlatformPaths: true, paths: ndkPath })
 				.then(results => {
 					validateResults(results, [
 						{
@@ -542,8 +623,17 @@ describe('sdk', () => {
 });
 
 function validateResults(results, expected) {
-	expect(results).to.be.an.Object;
-	expect(results).to.have.keys('path', 'buildTools', 'platformTools', 'proguard', 'targets', 'tools');
+	expect(results).to.be.an.Array;
+
+	for (const result of results) {
+		expect(result).to.be.an.Object;
+		expect(result).to.have.property('path');
+		expect(result).to.have.property('buildTools');
+		expect(result).to.have.property('platformTools');
+		expect(result).to.have.property('proguard');
+		expect(result).to.have.property('targets');
+		expect(result).to.have.property('tools');
+	}
 
 	if (expected) {
 		expect(results).to.deep.equal(expected);

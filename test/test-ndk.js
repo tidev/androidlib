@@ -104,7 +104,7 @@ describe('ndk', () => {
 
 			ndk.detect()
 				.then(results => {
-					expect(results).to.be.an.Array;
+					validateResults(results);
 					done();
 				})
 				.catch(done);
@@ -853,19 +853,24 @@ describe('ndk', () => {
 function validateResults(results, expected) {
 	expect(results).to.be.an.Array;
 
-	for (const ndk of results) {
-		expect(ndk).to.have.keys('path', 'name', 'version', 'arch', 'executables', 'default');
+	for (const result of results) {
+		expect(result).to.be.an.Object;
+		expect(result).to.have.property('path');
+		expect(result).to.have.property('name');
+		expect(result).to.have.property('version');
+		expect(result).to.have.property('arch');
+		expect(result).to.have.property('executables');
 
-		expect(ndk.path).to.be.a.String;
-		expect(ndk.name).to.be.a.String;
-		expect(ndk.version).to.be.a.String;
-		expect(ndk.arch).to.be.a.String;
+		expect(result.path).to.be.a.String;
+		expect(result.name).to.be.a.String;
+		expect(result.version).to.be.a.String;
+		expect(result.arch).to.be.a.String;
 
-		expect(ndk.executables).to.be.an.Object;
-		for (const name of Object.keys(ndk.executables)) {
-			expect(ndk.executables[name]).to.be.a.String;
-			expect(ndk.executables[name]).to.not.equal('');
-			expect(() => fs.statSync(ndk.executables[name])).to.not.throw(Error);
+		expect(result.executables).to.be.an.Object;
+		for (const name of Object.keys(result.executables)) {
+			expect(result.executables[name]).to.be.a.String;
+			expect(result.executables[name]).to.not.equal('');
+			expect(() => fs.statSync(result.executables[name])).to.not.throw(Error);
 		}
 	}
 

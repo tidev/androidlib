@@ -1,7 +1,10 @@
 import appc from 'node-appc';
+import debug from 'debug';
 import fs from 'fs';
 import path from 'path';
 import systemPaths from './system-paths';
+
+const log = debug('androidlib:sdk');
 
 const platformPaths = {
 	darwin: [
@@ -40,7 +43,7 @@ const engine = new appc.detect.Engine({
 		name: 'Path'
 	},
 	registryPollInterval: 15000,
-	searchPaths:          platformPaths[process.platform]
+	paths:                platformPaths[process.platform]
 });
 
 const exe = appc.subprocess.exe;
@@ -92,14 +95,18 @@ export class SDK extends appc.gawk.GawkObject {
 
 		dir = appc.path.expand(dir);
 		if (!appc.fs.isDir(dir)) {
-			throw new Error('Directory does not exist');
+			throw new Error('Directory does not exist or is actually a file');
 		}
 
 		const toolsDir     = path.join(dir, 'tools');
 		const proguardFile = path.join(toolsDir, 'proguard', 'lib', 'proguard.jar');
 
 		const toolsProps = readProps(path.join(toolsDir, 'source.properties'));
-		if (!toolsProps || !toolsProps['Pkg.Revision']) {
+		if (!toolsProps) {
+			throw new Error('Directory does not contain a valid Android SDK');
+		}
+
+		if (!toolsProps['Pkg.Revision']) {
 			throw new Error('Directory does not contain a valid Android SDK; bad source.properties');
 		}
 
@@ -112,7 +119,7 @@ export class SDK extends appc.gawk.GawkObject {
 				version:     null
 			},
 			proguard:        appc.fs.isFile(proguardFile) ? proguardFile : null,
-			targets: [],
+			targets:         [],
 			tools: {
 				executables:         detectExecutables(toolsDir, 'tools', true),
 				minPlatformToolsRev: +toolsProps['Platform.MinPlatformToolsRev'] || null,
@@ -261,7 +268,7 @@ function readProps(file) {
 function loadPlatform(dir, systemImages) {
 	// read in the properties
 	const sourceProps = readProps(path.join(dir, 'source.properties'));
-	const apiLevel = sourceProps ? +sourceProps['AndroidVersion.ApiLevel'] : null;
+	const apiLevel = sourceProps ? ~~sourceProps['AndroidVersion.ApiLevel'] : null;
 	if (!sourceProps || !apiLevel || !appc.fs.isFile(path.join(dir, 'build.prop'))) {
 		return null;
 	}
@@ -330,7 +337,7 @@ function loadPlatform(dir, systemImages) {
 function loadAddon(dir, platforms, systemImages) {
 	// read in the properties
 	const sourceProps = readProps(path.join(dir, 'source.properties'));
-	const apiLevel = +sourceProps['AndroidVersion.ApiLevel'];
+	const apiLevel = sourceProps ? ~~sourceProps['AndroidVersion.ApiLevel'] : null;
 	if (!sourceProps || !apiLevel || !sourceProps['Addon.VendorDisplay'] || !sourceProps['Addon.NameDisplay']) {
 		return null;
 	}
@@ -443,7 +450,10 @@ export function watch(opts = {}) {
 function checkDir(dir) {
 	return Promise.resolve()
 		.then(() => new SDK(dir))
-		.catch(err => Promise.resolve());
+		.catch(err => {
+			log('checkDir()', err, dir);
+			return Promise.resolve();
+		});
 }
 
 /**
