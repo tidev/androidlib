@@ -2,7 +2,6 @@ import _ from 'lodash';
 import appc from 'node-appc';
 import del from 'del';
 import fs from 'fs-extra';
-import { GawkArray, GawkObject } from 'gawk';
 import androidlib from '../src/index';
 import path from 'path';
 import temp from 'temp';
@@ -594,7 +593,7 @@ describe('ndk', () => {
 					if (count === 1) {
 						// 1) initial call
 						expect(results).to.have.lengthOf(0);
-						// first time, copy the ndk into our temp directory
+						// first time, copy the NDK into our temp directory
 						fs.copySync(src, dest);
 
 					} else if (count === 2) {
@@ -642,7 +641,7 @@ describe('ndk', () => {
 						// 1) initial call
 						expect(results).to.have.lengthOf(0);
 
-						// first time, copy the ndk into our temp directory
+						// first time, copy the NDK into our temp directory
 						fs.copySync(src, path.join(dest, 'android-ndk'));
 
 					} else if (count === 2) {
