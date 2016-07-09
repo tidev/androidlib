@@ -377,6 +377,74 @@ describe('sdk', () => {
 				})
 				.on('error', done);
 		});
+
+		it('should watch an SDK for a platform to be added', function (done) {
+			this.timeout(10000);
+			this.slow(5000);
+
+			let count = 0;
+			const src = path.resolve(`./test/mocks/sdk/${process.platform}/single-sdk`);
+			const srcPlatform = path.resolve(`./test/mocks/sdk/${process.platform}/android-N`);
+			let dest = temp.path('androidlib-test-');
+
+			fs.copySync(src, dest);
+			dest = fs.realpathSync(dest);
+			this.cleanup.push(dest);
+
+			this.watcher = sdk
+				.watch({ paths: dest })
+				.on('results', results => {
+					count++;
+					if (count === 1) {
+						// 1) initial call
+						expect(results).to.have.lengthOf(1);
+						validateResults(results, [
+							{
+								path:          dest,
+								buildTools:    [ buildTools23(dest) ],
+								platformTools: platformTools(dest),
+								proguard:      path.join(dest, 'tools', 'proguard', 'lib', 'proguard.jar'),
+								targets: [
+									android23(dest),
+									googleAPIs23(dest)
+								],
+								tools: tools25(dest),
+								default: true
+							}
+						]);
+
+						// copy the platform into our temp directory
+						fs.copySync(srcPlatform, path.join(dest, 'platforms', 'android-N'));
+
+					} else if (count === 2) {
+						// 2) should find our new target
+						validateResults(results, [
+							{
+								path:          dest,
+								buildTools:    [ buildTools23(dest) ],
+								platformTools: platformTools(dest),
+								proguard:      path.join(dest, 'tools', 'proguard', 'lib', 'proguard.jar'),
+								targets: [
+									android23(dest),
+									androidN(dest),
+									googleAPIs23(dest)
+								],
+								tools: tools25(dest),
+								default: true
+							}
+						]);
+
+						setTimeout(() => del([dest], { force: true }), 250);
+
+					} else if (count === 3) {
+						// 3) should detect the SDK was deleted
+						expect(results).to.have.lengthOf(0);
+						this.watcher.stop();
+						done();
+					}
+				})
+				.on('error', done);
+		});
 	});
 
 	//	console.log(JSON.stringify(results, null, '\t').replace(/"/g, '\'').replace(new RegExp('\'' + sdkPath, 'g'), 'path.join(sdkPath, \''));
