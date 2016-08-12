@@ -436,6 +436,7 @@ export function detect(opts = {}) {
  */
 export function watch(opts = {}) {
 	opts.watch = true;
+	opts.redetect = true;
 	return engine
 		.detect(opts);
 }

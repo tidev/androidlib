@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import temp from 'temp';
 
-temp.track();
+//temp.track();
 
 const exe = appc.subprocess.exe;
 const bat = appc.subprocess.bat;
@@ -312,9 +312,9 @@ describe('sdk', () => {
 		});
 
 		afterEach(function () {
-			temp.cleanupSync();
+			//temp.cleanupSync();
 			this.watcher && this.watcher.stop();
-			del.sync(this.cleanup, { force: true });
+			//del.sync(this.cleanup, { force: true });
 		});
 
 		it('should watch using defaults', function (done) {
@@ -384,7 +384,8 @@ describe('sdk', () => {
 
 			let count = 0;
 			const src = path.resolve(`./test/mocks/sdk/${process.platform}/single-sdk`);
-			const srcPlatform = path.resolve(`./test/mocks/sdk/${process.platform}/android-N`);
+			const srcPlatform = path.resolve(`./test/mocks/sdk/${process.platform}/multiple-sdks/platforms/android-N`);
+			const srcSystemImages = path.resolve(`./test/mocks/sdk/${process.platform}/multiple-sdks/system-images/android-N`);
 			let dest = temp.path('androidlib-test-');
 
 			fs.copySync(src, dest);
@@ -415,6 +416,7 @@ describe('sdk', () => {
 
 						// copy the platform into our temp directory
 						fs.copySync(srcPlatform, path.join(dest, 'platforms', 'android-N'));
+						fs.copySync(srcSystemImages, path.join(dest, 'system-images', 'android-N'));
 
 					} else if (count === 2) {
 						// 2) should find our new target

@@ -307,7 +307,7 @@ export default class ADB {
 			})
 			.then(() => sdkDetect(this.opts))
 			.then(results => results.sdks.shift())
-			.then(sdk => appc.subprocess.run(sdk.executables.adb, ['-s', deviceId, 'install', '-r', apkFile]));
+			.then(sdk => appc.subprocess.run(sdk.executables.adb, ['-s', deviceId, 'install', '-r', '-d', apkFile]));
 	}
 
 	/**
