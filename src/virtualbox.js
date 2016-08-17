@@ -3,81 +3,102 @@ import debug from 'debug';
 import fs from 'fs';
 import path from 'path';
 
-const log = debug('androidlib:genymotion');
+const log = debug('androidlib:virtualbox');
 
 const platformPaths = {
 	darwin: [
-		'/Applications/Genymotion.app/Contents/MacOS',
-		'~/Applications/Genymotion.app/Contents/MacOS'
+		'/opt',
+		'/opt/local',
+		'/usr',
+		'/usr/local',
+		'~'
 	],
 	linux: [
 		'/opt',
+		'/opt/local',
 		'/usr',
+		'/usr/local',
 		'~'
 	],
 	win32: [
-		'%ProgramFiles%\\Genymobile\\Genymotion',
-		'%ProgramFiles%\\Genymotion',
-		'%ProgramFiles(x86)%\\Genymobile\\Genymotion',
-		'%ProgramFiles(x86)%\\Genymotion'
+		'%SystemDrive%',
+		'%ProgramFiles%',
+		'%ProgramFiles(x86)%',
+		'~'
 	]
 };
 
 const engine = new appc.detect.Engine({
 	depth:     1,
-	exe:       `genymotion${appc.subprocess.exe}`,
+	exe:       `vboxmanage${appc.subprocess.exe}`,
 	multiple:  false,
 	checkDir:  checkDir,
-	paths:     platformPaths[process.platform]
+	paths:     platformPaths[process.platform],
+	registryKeys: {
+		root: 'HKLM',
+		key: 'Software\\Oracle\\VirtualBox',
+		name: 'InstallDir'
+	},
+	registryPollInterval: 15000
 });
 
 /**
- * Resets the internal result cache. This is intended for testing purposes.
+ * Resets the internal detection result cache. This is intended for testing
+ * purposes.
+ *
+ * @param {Boolean} [reinit=false] - When true, the detect will re-initialize
+ * during the next detect call.
  */
-export function resetCache() {
-	appc.util.clearCache('androidlib:genymotion');
+export function resetCache(reinit) {
+	engine.cache = {};
+	if (reinit) {
+		engine.initialized = false;
+	}
 }
 
 /**
- * Genymotion information object.
+ * VirtualBox information object.
  */
-export class Genymotion extends appc.gawk.GawkObject {
+export class VirtualBox extends appc.gawk.GawkObject {
 	constructor(dir) {
 		if (typeof dir !== 'string' || !dir) {
 			throw new TypeError('Expected directory to be a valid string');
 		}
 
 		dir = appc.path.expand(dir);
-		if (!appc.fs.existsSync(dir)) {
-			throw new Error('Directory does not exist');
+		if (!appc.fs.isDir(dir)) {
+			throw new Error('Directory does not exist or is actually a file');
 		}
 
-		const values = {
-			path: dir,
-			home: null,
+		const vboxmanage = path.join(dir, `vboxmanage${appc.subprocess.exe}`);
+		if (!appc.fs.isFile(vboxmanage)) {
+			throw new Error('Directory does not contain vboxmanage executable');
+		}
+
+		super({
+			path:       dir,
 			executables: {
-				genymotion: path.join(dir, `genymotion${appc.subprocess.exe}`),
-				player: process.platform === 'darwin'
-					? path.join(dir, 'player.app', 'Contents', 'MacOS', 'player')
-					: path.join(dir, `player${appc.subprocess.exe}`)
-			}
-		};
+				vboxmanage,
+			},
+			version:    null
+		});
+	}
 
-		if (!appc.fs.isFile(values.executables.genymotion) || !appc.fs.isFile(values.executables.player)) {
-			throw new Error('Directory does not contain Genymotion');
-		}
-
-		const homeDirs = process.platform === 'win32'
-			? [ '~/AppData/Local/Genymobile/Genymotion' ]
-			: [ '~/.Genymobile/Genymotion', '~/.Genymotion' ];
-		for (let homeDir of homeDirs) {
-			if (appc.fs.isDir(homeDir = appc.path.expand(homeDir))) {
-				values.home = homeDir;
-				break;
-			}
-		}
-
-		super(values);
+	/**
+	 * Fetches the VirtualBox version.
+	 *
+	 * @returns {Promise}
+	 */
+	init() {
+		return appc.subprocess.run(this.get(['executables', 'vboxmanage']).toJS(), ['-version'])
+			.then(({ stdout }) => {
+				this.set('version', stdout.split('\n')[0].trim());
+				return this;
+			})
+			.catch(err => {
+				log('Failed to get VirtualBox version:', err);
+				return Promise.resolve();
+			});
 	}
 }
 
@@ -128,7 +149,8 @@ export function watch(opts = {}) {
  */
 function checkDir(dir) {
 	return Promise.resolve()
-		.then(() => new Genymotion(dir))
+		.then(() => new VirtualBox(dir))
+		.then(vbox => vbox.init())
 		.catch(err => {
 			log('checkDir()', err, dir);
 			return Promise.resolve();

@@ -6,20 +6,6 @@ if (!Error.prepareStackTrace) {
 	require('source-map-support/register');
 }
 
-// if (!global.dump) {
-// 	var util = require('util');
-//
-// 	/**
-// 	 * Prints an object, including deeply nested objects, to stderr.
-// 	 * @param {*} ... - Thing to dump
-// 	 */
-// 	global.dump = function dump() {
-// 		for (var i = 0; i < arguments.length; i++) {
-// 			console.error(util.inspect(arguments[i], false, null, true));
-// 		}
-// 	};
-// }
-
 export const androidlib = {
 	version: require('../package.json').version,
 	detect,
@@ -29,14 +15,15 @@ export const androidlib = {
 };
 
 const modules = {
-	ADB:             './adb',
+	// ADB:             './adb',
 	AndroidManifest: './AndroidManifest',
 	// device,
 	// emulator,
 	genymotion:      './genymotion',
-	linux:           './linux',
+	// linux:           './linux',
 	ndk:             './ndk',
-	sdk:             './sdk'
+	sdk:             './sdk',
+	virtualbox:      './virtualbox'
 };
 
 for (const name of Object.keys(modules)) {

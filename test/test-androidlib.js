@@ -2,23 +2,26 @@ import androidlib from '../src/index';
 import path from 'path';
 
 describe('androidlib', () => {
+	beforeEach(function () {
+		this.ANDROID_NDK             = process.env.ANDROID_NDK;
+		this.ANDROID_SDK             = process.env.ANDROID_SDK;
+		this.ANDROID_SDK_ROOT        = process.env.ANDROID_SDK_ROOT;
+		this.PATH                    = process.env.PATH;
+		process.env.ANDROID_NDK      = '';
+		process.env.ANDROID_SDK      = '';
+		process.env.ANDROID_SDK_ROOT = '';
+		process.env.PATH             = '';
+	});
+
+	afterEach(function () {
+		process.env.ANDROID_NDK      = this.ANDROID_NDK;
+		process.env.ANDROID_SDK      = this.ANDROID_SDK;
+		process.env.ANDROID_SDK_ROOT = this.ANDROID_SDK_ROOT;
+		process.env.PATH             = this.PATH;
+		androidlib.resetCache(true);
+	});
+
 	describe('detect()', () => {
-		beforeEach(function () {
-			this.androidNDKEnv      = process.env.ANDROID_NDK;
-			this.androidSDKEnv      = process.env.ANDROID_SDK;
-			this.pathEnv            = process.env.PATH;
-			process.env.ANDROID_NDK = '';
-			process.env.ANDROID_SDK = '';
-			process.env.PATH        = '';
-		});
-
-		afterEach(function () {
-			process.env.ANDROID_NDK = this.androidNDKEnv;
-			process.env.ANDROID_SDK = this.androidSDKEnv;
-			process.env.PATH        = this.pathEnv;
-			androidlib.resetCache();
-		});
-
 		it('should detect the Android environment', function (done) {
 			this.timeout(10000);
 			this.slow(5000);
@@ -37,21 +40,11 @@ describe('androidlib', () => {
 
 	describe('watch()', () => {
 		beforeEach(function () {
-			this.androidNDKEnv      = process.env.ANDROID_NDK;
-			this.androidSDKEnv      = process.env.ANDROID_SDK;
-			this.pathEnv            = process.env.PATH;
-			process.env.ANDROID_NDK = '';
-			process.env.ANDROID_SDK = '';
-			process.env.PATH        = '';
-			this.watcher            = null;
+			this.watcher = null;
 		});
 
 		afterEach(function () {
-			process.env.ANDROID_NDK = this.androidNDKEnv;
-			process.env.ANDROID_SDK = this.androidSDKEnv;
-			process.env.PATH        = this.pathEnv;
 			this.watcher && this.watcher.stop();
-			androidlib.resetCache();
 		});
 
 		it.skip('should watch the Android environment', function (done) {

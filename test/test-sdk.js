@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import temp from 'temp';
 
-//temp.track();
+temp.track();
 
 const exe = appc.subprocess.exe;
 const bat = appc.subprocess.bat;
@@ -13,11 +13,11 @@ const sdk = androidlib.sdk;
 
 describe('sdk', () => {
 	beforeEach(function () {
-		this.androidSDKRootEnv       = process.env.ANDROID_SDK_ROOT;
-		this.androidSDKEnv           = process.env.ANDROID_SDK;
-		this.pathEnv                 = process.env.PATH;
-		process.env.ANDROID_SDK_ROOT = '';
+		this.ANDROID_SDK             = process.env.ANDROID_SDK;
+		this.ANDROID_SDK_ROOT        = process.env.ANDROID_SDK_ROOT;
+		this.PATH                    = process.env.PATH;
 		process.env.ANDROID_SDK      = '';
+		process.env.ANDROID_SDK_ROOT = '';
 		process.env.PATH             = '';
 		process.env.NODE_APPC_SKIP_GLOBAL_SEARCH_PATHS = 1;
 		process.env.NODE_APPC_SKIP_GLOBAL_ENVIRONMENT_PATHS = 1;
@@ -25,13 +25,13 @@ describe('sdk', () => {
 	});
 
 	afterEach(function () {
-		process.env.ANDROID_SDK_ROOT = this.androidSDKRootEnv;
-		process.env.ANDROID_SDK      = this.androidSDKEnv;
-		process.env.PATH             = this.pathEnv;
+		process.env.ANDROID_SDK      = this.ANDROID_SDK;
+		process.env.ANDROID_SDK_ROOT = this.ANDROID_SDK_ROOT;
+		process.env.PATH             = this.PATH;
 		delete process.env.NODE_APPC_SKIP_GLOBAL_SEARCH_PATHS;
 		delete process.env.NODE_APPC_SKIP_GLOBAL_ENVIRONMENT_PATHS;
 		delete process.env.NODE_APPC_SKIP_GLOBAL_EXECUTABLE_PATH;
-		sdk.resetCache();
+		sdk.resetCache(true);
 	});
 
 	describe('SDK', () => {
@@ -312,9 +312,9 @@ describe('sdk', () => {
 		});
 
 		afterEach(function () {
-			//temp.cleanupSync();
+			temp.cleanupSync();
 			this.watcher && this.watcher.stop();
-			//del.sync(this.cleanup, { force: true });
+			del.sync(this.cleanup, { force: true });
 		});
 
 		it('should watch using defaults', function (done) {
@@ -325,7 +325,8 @@ describe('sdk', () => {
 				.watch()
 				.on('results', results => {
 					validateResults(results);
-					this.watcher.stop();
+				})
+				.on('ready', () => {
 					done();
 				})
 				.on('error', done);

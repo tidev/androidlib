@@ -2,7 +2,6 @@ import appc from 'node-appc';
 import debug from 'debug';
 import fs from 'fs';
 import path from 'path';
-import systemPaths from './system-paths';
 
 const log = debug('androidlib:sdk');
 
@@ -396,12 +395,6 @@ function detectExecutables(dir, type, throwOnMissing) {
 
 	return results;
 }
-
-
-
-// * @param {String} [opts.buildToolVersion] - Specify the version of build tools.
-
-
 
 /**
  * Detects installed Android SDKs.

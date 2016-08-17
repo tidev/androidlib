@@ -29,7 +29,7 @@ describe('ndk', () => {
 		delete process.env.NODE_APPC_SKIP_GLOBAL_SEARCH_PATHS;
 		delete process.env.NODE_APPC_SKIP_GLOBAL_ENVIRONMENT_PATHS;
 		delete process.env.NODE_APPC_SKIP_GLOBAL_EXECUTABLE_PATH;
-		ndk.resetCache();
+		ndk.resetCache(true);
 	});
 
 	describe('NDK', () => {

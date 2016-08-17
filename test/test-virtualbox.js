@@ -7,20 +7,9 @@ import temp from 'temp';
 
 temp.track();
 
-const genymotion = androidlib.genymotion;
+const virtualbox = androidlib.virtualbox;
 
-// in our tests, we need to wipe the PATH environment variable so that JDKs
-// other than our mocks are found, but on Windows, we need to leave
-// C:\Windows\System32 in the path so that we can query the Windows registry
-const tempPATH = process.platform !== 'win32' ? '' : (function () {
-	const windowsDir = appc.path.expand('%SystemRoot%');
-	return process.env.PATH
-		.split(path.delimiter)
-		.filter(p => p.indexOf(windowsDir) === 0)
-		.join(path.delimiter);
-}());
-
-describe('genymotion', () => {
+describe('virtualbox', () => {
 	beforeEach(function () {
 		this.PATH        = process.env.PATH;
 		process.env.PATH = '';
@@ -34,41 +23,61 @@ describe('genymotion', () => {
 		delete process.env.NODE_APPC_SKIP_GLOBAL_SEARCH_PATHS;
 		delete process.env.NODE_APPC_SKIP_GLOBAL_ENVIRONMENT_PATHS;
 		delete process.env.NODE_APPC_SKIP_GLOBAL_EXECUTABLE_PATH;
-		genymotion.resetCache(true);
+		virtualbox.resetCache(true);
 	});
 
-	describe('Genymotion', () => {
+	describe('VirtualBox', () => {
 		it('should error if directory is invalid', () => {
 			expect(() => {
-				new genymotion.Genymotion();
+				new virtualbox.VirtualBox();
 			}).to.throw(TypeError, 'Expected directory to be a valid string');
 
 			expect(() => {
-				new genymotion.Genymotion(123);
+				new virtualbox.VirtualBox(123);
 			}).to.throw(TypeError, 'Expected directory to be a valid string');
 
 			expect(() => {
-				new genymotion.Genymotion('');
+				new virtualbox.VirtualBox('');
 			}).to.throw(TypeError, 'Expected directory to be a valid string');
 		});
 
 		it('should error if directory does not exist', () => {
 			expect(() => {
-				new genymotion.Genymotion(path.join(__dirname, 'mocks', 'doesnotexist'));
-			}).to.throw(Error, 'Directory does not exist');
+				new virtualbox.VirtualBox(path.join(__dirname, 'mocks', 'doesnotexist'));
+			}).to.throw(Error, 'Directory does not exist or is actually a file');
 		});
 
-		it('should error if directory does not contain Genymotion', () => {
+		it('should error if the directory does not contain vboxmanage', () => {
 			expect(() => {
-				new genymotion.Genymotion(path.join(__dirname, 'mocks', 'empty'));
-			}).to.throw(Error, 'Directory does not contain Genymotion');
+				new virtualbox.VirtualBox(path.join(__dirname, 'mocks', 'empty'));
+			}).to.throw(Error, 'Directory does not contain vboxmanage executable');
 		});
 
-		//
+		it('should find mock VirtualBox', done => {
+			const mockDir = path.resolve('./test/mocks/virtualbox');
+			const vbox = new virtualbox.VirtualBox(mockDir);
+			const expected = {
+				path: mockDir,
+				executables: {
+					vboxmanage: path.join(mockDir, `vboxmanage${appc.subprocess.exe}`)
+				},
+				version: null
+			};
+
+			expect(vbox.toJS()).to.deep.equal(expected);
+
+			vbox.init()
+				.then(() => {
+					expected.version = '1.2.3r456789';
+					expect(vbox.toJS()).to.deep.equal(expected);
+					done();
+				})
+				.catch(done);
+		});
 	});
 
 	describe('detect()', () => {
-		it('should detect Genymotion using defaults', function (done) {
+		it('should detect VirtualBox using defaults', function (done) {
 			this.timeout(10000);
 			this.slow(5000);
 
@@ -77,7 +86,7 @@ describe('genymotion', () => {
 			delete process.env.NODE_APPC_SKIP_GLOBAL_ENVIRONMENT_PATHS;
 			delete process.env.NODE_APPC_SKIP_GLOBAL_EXECUTABLE_PATH;
 
-			genymotion.detect()
+			virtualbox.detect()
 				.then(result => {
 					if (typeof result !== 'undefined') {
 						validateResult(result);
@@ -87,23 +96,19 @@ describe('genymotion', () => {
 				.catch(done);
 		});
 
-		it('should detect mock Genymotion', function (done) {
+		it('should detect mock VirtualBox', function (done) {
 			this.timeout(10000);
 			this.slow(5000);
 
-			const mockDir = path.resolve('./test/mocks/genymotion');
-
-			const player = process.platform === 'darwin'
-				? path.join(mockDir, 'player.app', 'Contents', 'MacOS', 'player')
-				: path.join(mockDir, `player${appc.subprocess.exe}`);
-
-			genymotion.detect({ paths: mockDir })
+			const mockDir = path.resolve('./test/mocks/virtualbox');
+			virtualbox.detect({ paths: mockDir })
 				.then(result => {
-					validateResult(result);
-					expect(result.path).to.equal(mockDir);
-					expect(result.executables).to.deep.equal({
-						genymotion: path.join(mockDir, `genymotion${appc.subprocess.exe}`),
-						player
+					expect(result).to.deep.equal({
+						path: mockDir,
+						executables: {
+							vboxmanage: path.join(mockDir, `vboxmanage${appc.subprocess.exe}`)
+						},
+						version: '1.2.3r456789'
 					});
 					done();
 				})
@@ -114,7 +119,7 @@ describe('genymotion', () => {
 			this.timeout(10000);
 			this.slow(5000);
 
-			genymotion.detect({ paths: path.resolve('./test/mocks/empty') })
+			virtualbox.detect({ paths: path.resolve('./test/mocks/empty') })
 				.then(result => {
 					expect(result).to.be.undefined;
 					done();
@@ -139,7 +144,7 @@ describe('genymotion', () => {
 			this.timeout(10000);
 			this.slow(6000);
 
-			this.watcher = genymotion
+			this.watcher = virtualbox
 				.watch()
 				.on('results', result => {
 					if (typeof result !== 'undefined') {
@@ -152,29 +157,26 @@ describe('genymotion', () => {
 				.on('error', done);
 		});
 
-		it('should watch directory for Genymotion to be added', function (done) {
+		it('should watch directory for VirtualBox to be added', function (done) {
 			this.timeout(10000);
 			this.slow(5000);
 
 			let count = 0;
-			const src = path.resolve('./test/mocks/genymotion');
+			const src = path.resolve('./test/mocks/virtualbox');
 			const dest = temp.path('androidlib-test-');
 			this.cleanup.push(dest);
 
-			const player = process.platform === 'darwin'
-				? path.join(dest, 'player.app', 'Contents', 'MacOS', 'player')
-				: path.join(dest, `player${appc.subprocess.exe}`);
-
-			this.watcher = genymotion
+			this.watcher = virtualbox
 				.watch({ paths: dest })
 				.on('results', result => {
 					count++;
 					if (count === 1) {
-						validateResult(result);
-						expect(result.path).to.equal(dest);
-						expect(result.executables).to.deep.equal({
-							genymotion: path.join(dest, `genymotion${appc.subprocess.exe}`),
-							player
+						expect(result).to.deep.equal({
+							path: dest,
+							executables: {
+								vboxmanage: path.join(dest, `vboxmanage${appc.subprocess.exe}`)
+							},
+							version: '1.2.3r456789'
 						});
 						setTimeout(() => del([dest], { force: true }), 250);
 
@@ -194,20 +196,16 @@ describe('genymotion', () => {
 
 function validateResult(result) {
 	expect(result).to.be.an.Object;
-	expect(result).to.have.keys('path', 'home', 'executables');
+	expect(result).to.have.keys('path', 'executables', 'version');
 
 	expect(result.path).to.be.a.String;
 	expect(appc.fs.isDir(result.path)).to.be.true;
 
-	expect(result.home).to.be.a.String;
-	if (result.home !== null) {
-		expect(appc.fs.isDir(result.home)).to.be.true;
-	}
-
 	expect(result.executables).to.be.an.Object;
-	expect(result.executables).to.have.keys('genymotion', 'player');
-	expect(result.executables.genymotion).to.be.a.String;
-	expect(appc.fs.isFile(result.executables.genymotion)).to.be.true;
-	expect(result.executables.player).to.be.a.String;
-	expect(appc.fs.isFile(result.executables.player)).to.be.true;
+	expect(result.executables).to.have.keys('vboxmanage');
+	expect(result.executables.vboxmanage).to.be.a.String;
+	expect(appc.fs.isFile(result.executables.vboxmanage)).to.be.true;
+
+	expect(result.version).to.be.a.String;
+	expect(result.version).to.not.equal('');
 }
