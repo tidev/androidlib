@@ -8,11 +8,11 @@ var should = require('should'),
 	adb = require('../lib/adb');
 
 describe("adb", function(){
-	it("should have launch", function(){
+	(process.env.JENKINS ? it.skip : it)("should have launch", function(){
 		should(adb.launch).be.a.function;
 	});
 
-	it("should be able to launch example app",function(done){
+	(process.env.JENKINS ? it.skip : it)("should be able to launch example app",function(done){
 		this.timeout(30000);
 
 		var project_dir = path.join(__dirname,'..','example'),
