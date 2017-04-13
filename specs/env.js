@@ -8,7 +8,7 @@ var should = require('should'),
 describe("env", function(){
 
 	(process.env.JENKINS ? it.skip : it)("should be able to find SDK and NDK", function(done){
-		var options = {arch:'armv7',sdk:'18'};
+		var options = {arch: 'x86_64', sdk: '23', 'android-ndk-toolchain-version': '4.9'};
 		var android = env.find(options,done);
 		should(options.sdk).be.ok;
 		should(android).be.an.object;

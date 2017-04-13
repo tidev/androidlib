@@ -3,3 +3,4 @@ build
 _tmp
 out
 npm-debug.log
+junit_report.xml
