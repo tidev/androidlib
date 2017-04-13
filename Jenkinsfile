@@ -1,7 +1,7 @@
 library 'pipeline-library'
 
 timestamps {
-  node('(osx || linux) && android-sdk && android-ndk') {
+  node('(osx || linux) && android-sdk && android-ndk && !master') {
     def packageVersion = ''
     def isPR = false
     stage('Checkout') {
