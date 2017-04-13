@@ -21,14 +21,14 @@ timestamps {
               withEnv(["PATH+ANDROID=${env.ANDROID_SDK}/platform-tools:${env.ANDROID_SDK}/tools"]) {
                 sh 'echo no | android create avd --force -n test -t android-23 --abi x86_64'
                 sh 'emulator -avd test -no-skin -no-boot-anim -no-window &'
-                sh "${pwd()}/wait-for-emulator"
+                sh './wait_for_emulator'
                 sh 'adb shell input keyevent 82 &'
               } // withEnv
               sh 'npm test' // ASSUMES ANDROID_SDK, ANDROID_NDK, ANDROID_HOME are all set
             } catch (e) {
               throw e
             } finally {
-              sh 'killall -9 qemu-system-x86_64'
+              sh 'killall -9 emulator64-x86'
             }
             junit 'junit_report.xml'
             fingerprint 'package.json'
