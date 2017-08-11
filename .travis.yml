@@ -4,22 +4,23 @@ android:
   components:
   - build-tools-18.1.0
   - android-19
-  
+env:
+  - TRAVIS_NODE_VERSION="4"
+  - TRAVIS_NODE_VERSION="6"
+  - TRAVIS_NODE_VERSION="8"
 before_script:
-
   # Get Android NDK
   - wget http://dl.google.com/android/ndk/android-ndk-r10d-linux-x86_64.bin -O ndk.bin
   - chmod a+x ndk.bin
   - ./ndk.bin -y | grep -v Extracting
   - export ANDROID_NDK=${PWD}/android-ndk-r10d
-  
+
   - echo no | android create avd --force -n test -t android-16 --abi armeabi-v7a
   - emulator -avd test -no-skin -no-audio -no-window &
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
-  
 install:
+  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
   - npm install
-  
 script:
   - npm test
