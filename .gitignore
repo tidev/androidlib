@@ -4,3 +4,5 @@ _tmp
 out
 npm-debug.log
 junit_report.xml
+coverage/
+retirejs.output.json
