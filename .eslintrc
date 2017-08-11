@@ -1,0 +1,6 @@
+{
+  "extends": [ "axway/env-node" ],
+  "rules": {
+    "security/detect-child-process": 0
+  }
+}

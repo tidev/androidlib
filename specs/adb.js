@@ -1,51 +1,52 @@
 /**
  * adb specs
  */
-var should = require('should'),
+'use strict';
+const should = require('should'),
 	fs = require('fs'),
 	path = require('path'),
 	spawn = require('child_process').spawn,
 	adb = require('../lib/adb');
 
-describe("adb", function(){
-	(process.env.JENKINS ? it.skip : it)("should have launch", function(){
-		should(adb.launch).be.a.function;
+describe('adb', function () {
+	(process.env.JENKINS ? it.skip : it)('should have launch', function () {
+		should(adb.launch).be.a.function; // eslint-disable-line no-unused-expressions
 	});
 
-	(process.env.JENKINS ? it.skip : it)("should be able to launch example app",function(done){
+	(process.env.JENKINS ? it.skip : it)('should be able to launch example app', function (done) {
 		this.timeout(30000);
 
-		var project_dir = path.join(__dirname,'..','example'),
+		const project_dir = path.join(__dirname, '..', 'example'),
 			cwd = process.cwd();
 
 		process.chdir(project_dir);
 		try {
-			var child = spawn('ant',['debug']);
-			child.on('error',done);
-			child.stdout.on('data',function(buf){
+			const child = spawn('ant', [ 'debug' ]);
+			child.on('error', done);
+			child.stdout.on('data', function (buf) {
 				process.env.TRAVIS && console.log(String(buf).trim());
 			});
-			child.stderr.on('data',function(buf){
+			child.stderr.on('data', function (buf) {
 				console.error(String(buf).trim());
 			});
-			child.on('close',function(exitCode){
-				if (exitCode!=0) {
-					return done("exited with exitCode "+exitCode);
+			child.on('close', function (exitCode) {
+				if (exitCode !== 0) {
+					return done('exited with exitCode ' + exitCode);
 				}
 
-				var apk = path.join(project_dir,'bin','TestApp-debug.apk');
-				should(fs.existsSync(apk)).be.true;
+				const apk = path.join(project_dir, 'bin', 'TestApp-debug.apk');
+				should(fs.existsSync(apk)).be.true; // eslint-disable-line no-unused-expressions
 
-				function callback (err){
+				function callback (err) {
 					done(err);
 				}
 
-				function logger(label,message) {
-					//console.log(label,' ',message);
+				function logger() {
+					// console.log(label,' ',message);
 				}
 
-				//now launch
-				var config = {
+				// now launch
+				const config = {
 					callback: callback,
 					logger: logger,
 					apk: apk,
@@ -58,8 +59,7 @@ describe("adb", function(){
 
 				adb.launch(config);
 			});
-		}
-		finally {
+		} finally {
 			process.chdir(cwd);
 		}
 	});
