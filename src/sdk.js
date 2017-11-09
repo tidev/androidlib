@@ -4,41 +4,38 @@ import path from 'path';
 import { bat, exe } from 'appcd-subprocess';
 import { expandPath } from 'appcd-path';
 import { isDir, isFile } from 'appcd-fs';
+import { readPropertiesFile } from './util';
 
 /**
- * Directories to scan for Android SDK installations.
+ * Directories to scan for Android SDKs.
  * @type {Object}
  */
 export const sdkLocations = {
 	darwin: [
+		'~/Library/Android/sdk',
+		'~',
 		'/opt',
 		'/opt/local',
 		'/usr',
 		'/usr/local',
-		'~',
-		'~/Library/Android/sdk'
 	],
 	linux: [
+		'~/Android/sdk',
+		'~',
 		'/opt',
 		'/opt/local',
 		'/usr',
-		'/usr/local',
-		'~'
+		'/usr/local'
 	],
 	win32: [
+		'%LOCALAPPDATA%\\Android\\Sdk',
+		'~',
 		'%SystemDrive%',
 		'%ProgramFiles%',
 		'%ProgramFiles(x86)%',
-		'%CommonProgramFiles%',
-		'~'
+		'%CommonProgramFiles%'
 	]
 };
-
-/**
- * Cached regex for matching key/values in properties files.
- * @type {RegExp}
- */
-const pkgPropRegExp = /^([^=]*)=\s*(.+)$/;
 
 /**
  * Detects and organizes Android SDK information.
@@ -65,7 +62,7 @@ export class SDK {
 			throw new Error('Directory does not contain a "tools" directory');
 		}
 
-		const toolsProps = this.readProps(path.join(toolsDir, 'source.properties'));
+		const toolsProps = readPropertiesFile(path.join(toolsDir, 'source.properties'));
 		if (!toolsProps) {
 			throw new Error('Directory contains bad "tools/source.properties" file');
 		}
@@ -110,7 +107,7 @@ export class SDK {
 				const dir = path.join(buildToolsDir, name);
 				if (isDir(dir)) {
 					const dxFile = path.join(dir, 'lib', 'dx.jar');
-					const buildToolsProps = this.readProps(path.join(dir, 'source.properties'));
+					const buildToolsProps = readPropertiesFile(path.join(dir, 'source.properties'));
 					if (buildToolsProps) {
 						this.buildTools.push({
 							dx:          isFile(dxFile) ? dxFile : null,
@@ -133,7 +130,7 @@ export class SDK {
 		 */
 		const platformToolsDir = path.join(dir, 'platform-tools');
 		if (isDir(platformToolsDir)) {
-			const platformToolsProps = this.readProps(path.join(platformToolsDir, 'source.properties'));
+			const platformToolsProps = readPropertiesFile(path.join(platformToolsDir, 'source.properties'));
 			if (platformToolsProps) {
 				this.platformTools = {
 					executables: this.findExecutables(platformToolsDir, {
@@ -158,7 +155,7 @@ export class SDK {
 						if (isDir(tagDir)) {
 							for (const abi of fs.readdirSync(tagDir)) {
 								const abiDir = path.join(tagDir, abi);
-								const props = this.readProps(path.join(abiDir, 'source.properties'));
+								const props = readPropertiesFile(path.join(abiDir, 'source.properties'));
 								if (props && props['AndroidVersion.ApiLevel'] && props['SystemImage.TagId'] && props['SystemImage.Abi']) {
 									const id = `android-${props['AndroidVersion.CodeName'] || props['AndroidVersion.ApiLevel']}`;
 									const tag = props['SystemImage.TagId'];
@@ -191,14 +188,14 @@ export class SDK {
 		if (isDir(platformsDir)) {
 			for (const name of fs.readdirSync(platformsDir)) {
 				const dir = path.join(platformsDir, name);
-				const sourceProps = this.readProps(path.join(dir, 'source.properties'));
+				const sourceProps = readPropertiesFile(path.join(dir, 'source.properties'));
 				const apiLevel = sourceProps ? ~~sourceProps['AndroidVersion.ApiLevel'] : null;
 				if (!sourceProps || !apiLevel || !isFile(path.join(dir, 'build.prop'))) {
 					continue;
 				}
 
 				// read in the sdk properties, if exists
-				const sdkProps = this.readProps(path.join(dir, 'sdk.properties'));
+				const sdkProps = readPropertiesFile(path.join(dir, 'sdk.properties'));
 
 				// detect the available skins
 				const skinsDir = path.join(dir, 'skins');
@@ -255,7 +252,7 @@ export class SDK {
 		if (isDir(addonsDir)) {
 			for (const name of fs.readdirSync(addonsDir)) {
 				const dir = path.join(addonsDir, name);
-				const sourceProps = this.readProps(path.join(dir, 'source.properties'));
+				const sourceProps = readPropertiesFile(path.join(dir, 'source.properties'));
 				const apiLevel = sourceProps ? ~~sourceProps['AndroidVersion.ApiLevel'] : null;
 				if (!sourceProps || !apiLevel || !sourceProps['Addon.VendorDisplay'] || !sourceProps['Addon.NameDisplay']) {
 					continue;
@@ -302,28 +299,6 @@ export class SDK {
 
 		this.platforms.sort(sortFn);
 		this.addons.sort(sortFn);
-	}
-
-	/**
-	 * Reads and parses the specified properties file into an object.
-     *
-     * @param {String} file - The properties file to parse.
-     * @returns {Object?}
-	 * @access private
-	 */
-	readProps(file) {
-		if (!isFile(file)) {
-			return null;
-		}
-
-		const props = {};
-		for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
-			const m = line.match(pkgPropRegExp);
-			if (m) {
-				props[m[1].trim()] = m[2].trim();
-			}
-		}
-		return props;
 	}
 
 	/**
