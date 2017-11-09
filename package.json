@@ -25,7 +25,6 @@
     "appcd-fs": "^0.1.4",
     "appcd-path": "^0.1.4",
     "appcd-subprocess": "^0.1.4",
-    "appcd-util": "^0.1.5",
     "source-map-support": "^0.5.0"
   },
   "devDependencies": {
