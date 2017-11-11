@@ -1,6 +1,8 @@
 import fs from 'fs';
+import options from './options';
 import path from 'path';
 
+import { arrayify, cache, get } from 'appcd-util';
 import { bat, exe } from 'appcd-subprocess';
 import { expandPath } from 'appcd-path';
 import { isDir, isFile } from 'appcd-fs';
@@ -57,7 +59,11 @@ export class SDK {
 			throw new Error('Directory does not exist');
 		}
 
-		const toolsDir = path.join(dir, 'tools');
+		let toolsDir = path.join(dir, 'tools');
+		if (!isDir(toolsDir)) {
+			// are we in a subdirectory already in the SDK?
+			toolsDir = path.resolve(dir, '..', 'tools');
+		}
 		if (!isDir(toolsDir)) {
 			throw new Error('Directory does not contain a "tools" directory');
 		}
@@ -317,4 +323,39 @@ export class SDK {
 		}
 		return executables;
 	}
+}
+
+/**
+ * Detects installed Android SDKs, then caches and returns the results.
+ *
+ * @param {Boolean} [force=false] - When `true`, bypasses cache and forces redetection.
+ * @returns {Promise<Array.<SDK>>}
+ */
+export function getSDKs(force) {
+	return cache('androidlib:sdk', force, () => {
+		const results = [];
+		let searchPaths = arrayify(get(options, 'sdk.searchPaths'), true);
+		if (!searchPaths) {
+			searchPaths = sdkLocations[process.platform];
+		}
+
+		for (let dir of searchPaths) {
+			try {
+				results.push(new SDK(dir));
+			} catch (e) {
+				// not an SDK, check subdirectories
+				if (isDir(dir = expandPath(dir))) {
+					for (const name of fs.readdirSync(dir)) {
+						try {
+							results.push(new SDK(path.join(dir, name)));
+						} catch (e2) {
+							// not an SDK
+						}
+					}
+				}
+			}
+		}
+
+		return results;
+	});
 }

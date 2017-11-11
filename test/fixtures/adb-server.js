@@ -1,7 +1,7 @@
 import net from 'net';
 
 export default class MockAdbServer {
-	constructor(port=9999) {
+	constructor(port = 9999) {
 		this.server = null;
 		this.port = port;
 	}
