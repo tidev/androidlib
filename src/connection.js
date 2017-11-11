@@ -87,6 +87,7 @@ export default class Connection extends EventEmitter {
 		this.socket = null;
 		this.state = DO_NOTHING;
 		this.connNum = ++connCounter;
+		this.execNum = 0;
 	}
 
 	/**
@@ -96,12 +97,7 @@ export default class Connection extends EventEmitter {
 	 */
 	connect() {
 		return new Promise((resolve, reject) => {
-			if (this.socket) {
-				log(`[${this.connNum}] [${states[this.state]}] Socket already open, resetting listeners`);
-				this.socket.removeAllListeners('data');
-				this.socket.removeAllListeners('end');
-				this.socket.removeAllListeners('error');
-			} else {
+			if (!this.socket) {
 				this.socket = net.connect({ port: this.port })
 					.on('connect', () => {
 						log(`[${this.connNum}] Connected to ADB on port ${this.port}`);
@@ -128,7 +124,7 @@ export default class Connection extends EventEmitter {
 	 * @param {String} cmd - The command to run.
 	 * @param {Object} [opts] - Execute options.
 	 * @param {Boolean} [opts.bufferUntilClose=false] - Buffers all received data until ADB closes the connection.
-	 * @returns {Promise}
+	 * @returns {Promise<Buffer?>}
 	 * @access public
 	 */
 	async exec(cmd, opts = {}) {
@@ -136,10 +132,23 @@ export default class Connection extends EventEmitter {
 			throw new TypeError('Expected command to be a string');
 		}
 
+		if (!this.socket) {
+			await this.connect();
+		}
+
 		let buffer = null;
 		let len = null;
 
-		const doSend = !!this.socket;
+		const doSend = ++this.execNum;
+
+		log(`[${this.connNum}] [${states[this.state]}] Executing "${cmd}"`, opts);
+
+		if (doSend) {
+			log(`[${this.connNum}] [${states[this.state]}] Socket already open, resetting listeners`);
+			this.socket.removeAllListeners('data');
+			this.socket.removeAllListeners('end');
+			this.socket.removeAllListeners('error');
+		}
 
 		const send = () => {
 			log(`[${this.connNum}] [${states[this.state]}] [${cmd}] Sending command: ${cmd}`);

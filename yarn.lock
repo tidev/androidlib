@@ -1031,6 +1031,14 @@ cli-cursor@^2.1.0:
   dependencies:
     restore-cursor "^2.0.0"
 
+cli-kit@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/cli-kit/-/cli-kit-0.0.7.tgz#318c92ce7e12ede9e7f58c551b8f785acd7a3be7"
+  dependencies:
+    hook-emitter "^2.1.0"
+    snooplogg "^1.8.0"
+    source-map-support "^0.5.0"
+
 cli-width@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/cli-width/-/cli-width-2.2.0.tgz#ff19ede8a9a5e579324147b0c11f0fbcbabed639"
@@ -2283,6 +2291,14 @@ homedir-polyfill@^1.0.0, homedir-polyfill@^1.0.1:
   resolved "https://registry.yarnpkg.com/homedir-polyfill/-/homedir-polyfill-1.0.1.tgz#4c2bbc8a758998feebf5ed68580f76d46768b4bc"
   dependencies:
     parse-passwd "^1.0.0"
+
+hook-emitter@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/hook-emitter/-/hook-emitter-2.1.0.tgz#45ac760712cf96621571fd74054f73c933d7259c"
+  dependencies:
+    babel-plugin-transform-async-to-generator "^6.24.1"
+    debug "^2.6.8"
+    source-map-support "^0.4.15"
 
 hosted-git-info@^2.1.4:
   version "2.5.0"

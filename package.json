@@ -27,6 +27,7 @@
     "appcd-path": "^0.1.4",
     "appcd-subprocess": "^0.1.4",
     "appcd-util": "^0.1.5",
+    "cli-kit": "^0.0.7",
     "fs-extra": "^4.0.2",
     "source-map-support": "^0.5.0"
   },

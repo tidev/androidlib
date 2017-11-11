@@ -9,6 +9,13 @@ describe('Connection', () => {
 		this.mockServer.start();
 	});
 
+	afterEach(function () {
+		if (this.conn) {
+			this.conn.end();
+			this.conn = null;
+		}
+	});
+
 	after(function () {
 		this.mockServer.stop();
 	});
@@ -27,9 +34,10 @@ describe('Connection', () => {
 		}).to.throw(Error, 'Port must be between 1 and 65535');
 	});
 
-	it('should error if command is not a string', () => {
-		const conn = new Connection(port);
-		return conn.exec(123)
+	it('should error if command is not a string', function () {
+		this.conn = new Connection(port);
+		return this.conn.connect()
+			.then(() => this.conn.exec(123))
 			.then(() => {
 				throw new Error('Expected error');
 			}, err => {
@@ -37,9 +45,10 @@ describe('Connection', () => {
 			});
 	});
 
-	it('should fail to execute bad command', () => {
-		const conn = new Connection(port);
-		return conn.exec('host:fake')
+	it('should fail to execute bad command', function () {
+		this.conn = new Connection(port);
+		return this.conn.connect()
+			.then(() => this.conn.exec('host:fake'))
 			.then(() => {
 				throw new Error('Expected error');
 			}, err => {
@@ -48,58 +57,64 @@ describe('Connection', () => {
 			});
 	});
 
-	it('should execute host:version', () => {
-		const conn = new Connection(port);
-		return conn.exec('host:version')
+	it('should execute host:version', function () {
+		this.conn = new Connection(port);
+		return this.conn.connect()
+			.then(() => this.conn.exec('host:version'))
 			.then(data => {
 				expect(data).to.not.be.null;
 				expect(data.toString()).to.equal('0030');
 			});
 	});
 
-	it('should execute host:devices with no devices', () => {
-		const conn = new Connection(port);
-		return conn.exec('host:nodevices')
+	it('should execute host:devices with no devices', function () {
+		this.conn = new Connection(port);
+		return this.conn.connect()
+			.then(() => this.conn.exec('host:nodevices'))
 			.then(data => {
 				expect(data).to.be.undefined;
 			});
 	});
 
-	it('should execute host:devices with devices', () => {
-		const conn = new Connection(port);
-		return conn.exec('host:twodevices')
+	it('should execute host:devices with devices', function () {
+		this.conn = new Connection(port);
+		return this.conn.connect()
+			.then(() => this.conn.exec('host:twodevices'))
 			.then(data => {
 				expect(data).to.not.be.null;
 				expect(data.toString()).to.equal('emulator-5556\tdevice\nemulator-5554\tdevice\n');
 			});
 	});
 
-	it('should execute shell:ps', () => {
-		const conn = new Connection(port);
-		return conn.exec('shell:ps', { bufferUntilClose: true, noLength: true })
+	it('should execute shell:ps', function () {
+		this.conn = new Connection(port);
+		return this.conn.connect()
+			.then(() => this.conn.exec('shell:ps', { bufferUntilClose: true, noLength: true }))
 			.then(data => {
 				expect(data).to.not.be.null;
 			});
 	});
 
-	it('should execute multiple commands over same connection but different sockets', () => {
-		const conn = new Connection(port);
-		return conn.exec('shell:ps', { bufferUntilClose: true, noLength: true })
+	it('should execute multiple commands over same connection but different sockets', function () {
+		this.conn = new Connection(port);
+		return this.conn.connect()
+			.then(() => this.conn.exec('shell:ps', { bufferUntilClose: true, noLength: true }))
 			.then(data => {
 				expect(data).to.not.be.null;
 
-				return conn.exec('shell:ps', { bufferUntilClose: true, noLength: true })
+				return this.conn.exec('shell:ps', { bufferUntilClose: true, noLength: true })
 					.then(data => {
 						expect(data).to.not.be.null;
 					});
 			});
 	});
 
-	it('should execute multiple commands over same connection with same socket', () => {
-		const conn = new Connection(port);
-		return conn.exec('host:transport:emulator-5554')
+	it('should execute multiple commands over same connection with same socket', function () {
+		this.conn = new Connection(port);
+		return this.conn.connect()
+			.then(() => this.conn.exec('host:transport:emulator-5554'))
 			.then(() => {
-				return conn.exec('shell:ps', { bufferUntilClose: true, noLength: true })
+				return this.conn.exec('shell:ps', { bufferUntilClose: true, noLength: true })
 					.then(data => {
 						expect(data).to.not.be.null;
 					});

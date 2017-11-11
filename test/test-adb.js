@@ -95,7 +95,7 @@ describe('ADB', () => {
 		const devices = await androidlib.devices.getDevices();
 		expect(devices).to.be.an('array');
 		for (const d of devices) {
-			expect(d).to.be.instanceof(androidlib.devices.Device);
+			expect(d).to.be.instanceof(androidlib.Device);
 		}
 	});
 
@@ -106,7 +106,7 @@ describe('ADB', () => {
 		const handle = androidlib.devices.trackDevices();
 		let counter = 0;
 
-		setTimeout(() => {
+		const timer = setTimeout(() => {
 			log('Device state hasn\'t changed, skipping test');
 			handle.stop();
 			done();
@@ -118,15 +118,17 @@ describe('ADB', () => {
 			try {
 				expect(devices).to.be.an('array');
 				for (const d of devices) {
-					expect(d).to.be.instanceof(androidlib.devices.Device);
+					expect(d).to.be.instanceof(androidlib.Device);
 				}
 				if (counter++ >= 2) {
-					done();
+					clearTimeout(timer);
 					handle.stop();
+					done();
 				}
 			} catch (e) {
-				done(e);
+				clearTimeout(timer);
 				handle.stop();
+				done();
 			}
 		});
 	});

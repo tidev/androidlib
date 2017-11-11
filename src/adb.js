@@ -1,15 +1,19 @@
 import appcdLogger from 'appcd-logger';
 import Connection from './connection';
-import Device from './devices';
+import Device from './device';
+import Emulator from './emulator';
 import options from './options';
 
-import { get, sleep } from 'appcd-util';
 import { EventEmitter } from 'events';
+import { get, sleep } from 'appcd-util';
 import { getSDKs } from './sdk';
+import { isEmulator } from './emulators';
 import { run, which } from 'appcd-subprocess';
 
 const { log } = appcdLogger('androidlib:adb');
 const { highlight } = appcdLogger.styles;
+
+const getpropRegExp = /^\[([^\]]*)\]: \[(.*)\]\s*$/;
 
 /**
  * Exposes an event emitter for device changes and a method to stop tracking.
@@ -52,7 +56,7 @@ export async function findAdb() {
  *
  * @returns {Promise<Connection>}
  */
-async function connect() {
+export async function connect() {
 	const port = get(options, 'adb.port') || 5037;
 	const conn = new Connection(port);
 
@@ -150,6 +154,30 @@ export async function version() {
 }
 
 /**
+ * Runs the specified command on the Android emulator/device.
+ *
+ * @param {String} id - The id of the device or emulator.
+ * @param {String} cmd - The command to run.
+ * @returns {Promise<Buffer>}
+ */
+export async function shell(id, cmd) {
+	if (typeof id !== 'string' || !id) {
+		throw new TypeError('Expected device ID to be a string');
+	}
+
+	if (typeof cmd !== 'string' || !cmd) {
+		throw new TypeError('Expected command to be a string');
+	}
+
+	const conn = await connect();
+	await conn.exec(`host:transport:${id}`);
+	return await conn.exec(`shell:${cmd.replace(/^shell:/, '')}`, {
+		bufferUntilClose: true,
+		noLength: true
+	});
+}
+
+/**
  * Retrieves a list of connected devices and emulators.
  *
  * @returns {Promise<Array.<Object>>}
@@ -172,10 +200,6 @@ export function trackDevices() {
 	setImmediate(async () => {
 		try {
 			let conn = await connect();
-			const results = await conn.exec('host:devices');
-			handle.emit('devices', await parseDevices(results));
-
-			conn = await connect();
 
 			handle.stop = function () {
 				if (!this.stopped) {
@@ -187,7 +211,7 @@ export function trackDevices() {
 			conn
 				.on('data', async (data) => {
 					try {
-						handle.emit('devices', await parseDevices(data));
+						handle.emit('change', await parseDevices(data));
 					} catch (err) {
 						handle.emit('error', err);
 					}
@@ -211,74 +235,65 @@ export function trackDevices() {
  */
 async function parseDevices(data = '') {
 	const devices = [];
-	// const final = [];
 
 	for (const item of data.toString().split(/\r?\n/)) {
 		const p = item.split(/\s+/);
 		if (p.length > 1) {
-			devices.push(new Device({
+			const info = {
 				id: p.shift(),
 				state: p.shift()
-			}));
+			};
+
+			const data = await shell(info.id, 'getprop');
+			const props = {};
+
+			for (const line of data.toString().split(/\r?\n/)) {
+				const m = line.match(getpropRegExp);
+				if (!m) {
+					continue;
+				}
+
+				const key = m[1];
+				const value = m[2];
+				props[key] = value;
+
+				switch (key) {
+					case 'ro.product.model.internal':
+						info.modelnumber = value;
+						break;
+					case 'ro.build.version.release':
+					case 'ro.build.version.sdk':
+					case 'ro.product.brand':
+					case 'ro.product.device':
+					case 'ro.product.manufacturer':
+					case 'ro.product.model':
+					case 'ro.product.name':
+						info[key.split('.').pop()] = value;
+						break;
+					default:
+						if (key.indexOf('ro.product.cpu.abi') === 0) {
+							if (!Array.isArray(info.abi)) {
+								info.abi = [];
+							}
+
+							for (let abi of value.split(',')) {
+								abi = abi.trim();
+								if (abi && info.abi.indexOf(abi) === -1) {
+									info.abi.push(abi);
+								}
+							}
+						}
+						break;
+				}
+			}
+
+			if (await isEmulator(info, props)) {
+				devices.push(new Emulator(info));
+			} else {
+				devices.push(new Device(info));
+			}
 		}
 	}
 
 	return devices;
-
-	// return Promise
-	// 	.all(devices.map(device => {
-	// 		return this
-	//          .shell(device.id, 'getprop')
-	// 			.then(data => {
-	// 				const re = /^\[([^\]]*)\]: \[(.*)\]\s*$/;
-	// 				const lines = data.toString().split(/\r?\n/);
-	// 				for (const line of lines) {
-	// 					var m = line.match(re);
-	// 					if (m) {
-	// 						const key = m[1];
-	// 						const value = m[2];
-	// 						switch (key) {
-	// 							case 'ro.product.model.internal':
-	// 								device.modelnumber = value;
-	// 								break;
-	// 							case 'ro.build.version.release':
-	// 							case 'ro.build.version.sdk':
-	// 							case 'ro.product.brand':
-	// 							case 'ro.product.device':
-	// 							case 'ro.product.manufacturer':
-	// 							case 'ro.product.model':
-	// 							case 'ro.product.name':
-	// 								device[key.split('.').pop()] = value;
-	// 								break;
-	// 							case 'ro.genymotion.version':
-	// 								device.genymotion = value;
-	// 								break;
-	// 							default:
-	// 								if (key.indexOf('ro.product.cpu.abi') === 0) {
-	// 									Array.isArray(device.abi) || (device.abi = []);
-	// 									for (let abi of value.split(',')) {
-	// 										abi = abi.trim();
-	// 										if (device.abi.indexOf(abi) === -1) {
-	// 											device.abi.push(abi);
-	// 										}
-	// 									}
-	// 								}
-	// 								break;
-	// 						}
-	// 					}
-	// 				}
-	//
-	// 				return isEmulator(device.id)
-	// 					.then(emu => {
-	// 						if (emu) {
-	// 							delete device.name;
-	// 							Object.assign(emu, device);
-	// 							final.push(emu);
-	// 						} else {
-	// 							final.push(new Device(device));
-	// 						}
-	// 					});
-	// 			});
-	// 	}))
-	// 	.then(() => final);
 }
