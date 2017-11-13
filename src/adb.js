@@ -61,7 +61,7 @@ export async function connect() {
 
 	try {
 		log(`Attempting to connect to adb on port ${port}`);
-		return conn.connect();
+		return await conn.connect();
 	} catch (err) {
 		if (err.errno !== 'ECONNREFUSED') {
 			throw err;
@@ -70,7 +70,7 @@ export async function connect() {
 
 	log('adb not running');
 	await startServer();
-	return conn.connect();
+	return await conn.connect();
 }
 
 /**

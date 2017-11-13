@@ -159,7 +159,7 @@ export default class Connection extends EventEmitter {
 
 		return new Promise((resolve, reject) => {
 			this.socket.on('data', data => {
-				log(`[${this.connNum}] [${states[this.state]}] [${cmd}] Received ${data.length} bytes`);
+				// log(`[${this.connNum}] [${states[this.state]}] [${cmd}] Received ${data.length} bytes`);
 
 				if (this.state === DO_NOTHING) {
 					return;
@@ -171,7 +171,7 @@ export default class Connection extends EventEmitter {
 					buffer += data;
 				}
 
-				log(`[${this.connNum}] [${states[this.state]}] [${cmd}] Buffer length = ${buffer.length}`);
+				// log(`[${this.connNum}] [${states[this.state]}] [${cmd}] Buffer length = ${buffer.length}`);
 
 				while (true) {
 					let result;
