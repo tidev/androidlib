@@ -1,3 +1,5 @@
+import Device from './device';
+
 import * as adb from './adb';
 
 /**
@@ -7,10 +9,7 @@ import * as adb from './adb';
  */
 export async function getDevices() {
 	const devices = await adb.devices();
-
-	// TODO: filter out emulators
-
-	return devices;
+	return devices.filter(d => d instanceof Device);
 }
 
 /**
@@ -26,9 +25,7 @@ export function trackDevices() {
 		let added = 0;
 		const previous = ids;
 		ids = new Set();
-		devices = devices.filter(d => d.state === 'device');
-
-		// TODO: filter out emulators
+		devices = devices.filter(d => d instanceof Device);
 
 		// determine if the results changed
 		for (const device of devices) {

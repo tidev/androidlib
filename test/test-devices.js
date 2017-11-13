@@ -10,7 +10,7 @@ describe('Devices', () => {
 
 		for (const dev of devices) {
 			expect(dev).to.be.an('object');
-			expect(dev).to.have.keys('abi', 'brand', 'id', 'manufacturer', 'model', 'name', 'sdk', 'version', 'state', 'release', 'device');
+			expect(dev).to.have.keys('abi', 'brand', 'id', 'manufacturer', 'model', 'name', 'sdk', 'state', 'release', 'device');
 		}
 	});
 });

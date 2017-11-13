@@ -45,12 +45,6 @@ export default class Device {
 	sdk = null;
 
 	/**
-	 * The Android version running on the device.
-	 * @type {String}.
-	 */
-	version = null;
-
-	/**
 	 * Sets the device information.
 	 *
 	 * @param {Object} [info] - The device info.

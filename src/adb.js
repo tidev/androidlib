@@ -1,11 +1,13 @@
 import appcdLogger from 'appcd-logger';
 import Connection from './connection';
 import Device from './device';
+import Emulator from './emulator';
 import options from './options';
 
 import { EventEmitter } from 'events';
 import { get, sleep } from 'appcd-util';
 import { getSDKs } from './sdk';
+import { isEmulator } from './emulators';
 import { run, which } from 'appcd-subprocess';
 
 const { log } = appcdLogger('androidlib:adb');
@@ -229,7 +231,7 @@ export function trackDevices() {
  * Parses the device list, and fetches additional device info.
  *
  * @param {Buffer|String} data - The buffer containing the list of devices.
- * @returns {Promise}
+ * @returns {Promise<Array<Device|Emulator>>}
  */
 async function parseDevices(data = '') {
 	const devices = [];
@@ -285,7 +287,11 @@ async function parseDevices(data = '') {
 				}
 			}
 
-			devices.push(new Device(info));
+			if (await isEmulator(info)) {
+				devices.push(new Emulator(info));
+			} else {
+				devices.push(new Device(info));
+			}
 		}
 	}
 

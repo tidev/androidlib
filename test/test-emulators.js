@@ -1,4 +1,3 @@
-import Emulator from '../dist/emulator';
 import path from 'path';
 
 import * as androidlib from '../dist/index';

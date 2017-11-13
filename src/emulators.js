@@ -1,11 +1,12 @@
 import Emulator from './emulator';
 import fs from 'fs';
+import net from 'net';
 import options from './options';
 import path from 'path';
 import SDK from './sdk';
 
+import { cache, get } from 'appcd-util';
 import { expandPath } from 'appcd-path';
-import { get } from 'appcd-util';
 import { isDir, isFile } from 'appcd-fs';
 import { readPropertiesFile } from './util';
 
@@ -29,75 +30,133 @@ export function getAvdDir() {
  *
  * @param {SDK} [sdk] - When passed in, it will attempt to resolve the AVD's target, SDK version,
  * and API level.
+ * @param {Boolean} [force] - When `true`, bypasses the cache and forces redetection.
  * @returns {Promise<Array>}
  */
-export async function getEmulators(sdk) {
-	const results = [];
-	const avdDir = expandPath(getAvdDir());
+export function getEmulators(sdk, force) {
+	return cache(`androidlib:emulators:${sdk && sdk.path || ''}`, force, async () => {
+		const results = [];
+		const avdDir = expandPath(getAvdDir());
 
-	if (!isDir(avdDir)) {
-		return results;
-	}
-
-	const avdFilenameRegExp = /^(.+)\.ini$/;
-
-	for (let name of fs.readdirSync(avdDir)) {
-		const m = name.match(avdFilenameRegExp);
-		if (!m) {
-			continue;
+		if (!isDir(avdDir)) {
+			return results;
 		}
 
-		const ini = readPropertiesFile(path.join(avdDir, name));
-		if (!ini) {
-			continue;
-		}
+		const avdFilenameRegExp = /^(.+)\.ini$/;
 
-		name = m[1];
+		for (let name of fs.readdirSync(avdDir)) {
+			const m = name.match(avdFilenameRegExp);
+			if (!m) {
+				continue;
+			}
 
-		let dir = ini.path;
-		if ((!dir || !isDir(dir)) && ini['path.rel'] && !isDir(dir = path.join(path.dirname(avdDir), ini['path.rel']))) {
-			continue;
-		}
+			const ini = readPropertiesFile(path.join(avdDir, name));
+			if (!ini) {
+				continue;
+			}
 
-		const config = readPropertiesFile(path.join(dir, 'config.ini'));
-		if (!config) {
-			continue;
-		}
+			name = m[1];
 
-		const sdcard = path.join(dir, 'sdcard.img');
-		let target = null;
-		let sdk = null;
-		let apiLevel = null;
+			let dir = ini.path;
+			if ((!dir || !isDir(dir)) && ini['path.rel'] && !isDir(dir = path.join(path.dirname(avdDir), ini['path.rel']))) {
+				continue;
+			}
 
-		if (config['image.sysdir.1'] && sdk instanceof SDK) {
-			const imageDir = config['image.sysdir.1'].replace(/^system-images\//, '').replace(/\/$/, '');
-			const image = sdk.systemImages[imageDir];
-			if (image) {
-				for (const platform of sdk.platforms) {
-					if (platform.sdk === image.sdk) {
-						apiLevel = platform.apiLevel;
-						sdk = platform.version;
-						target = `${platform.name} (API level ${platform.apiLevel})`;
-						break;
+			const config = readPropertiesFile(path.join(dir, 'config.ini'));
+			if (!config) {
+				continue;
+			}
+
+			const sdcard = path.join(dir, 'sdcard.img');
+			let target = null;
+			let sdk = null;
+			let apiLevel = null;
+
+			if (config['image.sysdir.1'] && sdk instanceof SDK) {
+				const imageDir = config['image.sysdir.1'].replace(/^system-images\//, '').replace(/\/$/, '');
+				const image = sdk.systemImages[imageDir];
+				if (image) {
+					for (const platform of sdk.platforms) {
+						if (platform.sdk === image.sdk) {
+							apiLevel = platform.apiLevel;
+							sdk = platform.version;
+							target = `${platform.name} (API level ${platform.apiLevel})`;
+							break;
+						}
 					}
 				}
 			}
+
+			results.push(new Emulator({
+				id:            config['AvdId'] || name,
+				name:          config['avd.ini.displayname'] || name,
+				device:        config['hw.device.name'] + ' (' + config['hw.device.manufacturer'] + ')',
+				path:          dir,
+				abi:           config['abi.type'],
+				skin:          config['skin.name'],
+				sdcard:        config['hw.sdCard'] === 'yes' && isFile(sdcard) ? sdcard : null,
+				googleApis:    config['tag.id'] === 'google_apis',
+				target,
+				'sdk-version': sdk,
+				'api-level':   apiLevel
+			}));
 		}
 
-		results.push(new Emulator({
-			id:            config['AvdId'] || name,
-			name:          config['avd.ini.displayname'] || name,
-			device:        config['hw.device.name'] + ' (' + config['hw.device.manufacturer'] + ')',
-			path:          dir,
-			abi:           config['abi.type'],
-			skin:          config['skin.name'],
-			sdcard:        config['hw.sdCard'] === 'yes' && isFile(sdcard) ? sdcard : null,
-			googleApis:    config['tag.id'] === 'google_apis',
-			target,
-			'sdk-version': sdk,
-			'api-level':   apiLevel
-		}));
+		return results;
+	});
+}
+
+/**
+ * Determines if the info object represents an Android Emulator.
+ *
+ * @param {Object} info - The device information.
+ * @returns {Promise<Boolean>}
+ */
+export async function isEmulator(info) {
+	let m = info.id.match(/^emulator-(\d+)$/);
+	if (!m) {
+		return false;
+	}
+	const port = parseInt(m[1]);
+
+	const avdName = await new Promise((resolve, reject) => {
+		let state = 'connecting';
+		let avdName = null;
+		let buffer = '';
+		const responseRegExp = /(.*)\r\nOK\r\n/;
+		const socket = net.connect({ port });
+
+		socket.on('data', function (data) {
+			buffer += data.toString();
+			var m = buffer.match(responseRegExp);
+			if (!m || state === 'done') {
+				// do nothing
+			} else if (state === 'connecting') {
+				state = 'sending command';
+				buffer = '';
+				socket.write('avd name\n');
+			} else if (state === 'sending command') {
+				state = 'done';
+				avdName = m[1].trim();
+				socket.end('quit\n');
+			}
+		});
+
+		socket.on('end', function () {
+			resolve(avdName);
+		});
+
+		socket.on('error', reject);
+	});
+
+	const emulators = await getEmulators();
+
+	for (const emu of emulators) {
+		if (emu.id === avdName) {
+			info.emulator = emu;
+			return true;
+		}
 	}
 
-	return results;
+	return false;
 }
