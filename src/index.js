@@ -5,12 +5,10 @@ if (!Error.prepareStackTrace) {
 
 export { default as options } from './options';
 
-import Device from './device';
-import Emulator from './emulator';
+import Device, * as devices from './device';
+import Emulator, * as emulators from './emulator';
 
 import * as adb from './adb';
-import * as devices from './devices';
-import * as emulators from './emulators';
 import * as ndk from './ndk';
 import * as sdk from './sdk';
 

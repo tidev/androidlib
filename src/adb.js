@@ -1,13 +1,12 @@
 import appcdLogger from 'appcd-logger';
 import Connection from './connection';
 import Device from './device';
-import Emulator from './emulator';
+import Emulator, { isEmulator } from './emulator';
 import options from './options';
 
 import { EventEmitter } from 'events';
 import { get, sleep } from 'appcd-util';
 import { getSDKs } from './sdk';
-import { isEmulator } from './emulators';
 import { run, which } from 'appcd-subprocess';
 
 const { log } = appcdLogger('androidlib:adb');
