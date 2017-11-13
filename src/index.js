@@ -5,7 +5,6 @@ if (!Error.prepareStackTrace) {
 
 export { default as options } from './options';
 
-import AndroidEmulator from './android-emulator';
 import Device from './device';
 import Emulator from './emulator';
 
@@ -17,7 +16,6 @@ import * as sdk from './sdk';
 
 export {
 	adb,
-	AndroidEmulator,
 	Device,
 	devices,
 	Emulator,

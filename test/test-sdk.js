@@ -190,77 +190,87 @@ describe('SDK', () => {
 				version: null
 			},
 			systemImages: {
-				'android-23': {
-					'android-tv': [
-						{
-							abi: 'armeabi-v7a',
-							skins: []
-						},
-						{
-							abi: 'x86',
-							skins: []
-						}
+				'android-23/android-tv/armeabi-v7a': {
+					abi: 'armeabi-v7a',
+					sdk: 'android-23',
+					skins: [],
+					type: 'android-tv'
+				},
+				'android-23/android-tv/x86': {
+					abi: 'x86',
+					sdk: 'android-23',
+					skins: [],
+					type: 'android-tv'
+				},
+				'android-23/android-wear/armeabi-v7a': {
+					abi: 'armeabi-v7a',
+					sdk: 'android-23',
+					skins: [
+						'AndroidWearRound',
+						'AndroidWearRound360x360',
+						'AndroidWearRound400x400',
+						'AndroidWearRound480x480',
+						'AndroidWearRoundChin320x290',
+						'AndroidWearRoundChin360x325',
+						'AndroidWearRoundChin360x326',
+						'AndroidWearRoundChin360x330',
+						'AndroidWearSquare',
+						'AndroidWearSquare320x320'
 					],
-					'android-wear': [
-						{
-							abi: 'armeabi-v7a',
-							skins: [
-								'AndroidWearRound',
-								'AndroidWearRound360x360',
-								'AndroidWearRound400x400',
-								'AndroidWearRound480x480',
-								'AndroidWearRoundChin320x290',
-								'AndroidWearRoundChin360x325',
-								'AndroidWearRoundChin360x326',
-								'AndroidWearRoundChin360x330',
-								'AndroidWearSquare',
-								'AndroidWearSquare320x320'
-							]
-						},
-						{
-							abi: 'x86',
-							skins: [
-								'AndroidWearRound',
-								'AndroidWearRound360x360',
-								'AndroidWearRound400x400',
-								'AndroidWearRound480x480',
-								'AndroidWearRoundChin320x290',
-								'AndroidWearRoundChin360x325',
-								'AndroidWearRoundChin360x326',
-								'AndroidWearRoundChin360x330',
-								'AndroidWearSquare',
-								'AndroidWearSquare320x320'
-							]
-						}
+					type: 'android-wear'
+				},
+				'android-23/android-wear/x86': {
+					abi: 'x86',
+					sdk: 'android-23',
+					skins: [
+						'AndroidWearRound',
+						'AndroidWearRound360x360',
+						'AndroidWearRound400x400',
+						'AndroidWearRound480x480',
+						'AndroidWearRoundChin320x290',
+						'AndroidWearRoundChin360x325',
+						'AndroidWearRoundChin360x326',
+						'AndroidWearRoundChin360x330',
+						'AndroidWearSquare',
+						'AndroidWearSquare320x320'
 					],
-					default: [
-						{
-							abi: 'armeabi-v7a',
-							skins: []
-						},
-						{
-							abi: 'x86',
-							skins: []
-						},
-						{
-							abi: 'x86_64',
-							skins: []
-						},
-					],
-					google_apis: [
-						{
-							abi: 'armeabi-v7a',
-							skins: []
-						},
-						{
-							abi: 'x86',
-							skins: []
-						},
-						{
-							abi: 'x86_64',
-							skins: []
-						}
-					]
+					type: 'android-wear'
+				},
+				'android-23/default/armeabi-v7a': {
+					abi: 'armeabi-v7a',
+					sdk: 'android-23',
+					skins: [],
+					type: 'default'
+				},
+				'android-23/default/x86': {
+					abi: 'x86',
+					sdk: 'android-23',
+					skins: [],
+					type: 'default'
+				},
+				'android-23/default/x86_64': {
+					abi: 'x86_64',
+					sdk: 'android-23',
+					skins: [],
+					type: 'default'
+				},
+				'android-23/google_apis/armeabi-v7a': {
+					abi: 'armeabi-v7a',
+					sdk: 'android-23',
+					skins: [],
+					type: 'google_apis'
+				},
+				'android-23/google_apis/x86': {
+					abi: 'x86',
+					sdk: 'android-23',
+					skins: [],
+					type: 'google_apis'
+				},
+				'android-23/google_apis/x86_64': {
+					abi: 'x86_64',
+					sdk: 'android-23',
+					skins: [],
+					type: 'google_apis'
 				}
 			},
 			targets: [],
@@ -286,7 +296,7 @@ describe('SDK', () => {
 			path: dir,
 			platforms: [
 				{
-					id:          'android-23',
+					sdk:         'android-23',
 					name:        'Android 6.0',
 					apiLevel:    23,
 					codename:    null,
@@ -327,7 +337,7 @@ describe('SDK', () => {
 					aidl:        path.join(dir, 'platforms', 'android-23', 'framework.aidl')
 				},
 				{
-					id:          'android-N',
+					sdk:         'android-N',
 					name:        'Android N (Preview)',
 					apiLevel:    23,
 					codename:    'N',
@@ -348,77 +358,87 @@ describe('SDK', () => {
 				version: null
 			},
 			systemImages: {
-				'android-23': {
-					'android-tv': [
-						{
-							abi: 'armeabi-v7a',
-							skins: []
-						},
-						{
-							abi: 'x86',
-							skins: []
-						}
+				'android-23/android-tv/armeabi-v7a': {
+					abi: 'armeabi-v7a',
+					sdk: 'android-23',
+					skins: [],
+					type: 'android-tv'
+				},
+				'android-23/android-tv/x86': {
+					abi: 'x86',
+					sdk: 'android-23',
+					skins: [],
+					type: 'android-tv'
+				},
+				'android-23/android-wear/armeabi-v7a': {
+					abi: 'armeabi-v7a',
+					sdk: 'android-23',
+					skins: [
+						'AndroidWearRound',
+						'AndroidWearRound360x360',
+						'AndroidWearRound400x400',
+						'AndroidWearRound480x480',
+						'AndroidWearRoundChin320x290',
+						'AndroidWearRoundChin360x325',
+						'AndroidWearRoundChin360x326',
+						'AndroidWearRoundChin360x330',
+						'AndroidWearSquare',
+						'AndroidWearSquare320x320'
 					],
-					'android-wear': [
-						{
-							abi: 'armeabi-v7a',
-							skins: [
-								'AndroidWearRound',
-								'AndroidWearRound360x360',
-								'AndroidWearRound400x400',
-								'AndroidWearRound480x480',
-								'AndroidWearRoundChin320x290',
-								'AndroidWearRoundChin360x325',
-								'AndroidWearRoundChin360x326',
-								'AndroidWearRoundChin360x330',
-								'AndroidWearSquare',
-								'AndroidWearSquare320x320'
-							]
-						},
-						{
-							abi: 'x86',
-							skins: [
-								'AndroidWearRound',
-								'AndroidWearRound360x360',
-								'AndroidWearRound400x400',
-								'AndroidWearRound480x480',
-								'AndroidWearRoundChin320x290',
-								'AndroidWearRoundChin360x325',
-								'AndroidWearRoundChin360x326',
-								'AndroidWearRoundChin360x330',
-								'AndroidWearSquare',
-								'AndroidWearSquare320x320'
-							]
-						}
+					type: 'android-wear'
+				},
+				'android-23/android-wear/x86': {
+					abi: 'x86',
+					sdk: 'android-23',
+					skins: [
+						'AndroidWearRound',
+						'AndroidWearRound360x360',
+						'AndroidWearRound400x400',
+						'AndroidWearRound480x480',
+						'AndroidWearRoundChin320x290',
+						'AndroidWearRoundChin360x325',
+						'AndroidWearRoundChin360x326',
+						'AndroidWearRoundChin360x330',
+						'AndroidWearSquare',
+						'AndroidWearSquare320x320'
 					],
-					default: [
-						{
-							abi: 'armeabi-v7a',
-							skins: []
-						},
-						{
-							abi: 'x86',
-							skins: []
-						},
-						{
-							abi: 'x86_64',
-							skins: []
-						},
-					],
-					google_apis: [
-						{
-							abi: 'armeabi-v7a',
-							skins: []
-						},
-						{
-							abi: 'x86',
-							skins: []
-						},
-						{
-							abi: 'x86_64',
-							skins: []
-						}
-					]
+					type: 'android-wear'
+				},
+				'android-23/default/armeabi-v7a': {
+					abi: 'armeabi-v7a',
+					sdk: 'android-23',
+					skins: [],
+					type: 'default'
+				},
+				'android-23/default/x86': {
+					abi: 'x86',
+					sdk: 'android-23',
+					skins: [],
+					type: 'default'
+				},
+				'android-23/default/x86_64': {
+					abi: 'x86_64',
+					sdk: 'android-23',
+					skins: [],
+					type: 'default'
+				},
+				'android-23/google_apis/armeabi-v7a': {
+					abi: 'armeabi-v7a',
+					sdk: 'android-23',
+					skins: [],
+					type: 'google_apis'
+				},
+				'android-23/google_apis/x86': {
+					abi: 'x86',
+					sdk: 'android-23',
+					skins: [],
+					type: 'google_apis'
+				},
+				'android-23/google_apis/x86_64': {
+					abi: 'x86_64',
+					sdk: 'android-23',
+					skins: [],
+					type: 'google_apis'
 				}
 			},
 			targets: [],
@@ -441,7 +461,7 @@ describe('SDK', () => {
 		expect(results).to.deep.equal({
 			addons: [
 				{
-					id:       'Google Inc.:Google APIs:23',
+					sdk:      'Google Inc.:Google APIs:23',
 					name:     'Google APIs',
 					apiLevel: 23,
 					revision: 1,
@@ -465,7 +485,7 @@ describe('SDK', () => {
 			path: dir,
 			platforms: [
 				{
-					id:          'android-23',
+					sdk:         'android-23',
 					name:        'Android 6.0',
 					apiLevel:    23,
 					codename:    null,
@@ -506,7 +526,7 @@ describe('SDK', () => {
 					aidl:        path.join(dir, 'platforms', 'android-23', 'framework.aidl')
 				},
 				{
-					id:          'android-N',
+					sdk:         'android-N',
 					name:        'Android N (Preview)',
 					apiLevel:    23,
 					codename:    'N',
@@ -527,77 +547,87 @@ describe('SDK', () => {
 				version: null
 			},
 			systemImages: {
-				'android-23': {
-					'android-tv': [
-						{
-							abi: 'armeabi-v7a',
-							skins: []
-						},
-						{
-							abi: 'x86',
-							skins: []
-						}
+				'android-23/android-tv/armeabi-v7a': {
+					abi: 'armeabi-v7a',
+					sdk: 'android-23',
+					skins: [],
+					type: 'android-tv'
+				},
+				'android-23/android-tv/x86': {
+					abi: 'x86',
+					sdk: 'android-23',
+					skins: [],
+					type: 'android-tv'
+				},
+				'android-23/android-wear/armeabi-v7a': {
+					abi: 'armeabi-v7a',
+					sdk: 'android-23',
+					skins: [
+						'AndroidWearRound',
+						'AndroidWearRound360x360',
+						'AndroidWearRound400x400',
+						'AndroidWearRound480x480',
+						'AndroidWearRoundChin320x290',
+						'AndroidWearRoundChin360x325',
+						'AndroidWearRoundChin360x326',
+						'AndroidWearRoundChin360x330',
+						'AndroidWearSquare',
+						'AndroidWearSquare320x320'
 					],
-					'android-wear': [
-						{
-							abi: 'armeabi-v7a',
-							skins: [
-								'AndroidWearRound',
-								'AndroidWearRound360x360',
-								'AndroidWearRound400x400',
-								'AndroidWearRound480x480',
-								'AndroidWearRoundChin320x290',
-								'AndroidWearRoundChin360x325',
-								'AndroidWearRoundChin360x326',
-								'AndroidWearRoundChin360x330',
-								'AndroidWearSquare',
-								'AndroidWearSquare320x320'
-							]
-						},
-						{
-							abi: 'x86',
-							skins: [
-								'AndroidWearRound',
-								'AndroidWearRound360x360',
-								'AndroidWearRound400x400',
-								'AndroidWearRound480x480',
-								'AndroidWearRoundChin320x290',
-								'AndroidWearRoundChin360x325',
-								'AndroidWearRoundChin360x326',
-								'AndroidWearRoundChin360x330',
-								'AndroidWearSquare',
-								'AndroidWearSquare320x320'
-							]
-						}
+					type: 'android-wear'
+				},
+				'android-23/android-wear/x86': {
+					abi: 'x86',
+					sdk: 'android-23',
+					skins: [
+						'AndroidWearRound',
+						'AndroidWearRound360x360',
+						'AndroidWearRound400x400',
+						'AndroidWearRound480x480',
+						'AndroidWearRoundChin320x290',
+						'AndroidWearRoundChin360x325',
+						'AndroidWearRoundChin360x326',
+						'AndroidWearRoundChin360x330',
+						'AndroidWearSquare',
+						'AndroidWearSquare320x320'
 					],
-					default: [
-						{
-							abi: 'armeabi-v7a',
-							skins: []
-						},
-						{
-							abi: 'x86',
-							skins: []
-						},
-						{
-							abi: 'x86_64',
-							skins: []
-						},
-					],
-					google_apis: [
-						{
-							abi: 'armeabi-v7a',
-							skins: []
-						},
-						{
-							abi: 'x86',
-							skins: []
-						},
-						{
-							abi: 'x86_64',
-							skins: []
-						}
-					]
+					type: 'android-wear'
+				},
+				'android-23/default/armeabi-v7a': {
+					abi: 'armeabi-v7a',
+					sdk: 'android-23',
+					skins: [],
+					type: 'default'
+				},
+				'android-23/default/x86': {
+					abi: 'x86',
+					sdk: 'android-23',
+					skins: [],
+					type: 'default'
+				},
+				'android-23/default/x86_64': {
+					abi: 'x86_64',
+					sdk: 'android-23',
+					skins: [],
+					type: 'default'
+				},
+				'android-23/google_apis/armeabi-v7a': {
+					abi: 'armeabi-v7a',
+					sdk: 'android-23',
+					skins: [],
+					type: 'google_apis'
+				},
+				'android-23/google_apis/x86': {
+					abi: 'x86',
+					sdk: 'android-23',
+					skins: [],
+					type: 'google_apis'
+				},
+				'android-23/google_apis/x86_64': {
+					abi: 'x86_64',
+					sdk: 'android-23',
+					skins: [],
+					type: 'google_apis'
 				}
 			},
 			targets: [],

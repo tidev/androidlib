@@ -1,13 +1,11 @@
 import appcdLogger from 'appcd-logger';
 import Connection from './connection';
 import Device from './device';
-import Emulator from './emulator';
 import options from './options';
 
 import { EventEmitter } from 'events';
 import { get, sleep } from 'appcd-util';
 import { getSDKs } from './sdk';
-import { isEmulator } from './emulators';
 import { run, which } from 'appcd-subprocess';
 
 const { log } = appcdLogger('androidlib:adb');
@@ -20,7 +18,7 @@ const getpropRegExp = /^\[([^\]]*)\]: \[(.*)\]\s*$/;
  */
 export class TrackDeviceHandle extends EventEmitter {
 	stop() {
-		// noop
+		// this method is meant to be overridden
 	}
 }
 
@@ -287,11 +285,7 @@ async function parseDevices(data = '') {
 				}
 			}
 
-			if (await isEmulator(info, props)) {
-				devices.push(new Emulator(info));
-			} else {
-				devices.push(new Device(info));
-			}
+			devices.push(new Device(info));
 		}
 	}
 

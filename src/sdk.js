@@ -163,22 +163,17 @@ export class SDK {
 								const abiDir = path.join(tagDir, abi);
 								const props = readPropertiesFile(path.join(abiDir, 'source.properties'));
 								if (props && props['AndroidVersion.ApiLevel'] && props['SystemImage.TagId'] && props['SystemImage.Abi']) {
-									const id = `android-${props['AndroidVersion.CodeName'] || props['AndroidVersion.ApiLevel']}`;
-									const tag = props['SystemImage.TagId'];
+									const imageDir = path.relative(systemImagesDir, abiDir);
 									const skinsDir = path.join(abiDir, 'skins');
 
-									if (!this.systemImages[id]) {
-										this.systemImages[id] = {};
-									}
-									if (!this.systemImages[id][tag]) {
-										this.systemImages[id][tag] = [];
-									}
-									this.systemImages[id][tag].push({
+									this.systemImages[imageDir] = {
 										abi: props['SystemImage.Abi'],
+										sdk: `android-${props['AndroidVersion.CodeName'] || props['AndroidVersion.ApiLevel']}`,
 										skins: isDir(skinsDir) ? fs.readdirSync(skinsDir).map(name => {
 											return isFile(path.join(skinsDir, name, 'hardware.ini')) ? name : null;
-										}).filter(x => x) : []
-									});
+										}).filter(x => x) : [],
+										type: props['SystemImage.TagId']
+									};
 								}
 							}
 						}
@@ -214,27 +209,29 @@ export class SDK {
 				}
 
 				const apiName = sourceProps['AndroidVersion.CodeName'] || apiLevel;
-				const id = `android-${apiName}`;
+				const sdk = `android-${apiName}`;
 				let tmp;
 
 				const abis = {};
-				if (this.systemImages[id]) {
-					for (const type of Object.keys(this.systemImages[id])) {
-						for (const info of this.systemImages[id][type]) {
-							abis[type] || (abis[type] = []);
-							abis[type].push(info.abi);
+				for (const image of Object.values(this.systemImages)) {
+					if (image.sdk === sdk) {
+						if (!abis[image.type]) {
+							abis[image.type] = [];
+						}
+						if (!abis[image.type].includes(image.abi)) {
+							abis[image.type].push(image.abi);
+						}
 
-							for (const skin of info.skins) {
-								if (skins.indexOf(skin) === -1) {
-									skins.push(skin);
-								}
+						for (const skin of image.skins) {
+							if (!skins.includes(skin)) {
+								skins.push(skin);
 							}
 						}
 					}
 				}
 
 				this.platforms.push({
-					id,
+					sdk,
 					name:        `Android ${sourceProps['Platform.Version']}${sourceProps['AndroidVersion.CodeName'] ? ' (Preview)' : ''}`,
 					apiLevel:    apiLevel,
 					codename:    sourceProps['AndroidVersion.CodeName'] || null,
@@ -273,13 +270,13 @@ export class SDK {
 				}
 
 				this.addons.push({
-					id:          `${sourceProps['Addon.VendorDisplay']}:${sourceProps['Addon.NameDisplay']}:${apiLevel}`,
+					sdk:         `${sourceProps['Addon.VendorDisplay']}:${sourceProps['Addon.NameDisplay']}:${apiLevel}`,
 					name:        sourceProps['Addon.NameDisplay'],
 					apiLevel:    apiLevel,
 					revision:    +sourceProps['Pkg.Revision'] || null,
 					codename:    sourceProps['AndroidVersion.CodeName'] || null,
 					path:        dir,
-					basedOn:     basedOn && basedOn.id || null,
+					basedOn:     basedOn && basedOn.sdk || null,
 					abis:        basedOn && basedOn.abis || null,
 					skins:       basedOn && basedOn.skins || null,
 					defaultSkin: basedOn && basedOn.defaultSkin || null,
@@ -324,6 +321,8 @@ export class SDK {
 		return executables;
 	}
 }
+
+export default SDK;
 
 /**
  * Detects installed Android SDKs, then caches and returns the results.

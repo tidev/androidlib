@@ -6,6 +6,9 @@ const options = {
 	adb: {
 		port: null
 	},
+	avd: {
+		path: null
+	},
 	env: {
 		path: null
 	},
