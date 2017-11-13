@@ -93,7 +93,7 @@ export default class Connection extends EventEmitter {
 	/**
 	 * Connects to the ADB server.
 	 *
-	 * @returns {Promise}
+	 * @returns {Promise<Connection>}
 	 */
 	connect() {
 		return new Promise((resolve, reject) => {
