@@ -104,7 +104,7 @@ export default class Connection extends EventEmitter {
 
 						// in some circumstances sending a command to adb right away can yield no response,
 						// so we allow 200ms before sending the initial command
-						setTimeout(() => resolve(), 200);
+						setTimeout(() => resolve(this), 200);
 					})
 					.on('error', err => {
 						this.socket = null;

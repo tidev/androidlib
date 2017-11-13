@@ -92,10 +92,16 @@ describe('ADB', () => {
 		this.timeout(10000);
 		this.slow(2000);
 
-		const devices = await androidlib.devices.getDevices();
-		expect(devices).to.be.an('array');
-		for (const d of devices) {
-			expect(d).to.be.instanceof(androidlib.Device);
+		try {
+			const devices = await androidlib.devices.getDevices();
+			expect(devices).to.be.an('array');
+			for (const d of devices) {
+				expect(d).to.be.instanceof(androidlib.Device);
+			}
+		} catch (e) {
+			if (e.message !== 'Unable to find and start adb') {
+				throw e;
+			}
 		}
 	});
 
