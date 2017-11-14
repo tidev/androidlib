@@ -106,9 +106,18 @@ describe('Genymotion', () => {
 
 		const geny = await androidlib.genymotion.detect(genyDir, vbox);
 
+		let playerPath;
+
+		if (process.platform === 'darwin') {
+			playerPath = path.join(genyDir, 'player.app', 'Contents', 'MacOS', `player${exe}`);
+		} else {
+			playerPath = path.join(genyDir, `player${exe}`);
+
+		}
+
 		expect(geny.executables).to.deep.equal({
 			genymotion: path.join(genyDir, `genymotion${exe}`),
-			player: path.join(genyDir, `player${exe}`)
+			player: playerPath
 		});
 
 		expect(geny.emulators).to.deep.equal([
