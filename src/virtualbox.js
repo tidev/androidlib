@@ -1,6 +1,7 @@
+import options from './options';
 import path from 'path';
 
-import { cache } from 'appcd-util';
+import { arrayify, cache, get } from 'appcd-util';
 import { expandPath } from 'appcd-path';
 import { exe, run } from 'appcd-subprocess';
 import { isDir, isFile } from 'appcd-fs';
@@ -27,8 +28,8 @@ export const virtualBoxLocations = {
 	]
 };
 
-const VM_INFO_REGEX = /^"(.+)" \{(.+)\}$/;
-const GUESTPROPERTY_REGEX = /Name: (\S+), value: (\S*), timestamp:/;
+const vmInfoRegex = /^"(.+)" \{(.+)\}$/;
+const guestpropertyRegex = /Name: (\S+), value: (\S*), timestamp:/;
 
 /**
  * VirtualBox information
@@ -70,14 +71,14 @@ export class VirtualBox {
 	/**
 	 * List all VirtualBox VMs.
 	 *
-	 * @return {Promise<Array.<Object>|null>} - Array of VM objects with guid and name, or null if command errored.
+	 * @return {Promise<Array.<Object>>} - Array of VM objects with guid and name.
 	 */
 	async list() {
 		try {
 			const { stdout } = await run(this.executables.vboxmanage, [ 'list', 'vms' ]);
 			const vms = [];
 			for (const vm of stdout.trim().split(/\r?\n/)) {
-				const info = VM_INFO_REGEX.exec(vm);
+				const info = vmInfoRegex.exec(vm);
 				if (info) {
 					vms.push({
 						name: info[1],
@@ -87,7 +88,7 @@ export class VirtualBox {
 			}
 			return vms;
 		} catch (e) {
-			return null;
+			return [];
 		}
 	}
 
@@ -95,7 +96,7 @@ export class VirtualBox {
 	 * Query the guestproperties of a VM.
 	 *
 	 * @param {String}  guid - The guid for the VirtualBox VM.
-	 * @return {Promise<Array.<Object>|null>} - Array of guestproperty objects with name and value,
+	 * @return {Promise<Array.<Object>>} - Array of guestproperty objects with name and value,
 	 * or null if command errored.
 	 */
 	async getGuestproperties(guid) {
@@ -104,7 +105,7 @@ export class VirtualBox {
 			const properties = [];
 
 			for (const guestproperty of stdout.trim().split(/\r?\n/)) {
-				const propertyInfo = GUESTPROPERTY_REGEX.exec(guestproperty);
+				const propertyInfo = guestpropertyRegex.exec(guestproperty);
 				if (propertyInfo) {
 					properties.push({
 						name: propertyInfo[1],
@@ -114,7 +115,7 @@ export class VirtualBox {
 			}
 			return properties;
 		} catch (e) {
-			return null;
+			return [];
 		}
 	}
 }
@@ -127,7 +128,12 @@ export class VirtualBox {
  */
 export function getVirtualBox(force) {
 	return cache('virtualbox', force, async () => {
-		for (let dir of virtualBoxLocations[process.platform]) {
+		let searchPaths = arrayify(get(options, 'virtualbox.searchPaths'), true);
+
+		if (!searchPaths.length) {
+			searchPaths = virtualBoxLocations[process.platform];
+		}
+		for (let dir of searchPaths) {
 			dir = expandPath(dir);
 			try {
 				return new VirtualBox(dir);
