@@ -137,5 +137,7 @@ describe('ADB', () => {
 				done();
 			}
 		});
+
+		handle.on('error', done);
 	});
 });
