@@ -113,10 +113,6 @@ export class Genymotion {
 				break;
 			}
 		}
-
-		if (!this.home) {
-			throw new Error('Unable to find Genymotion home directory');
-		}
 	}
 
 	async init(vbox) {
