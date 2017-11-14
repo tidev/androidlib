@@ -1,6 +1,7 @@
 import path from 'path';
 
 import * as androidlib from '../dist/index';
+import { cmd } from 'appcd-subprocess';
 
 describe('NDK', () => {
 	it('should error if directory is invalid', () => {
@@ -56,8 +57,8 @@ describe('NDK', () => {
 			version: null,
 			arch: '64-bit',
 			executables: {
-				'ndk-build': path.join(dir, 'ndk-build'),
-				'ndk-which': path.join(dir, 'ndk-which')
+				'ndk-build': path.join(dir, `ndk-build${cmd}`),
+				'ndk-which': path.join(dir, `ndk-which${cmd}`)
 			}
 		});
 	});
@@ -71,8 +72,8 @@ describe('NDK', () => {
 			version: '9.3',
 			arch: '64-bit',
 			executables: {
-				'ndk-build': path.join(dir, 'ndk-build'),
-				'ndk-which': path.join(dir, 'ndk-which')
+				'ndk-build': path.join(dir, `ndk-build${cmd}`),
+				'ndk-which': path.join(dir, `ndk-which${cmd}`)
 			}
 		});
 	});
@@ -86,8 +87,8 @@ describe('NDK', () => {
 			version: '9.3',
 			arch: '32-bit',
 			executables: {
-				'ndk-build': path.join(dir, 'ndk-build'),
-				'ndk-which': path.join(dir, 'ndk-which')
+				'ndk-build': path.join(dir, `ndk-build${cmd}`),
+				'ndk-which': path.join(dir, `ndk-which${cmd}`)
 			}
 		});
 	});
@@ -101,8 +102,8 @@ describe('NDK', () => {
 			version: '11.1.2683735',
 			arch: '64-bit',
 			executables: {
-				'ndk-build': path.join(dir, 'ndk-build'),
-				'ndk-which': path.join(dir, 'ndk-which')
+				'ndk-build': path.join(dir, `ndk-build${cmd}`),
+				'ndk-which': path.join(dir, `ndk-which${cmd}`)
 			}
 		});
 	});
@@ -116,8 +117,8 @@ describe('NDK', () => {
 			version: '11.1.2683735',
 			arch: '32-bit',
 			executables: {
-				'ndk-build': path.join(dir, 'ndk-build'),
-				'ndk-which': path.join(dir, 'ndk-which')
+				'ndk-build': path.join(dir, `ndk-build${cmd}`),
+				'ndk-which': path.join(dir, `ndk-which${cmd}`)
 			}
 		});
 	});
