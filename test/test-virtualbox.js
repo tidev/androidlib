@@ -56,11 +56,11 @@ describe('VirtualBox', () => {
 		]);
 	});
 
-	it('list vms should return null if vboxmanage errored', async () => {
+	it('list vms should return empty array if vboxmanage errored', async () => {
 		const dir = path.resolve(`./test/mocks/virtualbox/${process.platform}/bad`);
 		const vbox = new androidlib.virtualbox.VirtualBox(dir);
 		const results = await vbox.list();
-		expect(results).to.equal(null);
+		expect(results).to.deep.equal([]);
 	});
 
 	it('should enumerate guestproperties', async () => {
@@ -81,10 +81,10 @@ describe('VirtualBox', () => {
 		]);
 	});
 
-	it('enumerate guest properties should return null if vboxmanage errored', async () => {
+	it('enumerate guest properties should return empty arra if vboxmanage errored', async () => {
 		const dir = path.resolve(`./test/mocks/virtualbox/${process.platform}/bad`);
 		const vbox = new androidlib.virtualbox.VirtualBox(dir);
 		const results = await vbox.getGuestproperties('a9364ace-c263-433a-b137-1c8d4e70c348');
-		expect(results).to.equal(null);
+		expect(results).to.deep.equal([]);
 	});
 });

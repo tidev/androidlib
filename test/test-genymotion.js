@@ -5,6 +5,15 @@ import * as androidlib from '../dist/index';
 import { exe } from 'appcd-subprocess';
 
 describe('Genymotion', () => {
+
+	beforeEach(function () {
+		this.searchPaths = androidlib.options.virtualbox.searchPaths;
+	});
+
+	afterEach(function () {
+		androidlib.options.virtualbox.searchPaths = this.searchPaths;
+	});
+
 	it('should error if directory is invalid', () => {
 		expect(() => {
 			new androidlib.genymotion.Genymotion();
@@ -38,13 +47,8 @@ describe('Genymotion', () => {
 	});
 
 	it('should get emulators', async () => {
-		const genyDir = path.resolve(`./test/mocks/genymotion/${process.platform}/good`);
-		const geny = new androidlib.genymotion.Genymotion(genyDir);
-
-		const vboxDir = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
-		const vbox = new androidlib.virtualbox.VirtualBox(vboxDir);
-
-		const results = await geny.getEmulators(vbox);
+		androidlib.options.virtualbox.searchPaths = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
+		const results = await androidlib.genymotion.getEmulators();
 
 		expect(results).to.deep.equal([
 			{
@@ -61,34 +65,26 @@ describe('Genymotion', () => {
 	});
 
 	it('getEmulatorInfo should error if no guid', async () => {
-		const genyDir = path.resolve(`./test/mocks/genymotion/${process.platform}/good`);
-		const geny = new androidlib.genymotion.Genymotion(genyDir);
-
 		try {
-			await geny.getEmulatorInfo({ });
+			await androidlib.genymotion.getEmulatorInfo({ });
 		} catch (e) {
 			expect(e instanceof TypeError).to.equal(true);
-			expect(e.message).to.equal('Guid must be a string');
+			expect(e.message).to.equal('vm must be a valid VM');
 		}
 	});
 
-	it('getEmulatorInfo should not error if no vbox', async () => {
-		const genyDir = path.resolve(`./test/mocks/genymotion/${process.platform}/good`);
-		const geny = new androidlib.genymotion.Genymotion(genyDir);
-
-		await geny.getEmulatorInfo({ guid: 'foo' });
-	});
-
 	it('should get emulator info', async () => {
-		const genyDir = path.resolve(`./test/mocks/genymotion/${process.platform}/good`);
-		const geny = new androidlib.genymotion.Genymotion(genyDir);
-
-		const vboxDir = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
-		const vbox = new androidlib.virtualbox.VirtualBox(vboxDir);
-
-		const results = await geny.getEmulatorInfo({ guid: 'a9364ace-c263-433a-b137-1c8d4e70c348', vbox: vbox });
+		androidlib.options.virtualbox.searchPaths = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
+		const results = await androidlib.genymotion.getEmulatorInfo({
+			vm: {
+				name: 'PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920',
+				guid: 'a9364ace-c263-433a-b137-1c8d4e70c348'
+			}
+		});
 
 		expect(results).to.deep.equal({
+			name: 'PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920',
+			guid: 'a9364ace-c263-433a-b137-1c8d4e70c348',
 			target: '8.0',
 			'sdk-version': '8.0',
 			genymotion: '2.11.0',
@@ -99,12 +95,9 @@ describe('Genymotion', () => {
 	});
 
 	it('should detect a genymotion install', async () => {
+		androidlib.options.virtualbox.searchPaths = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
 		const genyDir = path.resolve(`./test/mocks/genymotion/${process.platform}/good`);
-
-		const vboxDir = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
-		const vbox = new androidlib.virtualbox.VirtualBox(vboxDir);
-
-		const geny = await androidlib.genymotion.detect(genyDir, vbox);
+		const geny = await androidlib.genymotion.detect(genyDir);
 
 		let playerPath;
 

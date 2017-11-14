@@ -2,15 +2,13 @@ import path from 'path';
 
 import * as androidlib from '../dist/index';
 
-describe('Emulators', () => {
+describe('AndroidEmulators', () => {
 	beforeEach(function () {
 		this.avdPath = androidlib.options.avd.path;
-		this.searchPaths = androidlib.options.virtualbox.searchPaths;
 	});
 
 	afterEach(async function () {
 		androidlib.options.avd.path = this.avdPath;
-		androidlib.options.virtualbox.searchPaths = this.searchPaths;
 	});
 
 	it('should detect mock emulators', async function () {
@@ -19,13 +17,13 @@ describe('Emulators', () => {
 		const avdDir = path.join(__dirname, 'mocks', 'avd');
 
 		androidlib.options.avd.path = avdDir;
-		androidlib.options.virtualbox.searchPaths = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
 
-		const emulators = await androidlib.emulators.getEmulators(sdk);
+		const emulators = await androidlib.androidEmulator.getEmulators(sdk);
 		expect(emulators).to.be.an('array');
-		expect(emulators).to.have.lengthOf(2);
-		let emulator = emulators[0];
-		expect(emulator).to.be.instanceof(androidlib.emulators.AndroidEmulator);
+		expect(emulators).to.have.lengthOf(1);
+
+		const emulator = emulators[0];
+		expect(emulator).to.be.instanceof(androidlib.Emulator);
 
 		expect(emulator).to.deep.equal({
 			id: 'test_API_23',
@@ -39,20 +37,6 @@ describe('Emulators', () => {
 			target: null,
 			'sdk-version': null,
 			'api-level': null
-		});
-
-		emulator = emulators[1];
-		expect(emulator).to.be.instanceof(androidlib.emulators.GenymotionEmulator);
-
-		expect(emulator).to.deep.equal({
-			name: 'PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920',
-			guid: 'a9364ace-c263-433a-b137-1c8d4e70c348',
-			target: '8.0',
-			'sdk-version': '8.0',
-			genymotion: '2.11.0',
-			dpi: 420,
-			abi: 'x86',
-			googleApis: null
 		});
 	});
 
