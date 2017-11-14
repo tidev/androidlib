@@ -124,7 +124,7 @@ export default class Connection extends EventEmitter {
 	 * @param {String} cmd - The command to run.
 	 * @param {Object} [opts] - Execute options.
 	 * @param {Boolean} [opts.bufferUntilClose=false] - Buffers all received data until ADB closes the connection.
-	 * @returns {Promise<Buffer?>}
+	 * @returns {Promise<Buffer?>} Resolves the received bytes.
 	 * @access public
 	 */
 	async exec(cmd, opts = {}) {
