@@ -1,5 +1,5 @@
 import { cache } from 'appcd-util';
-import { getEmulators as getAndroidEmulators, isEmulator as isAndroidEmulator } from './androidEmulator';
+import { getEmulators as getAndroidEmulators, isEmulator as isAndroidEmulator } from './android-emulator';
 import { getEmulators as getGenymotionEmulators, isEmulator as isGenymotionEmulator } from './genymotion';
 
 /**

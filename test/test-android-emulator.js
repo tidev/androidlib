@@ -2,7 +2,7 @@ import path from 'path';
 
 import * as androidlib from '../dist/index';
 
-describe('AndroidEmulators', () => {
+describe('AndroidEmulator', () => {
 	beforeEach(function () {
 		this.avdPath = androidlib.options.avd.path;
 	});

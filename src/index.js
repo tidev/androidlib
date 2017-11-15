@@ -9,7 +9,7 @@ import Device, * as devices from './device';
 import Emulator, * as emulators  from './emulator';
 
 import * as adb from './adb';
-import * as androidEmulator from './androidEmulator';
+import * as androidEmulator from './android-emulator';
 import * as genymotion from './genymotion';
 import * as ndk from './ndk';
 import * as sdk from './sdk';
