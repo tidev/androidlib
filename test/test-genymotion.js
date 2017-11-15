@@ -59,7 +59,10 @@ describe('Genymotion', () => {
 				genymotion: '2.11.0',
 				dpi: 420,
 				abi: 'x86',
-				googleApis: null
+				googleApis: null,
+				display: null,
+				hardwareOpenGL: null,
+				ipaddress: null
 			}
 		]);
 	});
@@ -122,7 +125,10 @@ describe('Genymotion', () => {
 				genymotion: '2.11.0',
 				dpi: 420,
 				abi: 'x86',
-				googleApis: null
+				googleApis: null,
+				display: null,
+				hardwareOpenGL: null,
+				ipaddress: null
 			}
 		]);
 		expect(geny.path).to.equal(genyDir);

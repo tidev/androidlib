@@ -21,7 +21,7 @@ describe('Emulators', () => {
 		androidlib.options.avd.path = avdDir;
 		androidlib.options.virtualbox.searchPaths = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
 
-		const emulators = await androidlib.emulators.getEmulators(sdk);
+		const emulators = await androidlib.emulators.getEmulators({ force: true, sdk });
 
 		expect(emulators).to.be.an('array');
 		expect(emulators).to.have.lengthOf(2);
@@ -53,14 +53,16 @@ describe('Emulators', () => {
 			genymotion: '2.11.0',
 			dpi: 420,
 			abi: 'x86',
-			googleApis: null
+			googleApis: null,
+			display: null,
+			hardwareOpenGL: null,
+			ipaddress: null
 		});
 	});
 
 	it('should detect system emulators', async () => {
-		const emulators = await androidlib.emulators.getEmulators();
+		const emulators = await androidlib.emulators.getEmulators({ force: true });
 		expect(emulators).to.be.an('array');
-
 		console.log(emulators);
 
 		for (const emu of emulators) {

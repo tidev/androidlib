@@ -18,7 +18,7 @@ describe('AndroidEmulator', () => {
 
 		androidlib.options.avd.path = avdDir;
 
-		const emulators = await androidlib.avd.getEmulators(sdk);
+		const emulators = await androidlib.avd.getEmulators({ force: true, sdk });
 		expect(emulators).to.be.an('array');
 		expect(emulators).to.have.lengthOf(1);
 
@@ -41,7 +41,7 @@ describe('AndroidEmulator', () => {
 	});
 
 	it('should detect system emulators', async () => {
-		const emulators = await androidlib.avd.getEmulators();
+		const emulators = await androidlib.avd.getEmulators({ force: true });
 		expect(emulators).to.be.an('array');
 
 		for (const emu of emulators) {

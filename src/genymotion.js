@@ -60,7 +60,13 @@ export const genymotionPlist = '~/Library/Preferences/com.genymobile.Genymotion.
 /**
  * Genymotion emulator information.
  */
-export class GenymotionEmulator extends BaseEmulator {}
+export class GenymotionEmulator extends BaseEmulator {
+	display = null;
+
+	hardwareOpenGL = null;
+
+	ipaddress = null;
+}
 
 export default GenymotionEmulator;
 
@@ -161,12 +167,13 @@ export class Genymotion {
 /**
  * Get the Genymotion emulators installed on a system.
  *
- * @param  {Object} [vbox] - Object containing information about the VirtualBox install.
- * @param {Boolean} [force] - When `true`, bypasses the cache and forces redetection.
+ * @param {Object} [opts] - Various options.
+ * @param {Boolean} [opts.force] - When `true`, bypasses the cache and forces redetection.
+ * @param {Object} [opts.vbox] - Object containing information about the VirtualBox install.
  * @return {Promise<Array<GenymotionEmulator>>} The installed emulators.
  * @access public
  */
-export function getEmulators(vbox, force) {
+export function getEmulators({ vbox, force } = {}) {
 	return cache(`androidlib:genymotion:${vbox && vbox.path || ''}`, force, async () => {
 		if (!vbox) {
 			vbox = await getVirtualBox();
