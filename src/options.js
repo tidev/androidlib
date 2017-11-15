@@ -14,10 +14,16 @@ const options = {
 	},
 	executables: {
 	},
+	genymotion: {
+		searchPaths: null
+	},
 	ndk: {
 		searchPaths: null
 	},
 	sdk: {
+		searchPaths: null
+	},
+	virtualbox: {
 		searchPaths: null
 	}
 };

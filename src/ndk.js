@@ -87,7 +87,7 @@ export class NDK {
 		this.arch = '32-bit';
 		this.executables = {
 			'ndk-build': path.join(dir, `ndk-build${cmd}`),
-			'ndk-which': path.join(dir, 'ndk-which')
+			'ndk-which': path.join(dir, `ndk-which${cmd}`)
 		};
 
 		for (const name of Object.keys(this.executables)) {

@@ -1,0 +1,23 @@
+#!/bin/sh
+arg=$1
+if [ $arg = "-version" ];
+then
+	echo "5.0.28r111378"
+elif [ $arg = "list" ];
+then
+	echo "\"PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920\" {a9364ace-c263-433a-b137-1c8d4e70c348}"
+elif [ $arg = "guestproperty" ];
+then
+	echo "Name: android_version, value: 8.0, timestamp: 1510577198917062000, flags:
+Name: datadisk_size, value: 32768, timestamp: 1510577198558287000, flags:
+Name: genymotion_device_id, value: 000000000000000, timestamp: 1510577199208013000, flags:
+Name: genymotion_force_navbar, value: 1, timestamp: 1510585406660896000, flags:
+Name: genymotion_platform, value: p, timestamp: 1510577199026636000, flags:
+Name: genymotion_player_version, value: 1, timestamp: 1510586070988989000, flags:
+Name: genymotion_version, value: 2.11.0, timestamp: 1510577198975729000, flags:
+Name: genymotion_vm_name, value: PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920, timestamp: 1510586071023881000, flags:
+Name: release_date, value: Thu Oct 19 02:10:10 2017 GMT, timestamp: 1510577198607091000, flags:
+Name: sensor_camera, value: 1, timestamp: 1510577198657046000, flags:
+Name: sensor_gyro, value: 1, timestamp: 1510577198705903000, flags:
+Name: vbox_dpi, value: 420, timestamp: 1510585406587602000, flags:"
+fi
