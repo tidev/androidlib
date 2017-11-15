@@ -18,12 +18,12 @@ describe('AndroidEmulator', () => {
 
 		androidlib.options.avd.path = avdDir;
 
-		const emulators = await androidlib.androidEmulator.getEmulators(sdk);
+		const emulators = await androidlib.avd.getEmulators(sdk);
 		expect(emulators).to.be.an('array');
 		expect(emulators).to.have.lengthOf(1);
 
 		const emulator = emulators[0];
-		expect(emulator).to.be.instanceof(androidlib.Emulator);
+		expect(emulator).to.be.instanceof(androidlib.AndroidEmulator);
 
 		expect(emulator).to.deep.equal({
 			id: 'test_API_23',
@@ -41,7 +41,7 @@ describe('AndroidEmulator', () => {
 	});
 
 	it('should detect system emulators', async () => {
-		const emulators = await androidlib.androidEmulator.getEmulators();
+		const emulators = await androidlib.avd.getEmulators();
 		expect(emulators).to.be.an('array');
 
 		for (const emu of emulators) {

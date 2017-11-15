@@ -1,12 +1,13 @@
+import BaseEmulator from './base-emulator';
 import options from './options';
 import path from 'path';
 import plist from 'simple-plist';
+
 import * as registry from 'appcd-winreg';
 
-import { arrayify, get } from 'appcd-util';
+import { arrayify, cache, get } from 'appcd-util';
 import { exe } from 'appcd-subprocess';
 import { expandPath } from 'appcd-path';
-import { GenymotionEmulator } from './emulator';
 import { isDir, isFile } from 'appcd-fs';
 import { getVirtualBox } from './virtualbox';
 
@@ -50,7 +51,18 @@ export const genymotionHomeLocations = {
 	]
 };
 
+/**
+ * The default location of the Genymotion configuration plist on macOS.
+ * @type {String}
+ */
 export const genymotionPlist = '~/Library/Preferences/com.genymobile.Genymotion.plist';
+
+/**
+ * Genymotion emulator information.
+ */
+export class GenymotionEmulator extends BaseEmulator {}
+
+export default GenymotionEmulator;
 
 /**
  * Genymotion information.
@@ -120,7 +132,8 @@ export class Genymotion {
 
 	/**
 	 * Init a Genymotion instance, populating emulators.
-	 * @param {VirtualBox}  vbox - A VirtualBox instance
+	 *
+	 * @param {VirtualBox} vbox - A VirtualBox instance
 	 * @return {Promise<Genymotion>} A Genymotion instance
 	 * @access public
 	 */
@@ -139,6 +152,7 @@ export class Genymotion {
 			getEmulators(vbox).then(results => this.emulators = results),
 			detectRegistry()
 		]);
+
 		return this;
 	}
 
@@ -148,23 +162,28 @@ export class Genymotion {
  * Get the Genymotion emulators installed on a system.
  *
  * @param  {Object} [vbox] - Object containing information about the VirtualBox install.
- * @return {Array<Object>} The installed emulators.
+ * @param {Boolean} [force] - When `true`, bypasses the cache and forces redetection.
+ * @return {Promise<Array<GenymotionEmulator>>} The installed emulators.
  * @access public
  */
-export async function getEmulators(vbox) {
-	if (!vbox) {
-		vbox = await getVirtualBox();
-	}
-	const emulators = [];
-	const vms = await vbox.list();
-	await Promise.all(vms.map(async vm => {
-		Object.assign(vm, await getEmulatorInfo({ vm: vm, vbox }));
-		if (vm.genymotion) {
-			emulators.push(new GenymotionEmulator(vm));
+export function getEmulators(vbox, force) {
+	return cache(`androidlib:genymotion:${vbox && vbox.path || ''}`, force, async () => {
+		if (!vbox) {
+			vbox = await getVirtualBox();
 		}
-		return;
-	}));
-	return emulators;
+		const emulators = [];
+		const vms = await vbox.list();
+
+		await Promise.all(vms.map(async vm => {
+			await getEmulatorInfo({ vm: vm, vbox });
+			if (vm.genymotion) {
+				emulators.push(new GenymotionEmulator(vm));
+			}
+			return;
+		}));
+
+		return emulators;
+	});
 }
 
 /**
@@ -176,13 +195,13 @@ export async function getEmulators(vbox) {
  * @access public
  */
 export async function getEmulatorInfo({ vm, vbox }) {
-	if (!vm || !vm.guid || !vm.name) {
+	if (!vm || !vm.id || !vm.name) {
 		throw new TypeError('vm must be a valid VM');
 	}
 	if (!vbox) {
 		vbox = await getVirtualBox();
 	}
-	const vminfo = await vbox.getGuestproperties(vm.guid);
+	const vminfo = await vbox.getGuestproperties(vm.id);
 	if (vminfo) {
 		for (const info of vminfo) {
 			switch (info.name) {
@@ -207,6 +226,7 @@ export async function getEmulatorInfo({ vm, vbox }) {
 					break;
 			}
 		}
+
 		if (vm.genymotion) {
 			vm.abi = 'x86';
 			vm.googleApis = null; // null means maybe since we don't know for sure unless the emulator is running
@@ -216,7 +236,8 @@ export async function getEmulatorInfo({ vm, vbox }) {
 }
 
 /**
- * Determines if an emulator is a Genymotion emulator
+ * Determines if an emulator is a Genymotion emulator.
+ *
  * @param {Object} info - The device information.
  * @returns {Boolean}
  */

@@ -1,10 +1,10 @@
+import BaseEmulator from './base-emulator';
 import fs from 'fs';
 import net from 'net';
 import options from './options';
 import path from 'path';
 import SDK from './sdk';
 
-import { AndroidEmulator } from './emulator';
 import { cache, get } from 'appcd-util';
 import { expandPath } from 'appcd-path';
 import { isDir, isFile } from 'appcd-fs';
@@ -26,19 +26,26 @@ export function getAvdDir() {
 }
 
 /**
+ * Android emulator information.
+ */
+export class AndroidEmulator extends BaseEmulator {}
+
+export default AndroidEmulator;
+
+/**
  * Detects Android Emulators.
  *
  * @param {SDK} [sdk] - When passed in, it will attempt to resolve the AVD's target, SDK version,
  * and API level.
  * @param {Boolean} [force] - When `true`, bypasses the cache and forces redetection.
- * @returns {Promise<Array>}
+ * @returns {Promise<Array<AndroidEmulator>>}
  */
 export function getEmulators(sdk, force) {
 	return cache(`androidlib:avd:${sdk && sdk.path || ''}`, force, async () => {
 		const avdDir = expandPath(getAvdDir());
-		const results = [];
+		const emulators = [];
 		if (!isDir(avdDir)) {
-			return results;
+			return emulators;
 		}
 
 		const avdFilenameRegExp = /^(.+)\.ini$/;
@@ -86,7 +93,7 @@ export function getEmulators(sdk, force) {
 				}
 			}
 
-			results.push(new AndroidEmulator({
+			emulators.push(new AndroidEmulator({
 				id:            config['AvdId'] || name,
 				name:          config['avd.ini.displayname'] || name,
 				device:        config['hw.device.name'] + ' (' + config['hw.device.manufacturer'] + ')',
@@ -100,7 +107,8 @@ export function getEmulators(sdk, force) {
 				'api-level':   apiLevel
 			}));
 		}
-		return results;
+
+		return emulators;
 	});
 }
 

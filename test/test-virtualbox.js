@@ -40,6 +40,7 @@ describe('VirtualBox', () => {
 			executables: {
 				vboxmanage: path.join(dir, `vboxmanage${exe}`)
 			},
+			path: dir,
 			version: '5.0.28r111378'
 		});
 	});
@@ -51,7 +52,7 @@ describe('VirtualBox', () => {
 		expect(results).to.deep.equal([
 			{
 				name: 'PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920',
-				guid: 'a9364ace-c263-433a-b137-1c8d4e70c348'
+				id: 'a9364ace-c263-433a-b137-1c8d4e70c348'
 			}
 		]);
 	});

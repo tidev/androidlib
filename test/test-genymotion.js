@@ -53,7 +53,7 @@ describe('Genymotion', () => {
 		expect(results).to.deep.equal([
 			{
 				name: 'PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920',
-				guid: 'a9364ace-c263-433a-b137-1c8d4e70c348',
+				id: 'a9364ace-c263-433a-b137-1c8d4e70c348',
 				target: '8.0',
 				'sdk-version': '8.0',
 				genymotion: '2.11.0',
@@ -78,13 +78,13 @@ describe('Genymotion', () => {
 		const results = await androidlib.genymotion.getEmulatorInfo({
 			vm: {
 				name: 'PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920',
-				guid: 'a9364ace-c263-433a-b137-1c8d4e70c348'
+				id: 'a9364ace-c263-433a-b137-1c8d4e70c348'
 			}
 		});
 
 		expect(results).to.deep.equal({
 			name: 'PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920',
-			guid: 'a9364ace-c263-433a-b137-1c8d4e70c348',
+			id: 'a9364ace-c263-433a-b137-1c8d4e70c348',
 			target: '8.0',
 			'sdk-version': '8.0',
 			genymotion: '2.11.0',
@@ -116,7 +116,7 @@ describe('Genymotion', () => {
 		expect(geny.emulators).to.deep.equal([
 			{
 				name: 'PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920',
-				guid: 'a9364ace-c263-433a-b137-1c8d4e70c348',
+				id: 'a9364ace-c263-433a-b137-1c8d4e70c348',
 				target: '8.0',
 				'sdk-version': '8.0',
 				genymotion: '2.11.0',

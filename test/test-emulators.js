@@ -22,10 +22,11 @@ describe('Emulators', () => {
 		androidlib.options.virtualbox.searchPaths = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
 
 		const emulators = await androidlib.emulators.getEmulators(sdk);
+
 		expect(emulators).to.be.an('array');
 		expect(emulators).to.have.lengthOf(2);
 		let emulator = emulators[0];
-		expect(emulator).to.be.instanceof(androidlib.emulators.AndroidEmulator);
+		expect(emulator).to.be.instanceof(androidlib.AndroidEmulator);
 
 		expect(emulator).to.deep.equal({
 			id: 'test_API_23',
@@ -42,11 +43,11 @@ describe('Emulators', () => {
 		});
 
 		emulator = emulators[1];
-		expect(emulator).to.be.instanceof(androidlib.emulators.GenymotionEmulator);
+		expect(emulator).to.be.instanceof(androidlib.GenymotionEmulator);
 
 		expect(emulator).to.deep.equal({
 			name: 'PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920',
-			guid: 'a9364ace-c263-433a-b137-1c8d4e70c348',
+			id: 'a9364ace-c263-433a-b137-1c8d4e70c348',
 			target: '8.0',
 			'sdk-version': '8.0',
 			genymotion: '2.11.0',
@@ -57,12 +58,18 @@ describe('Emulators', () => {
 	});
 
 	it('should detect system emulators', async () => {
-		const emulators = await androidlib.androidEmulator.getEmulators();
+		const emulators = await androidlib.emulators.getEmulators();
 		expect(emulators).to.be.an('array');
+
+		console.log(emulators);
 
 		for (const emu of emulators) {
 			expect(emu).to.be.an('object');
-			expect(emu).to.have.keys('id', 'name', 'device', 'path', 'abi', 'skin', 'sdcard', 'googleApis', 'target', 'sdk-version', 'api-level');
+			if (emu instanceof androidlib.AndroidEmulator) {
+				expect(emu).to.have.keys('id', 'name', 'device', 'path', 'abi', 'skin', 'sdcard', 'googleApis', 'target', 'sdk-version', 'api-level');
+			} else {
+				expect(emu).to.have.keys('id', 'name', 'display', 'dpi', 'hardwareOpenGL', 'genymotion', 'abi', 'target', 'sdk-version', 'ipaddress', 'googleApis');
+			}
 		}
 	});
 });

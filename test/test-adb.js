@@ -138,6 +138,10 @@ describe('ADB', () => {
 			}
 		});
 
-		handle.on('error', done);
+		handle.on('error', err => {
+			if (err.message !== 'Unable to find and start adb') {
+				done(err);
+			}
+		});
 	});
 });

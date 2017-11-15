@@ -130,30 +130,30 @@ ansi-styles@^3.1.0:
   dependencies:
     color-convert "^1.9.0"
 
-appcd-dispatcher@1.0.0-2:
-  version "1.0.0-2"
-  resolved "https://registry.yarnpkg.com/appcd-dispatcher/-/appcd-dispatcher-1.0.0-2.tgz#bf54715db59fd3846c8df86d3346f892b042507b"
+appcd-dispatcher@^1.0.0-3:
+  version "1.0.0-3"
+  resolved "https://registry.yarnpkg.com/appcd-dispatcher/-/appcd-dispatcher-1.0.0-3.tgz#3c2b4fd14e6859c70b8fa302e79ea42004de9c4c"
   dependencies:
-    appcd-logger "1.0.0-2"
-    appcd-response "1.0.0-2"
-    gawk "^4.4.3"
+    appcd-logger "^1.0.0-3"
+    appcd-response "^1.0.0-3"
+    gawk "^4.4.4"
     path-to-regexp "^2.1.0"
     source-map-support "^0.5.0"
     uuid "^3.1.0"
 
-appcd-fs@1.0.0-2, appcd-fs@^1.0.0-0:
-  version "1.0.0-2"
-  resolved "https://registry.yarnpkg.com/appcd-fs/-/appcd-fs-1.0.0-2.tgz#303ca92a0c8a785ecaccce40169fa3880443e887"
+appcd-fs@^1.0.0-3:
+  version "1.0.0-3"
+  resolved "https://registry.yarnpkg.com/appcd-fs/-/appcd-fs-1.0.0-3.tgz#6f85bbec02f6791876d63312fbf81cdef7f50303"
   dependencies:
     source-map-support "^0.5.0"
 
-appcd-gulp@^1.0.0-0:
-  version "1.0.0-2"
-  resolved "https://registry.yarnpkg.com/appcd-gulp/-/appcd-gulp-1.0.0-2.tgz#e4d6ca91c60f9495b9a509408ccc652f9907774c"
+appcd-gulp@^1.0.0-3:
+  version "1.0.0-3"
+  resolved "https://registry.yarnpkg.com/appcd-gulp/-/appcd-gulp-1.0.0-3.tgz#bcbc17e7070de2065b4eea4b1495090c31af8499"
   dependencies:
     babel-core "^6.26.0"
     babel-eslint "^8.0.2"
-    babel-plugin-dynamic-import-node "^1.1.0"
+    babel-plugin-dynamic-import-node "^1.2.0"
     babel-plugin-istanbul "^4.1.5"
     babel-plugin-transform-async-to-generator "^6.24.1"
     babel-plugin-transform-class-properties "^6.24.1"
@@ -169,7 +169,7 @@ appcd-gulp@^1.0.0-0:
     chai-as-promised "^7.1.1"
     core-js "^2.5.1"
     del "^3.0.0"
-    esdoc "^1.0.3"
+    esdoc "^1.0.4"
     esdoc-ecmascript-proposal-plugin "^1.0.0"
     esdoc-standard-plugin "^1.0.0"
     eslint "^4.11.0"
@@ -188,79 +188,79 @@ appcd-gulp@^1.0.0-0:
     sinon "^4.1.2"
     sinon-chai "^2.14.0"
 
-appcd-logger@1.0.0-2, appcd-logger@^1.0.0-0:
-  version "1.0.0-2"
-  resolved "https://registry.yarnpkg.com/appcd-logger/-/appcd-logger-1.0.0-2.tgz#d467a4b4fe206a454c96592b42be7c826b63ee6a"
+appcd-logger@^1.0.0-3:
+  version "1.0.0-3"
+  resolved "https://registry.yarnpkg.com/appcd-logger/-/appcd-logger-1.0.0-3.tgz#56711b9576c842afadbf412cdc031e833d78795d"
   dependencies:
     snooplogg "^1.8.0"
     source-map-support "^0.5.0"
 
-appcd-nodejs@1.0.0-2:
-  version "1.0.0-2"
-  resolved "https://registry.yarnpkg.com/appcd-nodejs/-/appcd-nodejs-1.0.0-2.tgz#07d81769b639bd7bf5e68291736680ab5f99de07"
+appcd-nodejs@^1.0.0-3:
+  version "1.0.0-3"
+  resolved "https://registry.yarnpkg.com/appcd-nodejs/-/appcd-nodejs-1.0.0-3.tgz#ed98e797360834feb27abff1d7fb66c70177b96f"
   dependencies:
-    appcd-fs "1.0.0-2"
-    appcd-logger "1.0.0-2"
-    appcd-request "1.0.0-2"
-    appcd-util "1.0.0-2"
+    appcd-fs "^1.0.0-3"
+    appcd-logger "^1.0.0-3"
+    appcd-request "^1.0.0-3"
+    appcd-util "^1.0.0-3"
     fs-extra "^4.0.2"
     progress "^2.0.0"
     source-map-support "^0.5.0"
-    tar-stream "^1.5.4"
+    tar-stream "^1.5.5"
     tmp "^0.0.33"
     yauzl "^2.9.1"
 
-appcd-path@1.0.0-2, appcd-path@^1.0.0-0:
-  version "1.0.0-2"
-  resolved "https://registry.yarnpkg.com/appcd-path/-/appcd-path-1.0.0-2.tgz#129695ffa40681a36b0302bc667f3c5b872bcbc9"
+appcd-path@^1.0.0-3:
+  version "1.0.0-3"
+  resolved "https://registry.yarnpkg.com/appcd-path/-/appcd-path-1.0.0-3.tgz#20d284b9695aaaca64125a67189f5b271bf800f1"
   dependencies:
     source-map-support "^0.5.0"
 
-appcd-request@1.0.0-2:
-  version "1.0.0-2"
-  resolved "https://registry.yarnpkg.com/appcd-request/-/appcd-request-1.0.0-2.tgz#bedeff14161afe3b78f5373c5eb26564b7daf4a2"
+appcd-request@^1.0.0-3:
+  version "1.0.0-3"
+  resolved "https://registry.yarnpkg.com/appcd-request/-/appcd-request-1.0.0-3.tgz#6a30cb59eed5390a1829c6930a3fcf9af8ec3ec6"
   dependencies:
-    appcd-dispatcher "1.0.0-2"
-    appcd-fs "1.0.0-2"
-    appcd-logger "1.0.0-2"
+    appcd-dispatcher "^1.0.0-3"
+    appcd-fs "^1.0.0-3"
+    appcd-logger "^1.0.0-3"
     request "^2.83.0"
     source-map-support "^0.5.0"
 
-appcd-response@1.0.0-2:
-  version "1.0.0-2"
-  resolved "https://registry.yarnpkg.com/appcd-response/-/appcd-response-1.0.0-2.tgz#38f8f0ecfd8ae1810351137fd72ff2cc3761da00"
+appcd-response@^1.0.0-3:
+  version "1.0.0-3"
+  resolved "https://registry.yarnpkg.com/appcd-response/-/appcd-response-1.0.0-3.tgz#a81f1eba7eba2d2feb0879e5d0529682025aa37d"
   dependencies:
-    appcd-fs "1.0.0-2"
-    appcd-winreg "1.0.0-2"
+    appcd-fs "^1.0.0-3"
+    appcd-winreg "^1.0.0-3"
     source-map-support "^0.5.0"
     sprintf-js "^1.1.1"
 
-appcd-subprocess@^1.0.0-0:
-  version "1.0.0-2"
-  resolved "https://registry.yarnpkg.com/appcd-subprocess/-/appcd-subprocess-1.0.0-2.tgz#8b19d1ab6c110299032550c7133aedde94eddd5f"
+appcd-subprocess@^1.0.0-3:
+  version "1.0.0-3"
+  resolved "https://registry.yarnpkg.com/appcd-subprocess/-/appcd-subprocess-1.0.0-3.tgz#832eed7e375b67040747fce94eaad091a0ee2eb4"
   dependencies:
-    appcd-dispatcher "1.0.0-2"
-    appcd-logger "1.0.0-2"
-    appcd-nodejs "1.0.0-2"
-    appcd-path "1.0.0-2"
-    appcd-response "1.0.0-2"
-    gawk "^4.4.3"
+    appcd-dispatcher "^1.0.0-3"
+    appcd-logger "^1.0.0-3"
+    appcd-nodejs "^1.0.0-3"
+    appcd-path "^1.0.0-3"
+    appcd-response "^1.0.0-3"
+    gawk "^4.4.4"
     ps-tree "^1.1.0"
     source-map-support "^0.5.0"
     which "^1.3.0"
 
-appcd-util@1.0.0-2, appcd-util@^1.0.0-0:
-  version "1.0.0-2"
-  resolved "https://registry.yarnpkg.com/appcd-util/-/appcd-util-1.0.0-2.tgz#847b6ab924505a9694e2d945a375fb71a68a0487"
+appcd-util@^1.0.0-3:
+  version "1.0.0-3"
+  resolved "https://registry.yarnpkg.com/appcd-util/-/appcd-util-1.0.0-3.tgz#1802ee23d77b67ff923efbf371ba1309c36b6262"
   dependencies:
-    appcd-fs "1.0.0-2"
+    appcd-fs "^1.0.0-3"
     lodash.get "^4.4.2"
     semver "^5.4.1"
     source-map-support "^0.5.0"
 
-appcd-winreg@1.0.0-2, appcd-winreg@^1.0.0-0:
-  version "1.0.0-2"
-  resolved "https://registry.yarnpkg.com/appcd-winreg/-/appcd-winreg-1.0.0-2.tgz#83ace13ffe11ed923e4ba08e0821216b44fb3379"
+appcd-winreg@^1.0.0-3:
+  version "1.0.0-3"
+  resolved "https://registry.yarnpkg.com/appcd-winreg/-/appcd-winreg-1.0.0-3.tgz#35bc1a0c756ec448ad2ce6f841f94faf1e54eca0"
   dependencies:
     source-map-support "^0.5.0"
     winreg "^1.2.4"
@@ -349,7 +349,7 @@ aws4@^1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.6.0.tgz#83ef5ca860b2b32e4a0deedee8c771b9db57471e"
 
-babel-code-frame@^6.22.0, babel-code-frame@^6.26.0, babel-code-frame@^6.8.0:
+babel-code-frame@^6.22.0, babel-code-frame@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-code-frame/-/babel-code-frame-6.26.0.tgz#63fd43f7dc1e3bb7ce35947db8fe369a3f58c74b"
   dependencies:
@@ -401,7 +401,7 @@ babel-generator@6.11.4:
     lodash "^4.2.0"
     source-map "^0.5.0"
 
-babel-generator@^6.18.0, babel-generator@^6.26.0:
+babel-generator@6.26.0, babel-generator@^6.18.0, babel-generator@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-generator/-/babel-generator-6.26.0.tgz#ac1ae20070b79f6e3ca1d3269613053774f20dc5"
   dependencies:
@@ -498,13 +498,11 @@ babel-messages@^6.23.0, babel-messages@^6.8.0:
   dependencies:
     babel-runtime "^6.22.0"
 
-babel-plugin-dynamic-import-node@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-dynamic-import-node/-/babel-plugin-dynamic-import-node-1.1.0.tgz#bd1d88ac7aaf98df4917c384373b04d971a2b37a"
+babel-plugin-dynamic-import-node@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/babel-plugin-dynamic-import-node/-/babel-plugin-dynamic-import-node-1.2.0.tgz#f91631e703e0595e47d4beafbb088576c87fbeee"
   dependencies:
     babel-plugin-syntax-dynamic-import "^6.18.0"
-    babel-template "^6.26.0"
-    babel-types "^6.26.0"
 
 babel-plugin-istanbul@^4.1.5:
   version "4.1.5"
@@ -777,21 +775,7 @@ babel-template@^6.16.0, babel-template@^6.24.1, babel-template@^6.26.0, babel-te
     babylon "^6.18.0"
     lodash "^4.17.4"
 
-babel-traverse@6.12.0:
-  version "6.12.0"
-  resolved "https://registry.yarnpkg.com/babel-traverse/-/babel-traverse-6.12.0.tgz#f22f54fa0d6eeb7f63585246bab6e637858f5d94"
-  dependencies:
-    babel-code-frame "^6.8.0"
-    babel-messages "^6.8.0"
-    babel-runtime "^6.9.0"
-    babel-types "^6.9.0"
-    babylon "^6.7.0"
-    debug "^2.2.0"
-    globals "^8.3.0"
-    invariant "^2.2.0"
-    lodash "^4.2.0"
-
-babel-traverse@^6.18.0, babel-traverse@^6.24.1, babel-traverse@^6.26.0:
+babel-traverse@6.26.0, babel-traverse@^6.18.0, babel-traverse@^6.24.1, babel-traverse@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-traverse/-/babel-traverse-6.26.0.tgz#46a9cbd7edcc62c8e5c064e2d2d8d0f4035766ee"
   dependencies:
@@ -805,7 +789,7 @@ babel-traverse@^6.18.0, babel-traverse@^6.24.1, babel-traverse@^6.26.0:
     invariant "^2.2.2"
     lodash "^4.17.4"
 
-babel-types@^6.10.2, babel-types@^6.18.0, babel-types@^6.24.1, babel-types@^6.26.0, babel-types@^6.9.0:
+babel-types@^6.10.2, babel-types@^6.18.0, babel-types@^6.24.1, babel-types@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-types/-/babel-types-6.26.0.tgz#a3b073f94ab49eb6fa55cd65227a334380632497"
   dependencies:
@@ -814,17 +798,13 @@ babel-types@^6.10.2, babel-types@^6.18.0, babel-types@^6.24.1, babel-types@^6.26
     lodash "^4.17.4"
     to-fast-properties "^1.0.3"
 
-babylon@6.14.1:
-  version "6.14.1"
-  resolved "https://registry.yarnpkg.com/babylon/-/babylon-6.14.1.tgz#956275fab72753ad9b3435d7afe58f8bf0a29815"
+babylon@6.18.0, babylon@^6.18.0:
+  version "6.18.0"
+  resolved "https://registry.yarnpkg.com/babylon/-/babylon-6.18.0.tgz#af2f3b88fa6f5c1e4c634d1a0f8eac4f55b395e3"
 
 babylon@7.0.0-beta.31, babylon@^7.0.0-beta.31:
   version "7.0.0-beta.31"
   resolved "https://registry.yarnpkg.com/babylon/-/babylon-7.0.0-beta.31.tgz#7ec10f81e0e456fd0f855ad60fa30c2ac454283f"
-
-babylon@^6.18.0, babylon@^6.7.0:
-  version "6.18.0"
-  resolved "https://registry.yarnpkg.com/babylon/-/babylon-6.18.0.tgz#af2f3b88fa6f5c1e4c634d1a0f8eac4f55b395e3"
 
 balanced-match@^1.0.0:
   version "1.0.0"
@@ -1218,7 +1198,7 @@ debug@3.1.0, debug@^3.0.1, debug@^3.1.0:
   dependencies:
     ms "2.0.0"
 
-debug@^2.2.0, debug@^2.6.8:
+debug@^2.6.8:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
   dependencies:
@@ -1509,13 +1489,13 @@ esdoc-unexported-identifier-plugin@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/esdoc-unexported-identifier-plugin/-/esdoc-unexported-identifier-plugin-1.0.0.tgz#1f9874c6a7c2bebf9ad397c3ceb75c9c69dabab1"
 
-esdoc@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/esdoc/-/esdoc-1.0.3.tgz#4a67d33e8b5462e12828cf5d34507f3979cac30e"
+esdoc@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/esdoc/-/esdoc-1.0.4.tgz#e2534a228aa1f185e9746e8e418ae0330b967010"
   dependencies:
-    babel-generator "6.11.4"
-    babel-traverse "6.12.0"
-    babylon "6.14.1"
+    babel-generator "6.26.0"
+    babel-traverse "6.26.0"
+    babylon "6.18.0"
     cheerio "0.22.0"
     color-logger "0.0.3"
     escape-html "1.0.3"
@@ -1918,10 +1898,11 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
 
-gawk@^4.4.3:
-  version "4.4.3"
-  resolved "https://registry.yarnpkg.com/gawk/-/gawk-4.4.3.tgz#79ca4dcd5401ea04323f44eb055a5721d4b298a6"
+gawk@^4.4.4:
+  version "4.4.4"
+  resolved "https://registry.yarnpkg.com/gawk/-/gawk-4.4.4.tgz#aa98945d8d34bd3e2cb58308a685d536115ccff8"
   dependencies:
+    fast-deep-equal "^1.0.0"
     source-map-support "^0.5.0"
 
 gaze@^0.5.1:
@@ -2050,10 +2031,6 @@ global-prefix@^0.1.4:
 globals@^10.0.0:
   version "10.3.0"
   resolved "https://registry.yarnpkg.com/globals/-/globals-10.3.0.tgz#716aba93657b56630b5a0e77de5ea8ac6215afaa"
-
-globals@^8.3.0:
-  version "8.18.0"
-  resolved "https://registry.yarnpkg.com/globals/-/globals-8.18.0.tgz#93d4a62bdcac38cfafafc47d6b034768cb0ffcb4"
 
 globals@^9.17.0, globals@^9.18.0:
   version "9.18.0"
@@ -4135,9 +4112,9 @@ taffydb@2.7.2:
   version "2.7.2"
   resolved "https://registry.yarnpkg.com/taffydb/-/taffydb-2.7.2.tgz#7bf8106a5c1a48251b3e3bc0a0e1732489fd0dc8"
 
-tar-stream@^1.5.4:
-  version "1.5.4"
-  resolved "https://registry.yarnpkg.com/tar-stream/-/tar-stream-1.5.4.tgz#36549cf04ed1aee9b2a30c0143252238daf94016"
+tar-stream@^1.5.5:
+  version "1.5.5"
+  resolved "https://registry.yarnpkg.com/tar-stream/-/tar-stream-1.5.5.tgz#5cad84779f45c83b1f2508d96b09d88c7218af55"
   dependencies:
     bl "^1.0.0"
     end-of-stream "^1.0.0"

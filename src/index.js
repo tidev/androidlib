@@ -5,24 +5,27 @@ if (!Error.prepareStackTrace) {
 
 export { default as options } from './options';
 
+import AndroidEmulator, * as avd from './android-emulator';
+import BaseEmulator from './base-emulator';
 import Device, * as devices from './device';
-import Emulator, * as emulators  from './emulator';
+import GenymotionEmulator, * as genymotion from './genymotion';
 
 import * as adb from './adb';
-import * as androidEmulator from './android-emulator';
-import * as genymotion from './genymotion';
+import * as emulators  from './emulator';
 import * as ndk from './ndk';
 import * as sdk from './sdk';
 import * as virtualbox from './virtualbox';
 
 export {
 	adb,
-	androidEmulator,
+	AndroidEmulator,
+	avd,
+	BaseEmulator,
 	Device,
 	devices,
-	Emulator,
 	emulators,
 	genymotion,
+	GenymotionEmulator,
 	ndk,
 	sdk,
 	virtualbox

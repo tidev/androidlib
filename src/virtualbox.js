@@ -55,6 +55,7 @@ export class VirtualBox {
 		this.executables = {
 			vboxmanage: path.join(dir, `vboxmanage${exe}`)
 		};
+		this.path = dir;
 		this.version = null;
 
 		if (!isFile(this.executables.vboxmanage)) {
@@ -71,7 +72,7 @@ export class VirtualBox {
 	/**
 	 * List all VirtualBox VMs.
 	 *
-	 * @return {Promise<Array.<Object>>} - Array of VM objects with guid and name.
+	 * @return {Promise<Array.<Object>>} - Array of VM objects with id and name.
 	 */
 	async list() {
 		try {
@@ -82,7 +83,7 @@ export class VirtualBox {
 				if (info) {
 					vms.push({
 						name: info[1],
-						guid: info[2],
+						id: info[2],
 					});
 				}
 			}
@@ -95,13 +96,13 @@ export class VirtualBox {
 	/**
 	 * Query the guestproperties of a VM.
 	 *
-	 * @param {String}  guid - The guid for the VirtualBox VM.
+	 * @param {String}  id - The id for the VirtualBox VM.
 	 * @return {Promise<Array.<Object>>} - Array of guestproperty objects with name and value,
 	 * or null if command errored.
 	 */
-	async getGuestproperties(guid) {
+	async getGuestproperties(id) {
 		try {
-			const { stdout } = await run(this.executables.vboxmanage, [ 'guestproperty', 'enumerate', guid ]);
+			const { stdout } = await run(this.executables.vboxmanage, [ 'guestproperty', 'enumerate', id ]);
 			const properties = [];
 
 			for (const guestproperty of stdout.trim().split(/\r?\n/)) {
