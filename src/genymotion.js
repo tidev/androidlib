@@ -102,29 +102,26 @@ export class Genymotion {
 			throw new Error('Directory does not exist');
 		}
 
-		// on OS X, it lives in Contents/MacOS
-		if (process.platform === 'darwin') {
-			let p = path.join(dir, 'Contents', 'MacOS');
-			if (isDir(p)) {
-				dir = p;
-			}
-		}
-
+		this.deployedDir = null;
 		this.emulators 	 = [];
-		this.executables = {};
+		this.executables = {
+			genymotion: path.join(dir, `genymotion${exe}`),
+			player:     path.join(dir, `player${exe}`)
+		};
 		this.home 		 = null;
 		this.path 		 = dir;
+
+		// on macOS, it lives in 'Contents/MacOS'
 		if (process.platform === 'darwin') {
 			this.deployedDir = expandPath(plist.readFileSync(expandPath(genymotionPlist))['vms·path']);
-		} else {
-			this.deployedDir = null;
-		}
-		this.executables.genymotion = path.join(dir, `genymotion${exe}`);
 
-		if (process.platform === 'darwin') {
-			this.executables.player = path.join(dir, 'player.app', 'Contents', 'MacOS', 'player');
-		} else {
-			this.executables.player = path.join(dir, `player${exe}`);
+			if (isFile(this.executables.genymotion)) {
+				this.path = path.resolve(this.path, '../..');
+			} else {
+				this.executables.genymotion = path.join(this.path, 'Contents/MacOS/genymotion');
+			}
+
+			this.executables.player = path.join(this.path, 'Contents/MacOS/player.app/Contents/MacOS/player');
 		}
 
 		for (const name of Object.keys(this.executables)) {
