@@ -62,9 +62,6 @@ export class SDK {
 		let toolsDir = path.join(dir, 'tools');
 		if (!isDir(toolsDir)) {
 			// are we in a subdirectory already in the SDK?
-			toolsDir = path.resolve(dir, '..', 'tools');
-		}
-		if (!isDir(toolsDir)) {
 			throw new Error('Directory does not contain a "tools" directory');
 		}
 

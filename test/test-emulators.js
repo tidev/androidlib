@@ -63,7 +63,6 @@ describe('Emulators', () => {
 	it('should detect system emulators', async () => {
 		const emulators = await androidlib.emulators.getEmulators({ force: true });
 		expect(emulators).to.be.an('array');
-		console.log(emulators);
 
 		for (const emu of emulators) {
 			expect(emu).to.be.an('object');

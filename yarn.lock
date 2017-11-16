@@ -130,26 +130,26 @@ ansi-styles@^3.1.0:
   dependencies:
     color-convert "^1.9.0"
 
-appcd-dispatcher@^1.0.0-3:
-  version "1.0.0-3"
-  resolved "https://registry.yarnpkg.com/appcd-dispatcher/-/appcd-dispatcher-1.0.0-3.tgz#3c2b4fd14e6859c70b8fa302e79ea42004de9c4c"
+appcd-dispatcher@^1.0.0-7:
+  version "1.0.0-7"
+  resolved "https://registry.yarnpkg.com/appcd-dispatcher/-/appcd-dispatcher-1.0.0-7.tgz#eb90baf6a5475fc3d228c3a778da2bacd5bb5297"
   dependencies:
-    appcd-logger "^1.0.0-3"
-    appcd-response "^1.0.0-3"
+    appcd-logger "^1.0.0-7"
+    appcd-response "^1.0.0-7"
     gawk "^4.4.4"
     path-to-regexp "^2.1.0"
     source-map-support "^0.5.0"
     uuid "^3.1.0"
 
-appcd-fs@^1.0.0-3:
-  version "1.0.0-3"
-  resolved "https://registry.yarnpkg.com/appcd-fs/-/appcd-fs-1.0.0-3.tgz#6f85bbec02f6791876d63312fbf81cdef7f50303"
+appcd-fs@^1.0.0-7:
+  version "1.0.0-7"
+  resolved "https://registry.yarnpkg.com/appcd-fs/-/appcd-fs-1.0.0-7.tgz#54cf3758eec4e353d164aac11bfd4b084b6aea66"
   dependencies:
     source-map-support "^0.5.0"
 
-appcd-gulp@^1.0.0-3:
-  version "1.0.0-3"
-  resolved "https://registry.yarnpkg.com/appcd-gulp/-/appcd-gulp-1.0.0-3.tgz#bcbc17e7070de2065b4eea4b1495090c31af8499"
+appcd-gulp@^1.0.0-7:
+  version "1.0.0-7"
+  resolved "https://registry.yarnpkg.com/appcd-gulp/-/appcd-gulp-1.0.0-7.tgz#ec5a8215ff2aa5cb0ecc1a163bd8163037785d9a"
   dependencies:
     babel-core "^6.26.0"
     babel-eslint "^8.0.2"
@@ -188,21 +188,21 @@ appcd-gulp@^1.0.0-3:
     sinon "^4.1.2"
     sinon-chai "^2.14.0"
 
-appcd-logger@^1.0.0-3:
-  version "1.0.0-3"
-  resolved "https://registry.yarnpkg.com/appcd-logger/-/appcd-logger-1.0.0-3.tgz#56711b9576c842afadbf412cdc031e833d78795d"
+appcd-logger@^1.0.0-7:
+  version "1.0.0-7"
+  resolved "https://registry.yarnpkg.com/appcd-logger/-/appcd-logger-1.0.0-7.tgz#af1367cf29ab5dbfca378de399b25a992ade1528"
   dependencies:
-    snooplogg "^1.8.0"
+    snooplogg "^1.9.0"
     source-map-support "^0.5.0"
 
-appcd-nodejs@^1.0.0-3:
-  version "1.0.0-3"
-  resolved "https://registry.yarnpkg.com/appcd-nodejs/-/appcd-nodejs-1.0.0-3.tgz#ed98e797360834feb27abff1d7fb66c70177b96f"
+appcd-nodejs@^1.0.0-7:
+  version "1.0.0-7"
+  resolved "https://registry.yarnpkg.com/appcd-nodejs/-/appcd-nodejs-1.0.0-7.tgz#b205067925b25e4d84716d0e0b0a9233dc402c5d"
   dependencies:
-    appcd-fs "^1.0.0-3"
-    appcd-logger "^1.0.0-3"
-    appcd-request "^1.0.0-3"
-    appcd-util "^1.0.0-3"
+    appcd-fs "^1.0.0-7"
+    appcd-logger "^1.0.0-7"
+    appcd-request "^1.0.0-7"
+    appcd-util "^1.0.0-7"
     fs-extra "^4.0.2"
     progress "^2.0.0"
     source-map-support "^0.5.0"
@@ -210,57 +210,57 @@ appcd-nodejs@^1.0.0-3:
     tmp "^0.0.33"
     yauzl "^2.9.1"
 
-appcd-path@^1.0.0-3:
-  version "1.0.0-3"
-  resolved "https://registry.yarnpkg.com/appcd-path/-/appcd-path-1.0.0-3.tgz#20d284b9695aaaca64125a67189f5b271bf800f1"
+appcd-path@^1.0.0-7:
+  version "1.0.0-7"
+  resolved "https://registry.yarnpkg.com/appcd-path/-/appcd-path-1.0.0-7.tgz#81e949b08334c4f36c2b46f186cb63d91b08e0dc"
   dependencies:
     source-map-support "^0.5.0"
 
-appcd-request@^1.0.0-3:
-  version "1.0.0-3"
-  resolved "https://registry.yarnpkg.com/appcd-request/-/appcd-request-1.0.0-3.tgz#6a30cb59eed5390a1829c6930a3fcf9af8ec3ec6"
+appcd-request@^1.0.0-7:
+  version "1.0.0-7"
+  resolved "https://registry.yarnpkg.com/appcd-request/-/appcd-request-1.0.0-7.tgz#44cb430492d8662ea87c484fb6bd9d79e95cdd69"
   dependencies:
-    appcd-dispatcher "^1.0.0-3"
-    appcd-fs "^1.0.0-3"
-    appcd-logger "^1.0.0-3"
+    appcd-dispatcher "^1.0.0-7"
+    appcd-fs "^1.0.0-7"
+    appcd-logger "^1.0.0-7"
     request "^2.83.0"
     source-map-support "^0.5.0"
 
-appcd-response@^1.0.0-3:
-  version "1.0.0-3"
-  resolved "https://registry.yarnpkg.com/appcd-response/-/appcd-response-1.0.0-3.tgz#a81f1eba7eba2d2feb0879e5d0529682025aa37d"
+appcd-response@^1.0.0-7:
+  version "1.0.0-7"
+  resolved "https://registry.yarnpkg.com/appcd-response/-/appcd-response-1.0.0-7.tgz#bb983171f86b136431b4371410a59469b73b94b9"
   dependencies:
-    appcd-fs "^1.0.0-3"
-    appcd-winreg "^1.0.0-3"
+    appcd-fs "^1.0.0-7"
+    appcd-winreg "^1.0.0-7"
     source-map-support "^0.5.0"
     sprintf-js "^1.1.1"
 
-appcd-subprocess@^1.0.0-3:
-  version "1.0.0-3"
-  resolved "https://registry.yarnpkg.com/appcd-subprocess/-/appcd-subprocess-1.0.0-3.tgz#832eed7e375b67040747fce94eaad091a0ee2eb4"
+appcd-subprocess@^1.0.0-7:
+  version "1.0.0-7"
+  resolved "https://registry.yarnpkg.com/appcd-subprocess/-/appcd-subprocess-1.0.0-7.tgz#ac59ae5b350f73db2ebeba3dce3cc382c54431ed"
   dependencies:
-    appcd-dispatcher "^1.0.0-3"
-    appcd-logger "^1.0.0-3"
-    appcd-nodejs "^1.0.0-3"
-    appcd-path "^1.0.0-3"
-    appcd-response "^1.0.0-3"
+    appcd-dispatcher "^1.0.0-7"
+    appcd-logger "^1.0.0-7"
+    appcd-nodejs "^1.0.0-7"
+    appcd-path "^1.0.0-7"
+    appcd-response "^1.0.0-7"
     gawk "^4.4.4"
     ps-tree "^1.1.0"
     source-map-support "^0.5.0"
     which "^1.3.0"
 
-appcd-util@^1.0.0-3:
-  version "1.0.0-3"
-  resolved "https://registry.yarnpkg.com/appcd-util/-/appcd-util-1.0.0-3.tgz#1802ee23d77b67ff923efbf371ba1309c36b6262"
+appcd-util@^1.0.0-7:
+  version "1.0.0-7"
+  resolved "https://registry.yarnpkg.com/appcd-util/-/appcd-util-1.0.0-7.tgz#bfb45165b3e10c6494c1b7ef9f36681abcb086db"
   dependencies:
-    appcd-fs "^1.0.0-3"
+    appcd-fs "^1.0.0-7"
     lodash.get "^4.4.2"
     semver "^5.4.1"
     source-map-support "^0.5.0"
 
-appcd-winreg@^1.0.0-3:
-  version "1.0.0-3"
-  resolved "https://registry.yarnpkg.com/appcd-winreg/-/appcd-winreg-1.0.0-3.tgz#35bc1a0c756ec448ad2ce6f841f94faf1e54eca0"
+appcd-winreg@^1.0.0-7:
+  version "1.0.0-7"
+  resolved "https://registry.yarnpkg.com/appcd-winreg/-/appcd-winreg-1.0.0-7.tgz#62bce7dddd38999f78487c60b7c38ab17fb363a9"
   dependencies:
     source-map-support "^0.5.0"
     winreg "^1.2.4"
@@ -963,7 +963,7 @@ chalk@^1.0.0, chalk@^1.1.1, chalk@^1.1.3:
     strip-ansi "^3.0.0"
     supports-color "^2.0.0"
 
-chalk@^2.0.0, chalk@^2.1.0:
+chalk@^2.0.0, chalk@^2.1.0, chalk@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.3.0.tgz#b5ea48efc9c1793dccc9b4767c93914d3f2d52ba"
   dependencies:
@@ -3140,6 +3140,10 @@ moment@^2.18.1:
   version "2.19.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.19.1.tgz#56da1a2d1cbf01d38b7e1afc31c10bcfa1929167"
 
+moment@^2.19.2:
+  version "2.19.2"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.19.2.tgz#8a7f774c95a64550b4c7ebd496683908f9419dbe"
+
 ms@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
@@ -3888,6 +3892,20 @@ snooplogg@^1.8.0:
     source-map-support "^0.4.16"
     supports-color "^4.2.1"
 
+snooplogg@^1.9.0:
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/snooplogg/-/snooplogg-1.9.0.tgz#9baf4e8af9e4cb6dcaaf343ba6524f4cb3a034ce"
+  dependencies:
+    brotli "^1.3.2"
+    chalk "^2.3.0"
+    figures "^2.0.0"
+    humanize "^0.0.9"
+    moment "^2.19.2"
+    nanobuffer "^1.0.0"
+    pluralize "^7.0.0"
+    source-map-support "^0.5.0"
+    supports-color "^5.0.0"
+
 sntp@2.x.x:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/sntp/-/sntp-2.1.0.tgz#2c6cec14fedc2222739caf9b5c3d85d1cc5a2cc8"
@@ -4090,6 +4108,12 @@ supports-color@^3.1.2:
 supports-color@^4.0.0, supports-color@^4.2.1, supports-color@^4.4.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-4.5.0.tgz#be7a0de484dec5c5cddf8b3d59125044912f635b"
+  dependencies:
+    has-flag "^2.0.0"
+
+supports-color@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-5.0.0.tgz#1db26229f6ae02f9acdb5410907c36ce2e362b13"
   dependencies:
     has-flag "^2.0.0"
 
