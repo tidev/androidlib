@@ -130,18 +130,18 @@ export class VirtualBox {
 export function getVirtualBox(force) {
 	return cache('virtualbox', force, async () => {
 		let searchPaths = arrayify(get(options, 'virtualbox.searchPaths'), true);
-
 		if (!searchPaths.length) {
 			searchPaths = virtualBoxLocations[process.platform];
 		}
-		for (let dir of searchPaths) {
-			dir = expandPath(dir);
+
+		for (const dir of searchPaths) {
 			try {
-				return new VirtualBox(dir);
+				return new VirtualBox(expandPath(dir));
 			} catch (e) {
-				// blah
+				// squelch
 			}
 		}
-		throw new Error('Unable to get VirtualBox');
+
+		throw new Error('Unable to find VirtualBox');
 	});
 }

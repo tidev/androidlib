@@ -8,7 +8,7 @@ export default class BaseEmulator {
 	 * @param {Object} [info] - The emulator info.
 	 * @access public
 	 */
-	constructor(info = {}) {
-		Object.assign(this, info);
+	constructor(info) {
+		Object.assign(this, info || {});
 	}
 }

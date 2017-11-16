@@ -61,11 +61,22 @@ export const genymotionPlist = '~/Library/Preferences/com.genymobile.Genymotion.
  * Genymotion emulator information.
  */
 export class GenymotionEmulator extends BaseEmulator {
+	abi = null;
 	display = null;
-
+	dpi = null;
+	genymotion = null;
+	googleApis = null;
 	hardwareOpenGL = null;
-
+	id = null;
 	ipaddress = null;
+	name = null;
+	'sdk-version' = null;
+	target = null;
+
+	constructor(info) {
+		super();
+		Object.assign(this, info || {});
+	}
 }
 
 export default GenymotionEmulator;
@@ -75,8 +86,8 @@ export default GenymotionEmulator;
  */
 export class Genymotion {
 	/**
-	 * Performs tests to see if this is a Genymotion install directory,
-	 * and then initializes the info.
+	 * Performs tests to see if this is a Genymotion install directory, and then initializes the
+	 * info.
 	 *
 	 * @param {String} dir - Directory to scan.
 	 * @access public
@@ -174,7 +185,7 @@ export class Genymotion {
  * @return {Promise<Array<GenymotionEmulator>>} The installed emulators.
  * @access public
  */
-export function getEmulators({ vbox, force } = {}) {
+export function getEmulators({ force, vbox } = {}) {
 	return cache(`androidlib:genymotion:${vbox && vbox.path || ''}`, force, async () => {
 		if (!vbox) {
 			try {
@@ -202,57 +213,61 @@ export function getEmulators({ vbox, force } = {}) {
 /**
  * Get the information for a specific vm.
  *
- * @param {Object} [opts] - Various options.
- * @param {Boolean} [opts.force] - When `true`, bypasses the cache and forces redetection of
+ * @param {Object} params - Various options.
+ * @param {Boolean} [params.force] - When `true`, bypasses the cache and forces redetection of
  * VirtualBox if not passed in.
- * @param {Object}  opts.vm - The VM.
- * @param {Object}  [opts.vbox] - Object containing information about the VirtualBox install.
- * @return {Promise<Object>} Object containing information about the VM
+ * @param {Object}  [params.vbox] - Object containing information about the VirtualBox install.
+ * @param {Object}  params.vm - The VM.
+ * @return {Promise} Object containing information about the VM
  * @access public
  */
-export async function getEmulatorInfo({ vm, vbox, force }) {
+export async function getEmulatorInfo({ force, vbox, vm } = {}) {
 	if (!vm || !vm.id || !vm.name) {
 		throw new TypeError('vm must be a valid VM');
 	}
+
 	if (!vbox) {
 		try {
 			vbox = await getVirtualBox(force);
 		} catch (e) {
-			// squelch
-			return {};
+			// no virtual box, no emulators
+			return;
 		}
 	}
-	const vminfo = await vbox.getGuestproperties(vm.id);
-	if (vminfo) {
-		for (const info of vminfo) {
-			switch (info.name) {
-				case 'android_version':
-					vm['sdk-version'] = vm.target = info.value;
-					break;
-				case 'genymotion_player_version':
-				case 'genymotion_version':
-					vm.genymotion = info.value;
-					break;
-				case 'hardware_opengl':
-					vm.hardwareOpenGL = !!parseInt(info.value);
-					break;
-				case 'vbox_dpi':
-					vm.dpi = ~~info.value;
-					break;
-				case 'vbox_graph_mode':
-					vm.display = info.value;
-					break;
-				case 'androvm_ip_management':
-					vm.ipaddress = info.value;
-					break;
-			}
-		}
 
-		if (vm.genymotion) {
-			vm.abi = 'x86';
-			vm.googleApis = null; // null means maybe since we don't know for sure unless the emulator is running
-			return vm;
+	const vminfo = await vbox.getGuestproperties(vm.id);
+	if (!vminfo) {
+		return;
+	}
+
+	for (const info of vminfo) {
+		switch (info.name) {
+			case 'android_version':
+				vm['sdk-version'] = vm.target = info.value;
+				break;
+			case 'genymotion_player_version':
+			case 'genymotion_version':
+				vm.genymotion = info.value;
+				break;
+			case 'hardware_opengl':
+				vm.hardwareOpenGL = !!parseInt(info.value);
+				break;
+			case 'vbox_dpi':
+				vm.dpi = ~~info.value;
+				break;
+			case 'vbox_graph_mode':
+				vm.display = info.value;
+				break;
+			case 'androvm_ip_management':
+				vm.ipaddress = info.value;
+				break;
 		}
+	}
+
+	if (vm.genymotion) {
+		vm.abi = 'x86';
+		vm.googleApis = null; // null means maybe since we don't know for sure unless the emulator is running
+		return vm;
 	}
 }
 
