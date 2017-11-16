@@ -84,7 +84,7 @@ export async function getDevices() {
 /**
  * Starts listening for devices being connected or disconnected.
  *
- * @returns {Promise<TrackDeviceHandle>}
+ * @returns {TrackDeviceHandle}
  */
 export function trackDevices() {
 	const handle = adb.trackDevices();
