@@ -48,7 +48,7 @@ describe('Genymotion', () => {
 
 	it('should get emulators', async () => {
 		androidlib.options.virtualbox.searchPaths = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
-		const results = await androidlib.genymotion.getEmulators();
+		const results = await androidlib.genymotion.getEmulators({ force: true });
 
 		expect(results).to.deep.equal([
 			{
@@ -69,7 +69,7 @@ describe('Genymotion', () => {
 
 	it('getEmulatorInfo should error if no guid', async () => {
 		try {
-			await androidlib.genymotion.getEmulatorInfo({ });
+			await androidlib.genymotion.getEmulatorInfo({ force: true });
 		} catch (e) {
 			expect(e instanceof TypeError).to.equal(true);
 			expect(e.message).to.equal('vm must be a valid VM');
@@ -82,7 +82,8 @@ describe('Genymotion', () => {
 			vm: {
 				name: 'PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920',
 				id: 'a9364ace-c263-433a-b137-1c8d4e70c348'
-			}
+			},
+			force: true
 		});
 
 		expect(results).to.deep.equal({
