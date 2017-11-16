@@ -142,5 +142,6 @@ export function getVirtualBox(force) {
 				// blah
 			}
 		}
+		throw new Error('Unable to get VirtualBox');
 	});
 }

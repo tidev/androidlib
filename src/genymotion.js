@@ -168,7 +168,8 @@ export class Genymotion {
  * Get the Genymotion emulators installed on a system.
  *
  * @param {Object} [opts] - Various options.
- * @param {Boolean} [opts.force] - When `true`, bypasses the cache and forces redetection.
+ * @param {Boolean} [opts.force] - When `true`, bypasses the cache and forces redetection of
+ * VirtualBox if not passed in.
  * @param {Object} [opts.vbox] - Object containing information about the VirtualBox install.
  * @return {Promise<Array<GenymotionEmulator>>} The installed emulators.
  * @access public
@@ -176,7 +177,12 @@ export class Genymotion {
 export function getEmulators({ vbox, force } = {}) {
 	return cache(`androidlib:genymotion:${vbox && vbox.path || ''}`, force, async () => {
 		if (!vbox) {
-			vbox = await getVirtualBox();
+			try {
+				vbox = await getVirtualBox(force);
+			} catch (e) {
+				// squelch
+				return [];
+			}
 		}
 		const emulators = [];
 		const vms = await vbox.list();
@@ -196,17 +202,25 @@ export function getEmulators({ vbox, force } = {}) {
 /**
  * Get the information for a specific vm.
  *
- * @param  {String}  vm - The VM.
- * @param  {Object}  [vbox] - Object containing information about the VirtualBox install.
+ * @param {Object} [opts] - Various options.
+ * @param {Boolean} [opts.force] - When `true`, bypasses the cache and forces redetection of
+ * VirtualBox if not passed in.
+ * @param {Object}  opts.vm - The VM.
+ * @param {Object}  [opts.vbox] - Object containing information about the VirtualBox install.
  * @return {Promise<Object>} Object containing information about the VM
  * @access public
  */
-export async function getEmulatorInfo({ vm, vbox }) {
+export async function getEmulatorInfo({ vm, vbox, force }) {
 	if (!vm || !vm.id || !vm.name) {
 		throw new TypeError('vm must be a valid VM');
 	}
 	if (!vbox) {
-		vbox = await getVirtualBox();
+		try {
+			vbox = await getVirtualBox(force);
+		} catch (e) {
+			// squelch
+			return {};
+		}
 	}
 	const vminfo = await vbox.getGuestproperties(vm.id);
 	if (vminfo) {

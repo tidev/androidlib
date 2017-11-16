@@ -13,6 +13,36 @@ describe('Emulators', () => {
 		androidlib.options.virtualbox.searchPaths = this.searchPaths;
 	});
 
+	it('should detect mock emulators with no virtualbox', async function () {
+		const dir = path.resolve(`./test/mocks/sdk/${process.platform}/with-platforms`);
+		const sdk = new androidlib.sdk.SDK(dir);
+		const avdDir = path.join(__dirname, 'mocks', 'avd');
+
+		androidlib.options.avd.path = avdDir;
+		androidlib.options.virtualbox.searchPaths = path.resolve(`./test/mocks/virtualbox/${process.platform}/bad`);
+
+		const emulators = await androidlib.emulators.getEmulators({ force: true, sdk });
+
+		expect(emulators).to.be.an('array');
+		expect(emulators).to.have.lengthOf(1);
+		let emulator = emulators[0];
+		expect(emulator).to.be.instanceof(androidlib.AndroidEmulator);
+
+		expect(emulator).to.deep.equal({
+			id: 'test_API_23',
+			name: 'Test API 23',
+			device: 'Nexus 5X (Google)',
+			path: path.join(avdDir, 'test.avd'),
+			abi: 'x86',
+			skin: 'nexus_5x',
+			sdcard: null,
+			googleApis: true,
+			target: null,
+			'sdk-version': null,
+			'api-level': null
+		});
+	});
+
 	it('should detect mock emulators', async function () {
 		const dir = path.resolve(`./test/mocks/sdk/${process.platform}/with-platforms`);
 		const sdk = new androidlib.sdk.SDK(dir);
