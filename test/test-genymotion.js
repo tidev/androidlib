@@ -105,20 +105,21 @@ describe('Genymotion', () => {
 
 	it('should detect a genymotion install', async () => {
 		androidlib.options.virtualbox.searchPaths = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
-		const genyDir = path.resolve(`./test/mocks/genymotion/${process.platform}/good`);
+		let genyDir = path.resolve(`./test/mocks/genymotion/${process.platform}/good`);
 		const geny = await androidlib.genymotion.detect(genyDir);
 
-		let playerPath;
-
+		let playerPath = path.join(genyDir, `player${exe}`);
 		if (process.platform === 'darwin') {
-			playerPath = path.join(genyDir, 'player.app', 'Contents', 'MacOS', `player${exe}`);
-		} else {
-			playerPath = path.join(genyDir, `player${exe}`);
+			playerPath = path.join(genyDir, 'Contents', 'MacOS', 'player.app', 'Contents', 'MacOS', 'player');
+		}
 
+		let genyexe = path.join(genyDir, `genymotion${exe}`);
+		if (process.platform === 'darwin') {
+			genyexe = path.join(genyDir, 'Contents', 'MacOS', 'genymotion');
 		}
 
 		expect(geny.executables).to.deep.equal({
-			genymotion: path.join(genyDir, `genymotion${exe}`),
+			genymotion: genyexe,
 			player: playerPath
 		});
 
