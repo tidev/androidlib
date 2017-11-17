@@ -330,10 +330,7 @@ export default SDK;
 export function getSDKs(force) {
 	return cache('androidlib:sdk', force, () => {
 		const results = [];
-		let searchPaths = arrayify(get(options, 'sdk.searchPaths'), true);
-		if (!searchPaths) {
-			searchPaths = sdkLocations[process.platform];
-		}
+		const searchPaths = arrayify(get(options, 'sdk.searchPaths') || sdkLocations[process.platform], true);
 
 		for (let dir of searchPaths) {
 			try {
