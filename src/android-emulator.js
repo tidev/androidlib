@@ -3,7 +3,6 @@ import fs from 'fs';
 import net from 'net';
 import options from './options';
 import path from 'path';
-import SDK from './sdk';
 
 import { arrayify, cache, get } from 'appcd-util';
 import { expandPath } from 'appcd-path';
@@ -42,7 +41,7 @@ export default AndroidEmulator;
  * @returns {Promise<Array<AndroidEmulator>>}
  */
 export function getEmulators({ force, sdks } = {}) {
-	return cache(`androidlib:avd:${sdks && sdks[0].path || ''}`, force, async () => {
+	return cache(`androidlib:avd:${sdks && (sdks.path || sdks[0].path) || ''}`, force, async () => {
 		const avdDir = expandPath(getAvdDir());
 		const emulators = [];
 		if (!isDir(avdDir)) {
@@ -80,7 +79,7 @@ export function getEmulators({ force, sdks } = {}) {
 			let sdkLevel = null;
 			let apiLevel = null;
 			if (config['image.sysdir.1']) {
-				const imageDir = config['image.sysdir.1'].replace(/^system-images\//, '').replace(/\/$/, '');
+				const imageDir = config['image.sysdir.1'].replace(/\\/g, '/').replace(/^system-images\//, '').replace(/\/$/, '');
 				for (const sdk of sdks) {
 					if (sdk.systemImages && sdk.systemImages[imageDir]) {
 						const image = sdk.systemImages[imageDir];

@@ -8,8 +8,6 @@ import { expandPath } from 'appcd-path';
 import { isDir, isFile } from 'appcd-fs';
 import { readPropertiesFile } from './util';
 
-// replace \\ in system images with /
-
 /**
  * Directories to scan for Android SDKs.
  * @type {Object}
@@ -162,7 +160,7 @@ export class SDK {
 								const abiDir = path.join(tagDir, abi);
 								const props = readPropertiesFile(path.join(abiDir, 'source.properties'));
 								if (props && props['AndroidVersion.ApiLevel'] && props['SystemImage.TagId'] && props['SystemImage.Abi']) {
-									const imageDir = path.relative(systemImagesDir, abiDir);
+									const imageDir = path.relative(systemImagesDir, abiDir).replace(/\\/g, '/');
 									const skinsDir = path.join(abiDir, 'skins');
 
 									this.systemImages[imageDir] = {
