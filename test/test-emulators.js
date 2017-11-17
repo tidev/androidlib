@@ -39,7 +39,8 @@ describe('Emulators', () => {
 			googleApis: true,
 			target: null,
 			'sdk-version': null,
-			'api-level': null
+			'api-level': null,
+			type: 'avd'
 		});
 	});
 
