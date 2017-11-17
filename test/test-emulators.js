@@ -39,19 +39,20 @@ describe('Emulators', () => {
 			googleApis: true,
 			target: null,
 			'sdk-version': null,
-			'api-level': null
+			'api-level': null,
+			type: 'avd'
 		});
 	});
 
 	it('should detect mock emulators', async function () {
 		const dir = path.resolve(`./test/mocks/sdk/${process.platform}/with-platforms`);
-		const sdk = new androidlib.sdk.SDK(dir);
+		const sdks = new androidlib.sdk.SDK(dir);
 		const avdDir = path.join(__dirname, 'mocks', 'avd');
 
 		androidlib.options.avd.path = avdDir;
 		androidlib.options.virtualbox.searchPaths = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
 
-		const emulators = await androidlib.emulators.getEmulators({ force: true, sdk });
+		const emulators = await androidlib.emulators.getEmulators({ force: true, sdks });
 
 		expect(emulators).to.be.an('array');
 		expect(emulators).to.have.lengthOf(2);
@@ -67,9 +68,10 @@ describe('Emulators', () => {
 			skin: 'nexus_5x',
 			sdcard: null,
 			googleApis: true,
-			target: null,
-			'sdk-version': null,
-			'api-level': null
+			target: 'Android 6.0 (API level 23)',
+			'sdk-version': '6.0',
+			'api-level': 23,
+			type: 'avd'
 		});
 
 		emulator = emulators[1];
@@ -86,7 +88,8 @@ describe('Emulators', () => {
 			googleApis: null,
 			display: null,
 			hardwareOpenGL: null,
-			ipaddress: null
+			ipaddress: null,
+			type: 'genymotion'
 		});
 	});
 
@@ -97,9 +100,9 @@ describe('Emulators', () => {
 		for (const emu of emulators) {
 			expect(emu).to.be.an('object');
 			if (emu instanceof androidlib.AndroidEmulator) {
-				expect(emu).to.have.keys('id', 'name', 'device', 'path', 'abi', 'skin', 'sdcard', 'googleApis', 'target', 'sdk-version', 'api-level');
+				expect(emu).to.have.keys('id', 'name', 'device', 'path', 'abi', 'skin', 'sdcard', 'googleApis', 'target', 'sdk-version', 'api-level', 'type');
 			} else {
-				expect(emu).to.have.keys('id', 'name', 'display', 'dpi', 'hardwareOpenGL', 'genymotion', 'abi', 'target', 'sdk-version', 'ipaddress', 'googleApis');
+				expect(emu).to.have.keys('id', 'name', 'display', 'dpi', 'hardwareOpenGL', 'genymotion', 'abi', 'target', 'sdk-version', 'ipaddress', 'googleApis', 'type');
 			}
 		}
 	});

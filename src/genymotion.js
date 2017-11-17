@@ -72,6 +72,7 @@ export class GenymotionEmulator extends BaseEmulator {
 	name = null;
 	'sdk-version' = null;
 	target = null;
+	type = 'genymotion';
 
 	constructor(info) {
 		super();
@@ -264,7 +265,7 @@ export async function getEmulatorInfo({ force, vbox, vm } = {}) {
 	if (vm.genymotion) {
 		vm.abi = 'x86';
 		vm.googleApis = null; // null means maybe since we don't know for sure unless the emulator is running
-		return vm;
+		return new GenymotionEmulator(vm);
 	}
 }
 

@@ -3,9 +3,8 @@ import fs from 'fs';
 import net from 'net';
 import options from './options';
 import path from 'path';
-import SDK from './sdk';
 
-import { cache, get } from 'appcd-util';
+import { arrayify, cache, get } from 'appcd-util';
 import { expandPath } from 'appcd-path';
 import { isDir, isFile } from 'appcd-fs';
 import { readPropertiesFile } from './util';
@@ -28,7 +27,9 @@ export function getAvdDir() {
 /**
  * Android emulator information.
  */
-export class AndroidEmulator extends BaseEmulator {}
+export class AndroidEmulator extends BaseEmulator {
+	type = 'avd';
+}
 
 export default AndroidEmulator;
 
@@ -41,13 +42,14 @@ export default AndroidEmulator;
  * version, and API level.
  * @returns {Promise<Array<AndroidEmulator>>}
  */
-export function getEmulators({ force, sdk } = {}) {
-	return cache(`androidlib:avd:${sdk && sdk.path || ''}`, force, async () => {
+export function getEmulators({ force, sdks } = {}) {
+	return cache(`androidlib:avd:${sdks && (sdks.path || sdks[0].path) || ''}`, force, async () => {
 		const avdDir = expandPath(getAvdDir());
 		const emulators = [];
 		if (!isDir(avdDir)) {
 			return emulators;
 		}
+		sdks = arrayify(sdks, true);
 
 		const avdFilenameRegExp = /^(.+)\.ini$/;
 
@@ -76,18 +78,22 @@ export function getEmulators({ force, sdk } = {}) {
 
 			const sdcard = path.join(dir, 'sdcard.img');
 			let target = null;
-			let sdk = null;
+			let sdkLevel = null;
 			let apiLevel = null;
-
-			if (config['image.sysdir.1'] && sdk instanceof SDK) {
-				const imageDir = config['image.sysdir.1'].replace(/^system-images\//, '').replace(/\/$/, '');
-				const image = sdk.systemImages[imageDir];
-				if (image) {
-					for (const platform of sdk.platforms) {
-						if (platform.sdk === image.sdk) {
-							apiLevel = platform.apiLevel;
-							sdk = platform.version;
-							target = `${platform.name} (API level ${platform.apiLevel})`;
+			if (config['image.sysdir.1']) {
+				const imageDir = config['image.sysdir.1'].replace(/\\/g, '/').replace(/^system-images\//, '').replace(/\/$/, '');
+				for (const sdk of sdks) {
+					if (sdk.systemImages && sdk.systemImages[imageDir]) {
+						const image = sdk.systemImages[imageDir];
+						for (const platform of sdk.platforms) {
+							if (platform.sdk === image.sdk) {
+								apiLevel = platform.apiLevel;
+								sdkLevel = platform.version;
+								target = `${platform.name} (API level ${platform.apiLevel})`;
+								break;
+							}
+						}
+						if (target) {
 							break;
 						}
 					}
@@ -104,7 +110,7 @@ export function getEmulators({ force, sdk } = {}) {
 				sdcard:        config['hw.sdCard'] === 'yes' && isFile(sdcard) ? sdcard : null,
 				googleApis:    config['tag.id'] === 'google_apis',
 				target,
-				'sdk-version': sdk,
+				'sdk-version': sdkLevel,
 				'api-level':   apiLevel
 			}));
 		}
