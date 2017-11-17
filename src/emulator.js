@@ -21,7 +21,7 @@ import {
  * @returns {Promise<Array>}
  */
 export function getEmulators({ force, sdks, vbox } = {}) {
-	return cache(`androidlib:emulators:${sdks && sdks[0].path || ''}`, force, async () => {
+	return cache(`androidlib:emulators:${sdks && (sdks.path || sdks[0].path) || ''}`, force, async () => {
 		return await Promise.all([
 			getAndroidEmulators({ sdks, force }),
 			getGenymotionEmulators({ vbox, force })
