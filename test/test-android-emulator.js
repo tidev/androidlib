@@ -40,9 +40,12 @@ describe('AndroidEmulator', () => {
 		});
 	});
 
-	it('should detect mock emulators', async function () {
+	it('should detect mock emulators when passing in an array of SDKs', async function () {
 		const dir = path.resolve(`./test/mocks/sdk/${process.platform}/with-platforms`);
-		const sdks = new androidlib.sdk.SDK(dir);
+		const sdk = new androidlib.sdk.SDK(dir);
+		const sysImgDir = path.resolve(`./test/mocks/sdk/${process.platform}/with-system-images`);
+		const sysImgsdk = new androidlib.sdk.SDK(sysImgDir);
+		const sdks = [ sdk, sysImgsdk ];
 		const avdDir = path.join(__dirname, 'mocks', 'avd');
 
 		androidlib.options.avd.path = avdDir;
