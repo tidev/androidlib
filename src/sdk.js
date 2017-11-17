@@ -8,6 +8,8 @@ import { expandPath } from 'appcd-path';
 import { isDir, isFile } from 'appcd-fs';
 import { readPropertiesFile } from './util';
 
+// replace \\ in system images with /
+
 /**
  * Directories to scan for Android SDKs.
  * @type {Object}

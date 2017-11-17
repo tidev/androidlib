@@ -20,10 +20,10 @@ import {
  * @param {Object} [opts.vbox] - Object containing information about the VirtualBox install.
  * @returns {Promise<Array>}
  */
-export function getEmulators({ force, sdk, vbox } = {}) {
-	return cache(`androidlib:emulators:${sdk && sdk.path || ''}`, force, async () => {
+export function getEmulators({ force, sdks, vbox } = {}) {
+	return cache(`androidlib:emulators:${sdks && sdks[0].path || ''}`, force, async () => {
 		return await Promise.all([
-			getAndroidEmulators({ sdk, force }),
+			getAndroidEmulators({ sdks, force }),
 			getGenymotionEmulators({ vbox, force })
 		])
 			.then(results => {
