@@ -66,6 +66,9 @@ export class GenymotionEmulator extends BaseEmulator {
 	hardwareOpenGL = null;
 
 	ipaddress = null;
+
+	type = 'genymotion';
+
 }
 
 export default GenymotionEmulator;
@@ -237,7 +240,7 @@ export async function getEmulatorInfo({ vm, vbox }) {
 		if (vm.genymotion) {
 			vm.abi = 'x86';
 			vm.googleApis = null; // null means maybe since we don't know for sure unless the emulator is running
-			return vm;
+			return new GenymotionEmulator(vm);
 		}
 	}
 }

@@ -39,7 +39,8 @@ describe('Emulators', () => {
 			googleApis: true,
 			target: 'Android 6.0 (API level 23)',
 			'sdk-version': '6.0',
-			'api-level': 23
+			'api-level': 23,
+			type: 'avd'
 		});
 
 		emulator = emulators[1];
@@ -56,7 +57,8 @@ describe('Emulators', () => {
 			googleApis: null,
 			display: null,
 			hardwareOpenGL: null,
-			ipaddress: null
+			ipaddress: null,
+			type: 'genymotion'
 		});
 	});
 
@@ -67,9 +69,9 @@ describe('Emulators', () => {
 		for (const emu of emulators) {
 			expect(emu).to.be.an('object');
 			if (emu instanceof androidlib.AndroidEmulator) {
-				expect(emu).to.have.keys('id', 'name', 'device', 'path', 'abi', 'skin', 'sdcard', 'googleApis', 'target', 'sdk-version', 'api-level');
+				expect(emu).to.have.keys('id', 'name', 'device', 'path', 'abi', 'skin', 'sdcard', 'googleApis', 'target', 'sdk-version', 'api-level', 'type');
 			} else {
-				expect(emu).to.have.keys('id', 'name', 'display', 'dpi', 'hardwareOpenGL', 'genymotion', 'abi', 'target', 'sdk-version', 'ipaddress', 'googleApis');
+				expect(emu).to.have.keys('id', 'name', 'display', 'dpi', 'hardwareOpenGL', 'genymotion', 'abi', 'target', 'sdk-version', 'ipaddress', 'googleApis', 'type');
 			}
 		}
 	});

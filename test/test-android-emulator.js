@@ -36,7 +36,8 @@ describe('AndroidEmulator', () => {
 			googleApis: true,
 			target: 'Android 6.0 (API level 23)',
 			'sdk-version': '6.0',
-			'api-level': 23
+			'api-level': 23,
+			type: 'avd'
 		});
 	});
 
@@ -68,7 +69,8 @@ describe('AndroidEmulator', () => {
 			googleApis: true,
 			target: 'Android 6.0 (API level 23)',
 			'sdk-version': '6.0',
-			'api-level': 23
+			'api-level': 23,
+			type: 'avd'
 		});
 	});
 
@@ -78,7 +80,7 @@ describe('AndroidEmulator', () => {
 
 		for (const emu of emulators) {
 			expect(emu).to.be.an('object');
-			expect(emu).to.have.keys('id', 'name', 'device', 'path', 'abi', 'skin', 'sdcard', 'googleApis', 'target', 'sdk-version', 'api-level');
+			expect(emu).to.have.keys('id', 'name', 'device', 'path', 'abi', 'skin', 'sdcard', 'googleApis', 'target', 'sdk-version', 'api-level', 'type');
 		}
 	});
 
@@ -106,7 +108,8 @@ describe('AndroidEmulator', () => {
 			googleApis: true,
 			target: null,
 			'sdk-version': null,
-			'api-level': null
+			'api-level': null,
+			type: 'avd'
 		});
 	});
 });

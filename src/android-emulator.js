@@ -27,7 +27,9 @@ export function getAvdDir() {
 /**
  * Android emulator information.
  */
-export class AndroidEmulator extends BaseEmulator {}
+export class AndroidEmulator extends BaseEmulator {
+	type = 'avd';
+}
 
 export default AndroidEmulator;
 
