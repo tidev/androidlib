@@ -15,13 +15,13 @@ import {
  *
  * @param {Object} [opts] - Various options.
  * @param {Boolean} [opts.force] - When `true`, bypasses the cache and forces redetection.
- * @param {SDK} [opts.sdk] - When passed in, it will attempt to resolve the AVD's target, SDK
+ * @param {Array<SDK>} [opts.sdks] - When passed in, it will attempt to resolve the AVD's target, SDK
  * version, and API level.
  * @param {Object} [opts.vbox] - Object containing information about the VirtualBox install.
  * @returns {Promise<Array>}
  */
 export function getEmulators({ force, sdks, vbox } = {}) {
-	return cache(`androidlib:emulators:${sdks && (sdks.path || sdks[0].path) || ''}`, force, async () => {
+	return cache(`androidlib:emulators:${sdks && sdks.map(s => s.path).sort().join(':') || ''}`, force, async () => {
 		return await Promise.all([
 			getAndroidEmulators({ sdks, force }),
 			getGenymotionEmulators({ vbox, force })

@@ -38,12 +38,12 @@ export default AndroidEmulator;
  *
  * @param {Object} [opts] - Various options.
  * @param {Boolean} [opts.force] - When `true`, bypasses the cache and forces redetection.
- * @param {SDK} [opts.sdk] - When passed in, it will attempt to resolve the AVD's target, SDK
+ * @param {Array<SDK>} [opts.sdks] - When passed in, it will attempt to resolve the AVD's target, SDK
  * version, and API level.
  * @returns {Promise<Array<AndroidEmulator>>}
  */
 export function getEmulators({ force, sdks } = {}) {
-	return cache(`androidlib:avd:${sdks && (sdks.path || sdks[0].path) || ''}`, force, async () => {
+	return cache(`androidlib:avd:${sdks && sdks.map(s => s.path).sort().join(':') || ''}`, force, async () => {
 		const avdDir = expandPath(getAvdDir());
 		const emulators = [];
 		if (!isDir(avdDir)) {
