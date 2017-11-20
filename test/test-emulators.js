@@ -15,13 +15,13 @@ describe('Emulators', () => {
 
 	it('should detect mock emulators with no virtualbox', async function () {
 		const dir = path.resolve(`./test/mocks/sdk/${process.platform}/with-platforms`);
-		const sdk = new androidlib.sdk.SDK(dir);
+		const sdks = [ new androidlib.sdk.SDK(dir) ];
 		const avdDir = path.join(__dirname, 'mocks', 'avd');
 
 		androidlib.options.avd.path = avdDir;
 		androidlib.options.virtualbox.searchPaths = path.resolve(`./test/mocks/virtualbox/${process.platform}/bad`);
 
-		const emulators = await androidlib.emulators.getEmulators({ force: true, sdk });
+		const emulators = await androidlib.emulators.getEmulators({ force: true, sdks });
 
 		expect(emulators).to.be.an('array');
 		expect(emulators).to.have.lengthOf(1);
@@ -37,16 +37,16 @@ describe('Emulators', () => {
 			skin: 'nexus_5x',
 			sdcard: null,
 			googleApis: true,
-			target: null,
-			'sdk-version': null,
-			'api-level': null,
+			target: 'Android 6.0 (API level 23)',
+			'sdk-version': '6.0',
+			'api-level': 23,
 			type: 'avd'
 		});
 	});
 
 	it('should detect mock emulators', async function () {
 		const dir = path.resolve(`./test/mocks/sdk/${process.platform}/with-platforms`);
-		const sdks = new androidlib.sdk.SDK(dir);
+		const sdks = [ new androidlib.sdk.SDK(dir) ];
 		const avdDir = path.join(__dirname, 'mocks', 'avd');
 
 		androidlib.options.avd.path = avdDir;

@@ -21,11 +21,7 @@ import {
  * @returns {Promise<Array>}
  */
 export function getEmulators({ force, sdks, vbox } = {}) {
-	let cacheString = 'androidlib:emulators';
-	if (sdks) {
-		cacheString = `${cacheString}:${sdks[0] && sdks[0].path || ''}`;
-	}
-	return cache(cacheString, force, async () => {
+	return cache(`androidlib:emulators:${sdks && sdks.map(s => s.path).sort().join(':') || ''}`, force, async () => {
 		return await Promise.all([
 			getAndroidEmulators({ sdks, force }),
 			getGenymotionEmulators({ vbox, force })

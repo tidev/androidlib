@@ -43,11 +43,7 @@ export default AndroidEmulator;
  * @returns {Promise<Array<AndroidEmulator>>}
  */
 export function getEmulators({ force, sdks } = {}) {
-	let cacheString = 'androidlib:avd';
-	if (sdks) {
-		cacheString = `${cacheString}:${sdks[0] && sdks[0].path || ''}`;
-	}
-	return cache(cacheString, force, async () => {
+	return cache(`androidlib:avd:${sdks && sdks.map(s => s.path).sort().join(':') || ''}`, force, async () => {
 		const avdDir = expandPath(getAvdDir());
 		const emulators = [];
 		if (!isDir(avdDir)) {

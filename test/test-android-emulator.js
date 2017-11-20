@@ -13,7 +13,7 @@ describe('AndroidEmulator', () => {
 
 	it('should detect mock emulators', async function () {
 		const dir = path.resolve(`./test/mocks/sdk/${process.platform}/with-platforms`);
-		const sdks = new androidlib.sdk.SDK(dir);
+		const sdks = [ new androidlib.sdk.SDK(dir) ];
 		const avdDir = path.join(__dirname, 'mocks', 'avd');
 
 		androidlib.options.avd.path = avdDir;
