@@ -74,6 +74,35 @@ describe('AndroidEmulator', () => {
 		});
 	});
 
+	it('should detect mock emulators when passing in an empty array of sdks', async function () {
+		const sdks = [ ];
+		const avdDir = path.join(__dirname, 'mocks', 'avd');
+
+		androidlib.options.avd.path = avdDir;
+
+		const emulators = await androidlib.avd.getEmulators({ force: true, sdks });
+		expect(emulators).to.be.an('array');
+		expect(emulators).to.have.lengthOf(1);
+
+		const emulator = emulators[0];
+		expect(emulator).to.be.instanceof(androidlib.AndroidEmulator);
+
+		expect(emulator).to.deep.equal({
+			id: 'test_API_23',
+			name: 'Test API 23',
+			device: 'Nexus 5X (Google)',
+			path: path.join(avdDir, 'test.avd'),
+			abi: 'x86',
+			skin: 'nexus_5x',
+			sdcard: null,
+			googleApis: true,
+			target: null,
+			'sdk-version': null,
+			'api-level': null,
+			type: 'avd'
+		});
+	});
+
 	it('should detect system emulators', async () => {
 		const emulators = await androidlib.avd.getEmulators({ force: true });
 		expect(emulators).to.be.an('array');

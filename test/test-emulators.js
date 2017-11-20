@@ -93,6 +93,55 @@ describe('Emulators', () => {
 		});
 	});
 
+	it('should detect mock emulators when passing in an empty array of sdks', async function () {
+		const sdks = [ ];
+		const avdDir = path.join(__dirname, 'mocks', 'avd');
+
+		androidlib.options.avd.path = avdDir;
+		androidlib.options.virtualbox.searchPaths = path.resolve(`./test/mocks/virtualbox/${process.platform}/good`);
+
+		const emulators = await androidlib.emulators.getEmulators({ force: true, sdks });
+
+		expect(emulators).to.be.an('array');
+		expect(emulators).to.have.lengthOf(2);
+		let emulator = emulators[0];
+		expect(emulator).to.be.instanceof(androidlib.AndroidEmulator);
+
+		expect(emulator).to.deep.equal({
+			id: 'test_API_23',
+			name: 'Test API 23',
+			device: 'Nexus 5X (Google)',
+			path: path.join(avdDir, 'test.avd'),
+			abi: 'x86',
+			skin: 'nexus_5x',
+			sdcard: null,
+			googleApis: true,
+			target: null,
+			'sdk-version': null,
+			'api-level': null,
+			type: 'avd'
+		});
+
+		emulator = emulators[1];
+		expect(emulator).to.be.instanceof(androidlib.GenymotionEmulator);
+
+		expect(emulator).to.deep.equal({
+			name: 'PREVIEW - Google Pixel - 8.0 - API 26 - 1080x1920',
+			id: 'a9364ace-c263-433a-b137-1c8d4e70c348',
+			target: '8.0',
+			'sdk-version': '8.0',
+			genymotion: '2.11.0',
+			dpi: 420,
+			abi: 'x86',
+			googleApis: null,
+			display: null,
+			hardwareOpenGL: null,
+			ipaddress: null,
+			type: 'genymotion'
+		});
+
+	});
+
 	it('should detect system emulators', async () => {
 		const emulators = await androidlib.emulators.getEmulators({ force: true });
 		expect(emulators).to.be.an('array');
