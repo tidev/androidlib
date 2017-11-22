@@ -4,10 +4,22 @@
  */
 const options = {
 	adb: {
-		port: null
+		install: {
+			timeout: null
+		},
+		port: null,
+		start: {
+			retryInterval: null,
+			timeout: null
+		}
 	},
 	avd: {
 		path: null
+	},
+	emulator: {
+		start: {
+			timeout: null
+		}
 	},
 	env: {
 		path: null
@@ -15,6 +27,10 @@ const options = {
 	executables: {
 	},
 	genymotion: {
+		executables: {
+			genymotion: null,
+			player: null
+		},
 		searchPaths: null
 	},
 	ndk: {
@@ -24,6 +40,10 @@ const options = {
 		searchPaths: null
 	},
 	virtualbox: {
+		configFile: null,
+		executables: {
+			vboxmanage: null,
+		},
 		searchPaths: null
 	}
 };

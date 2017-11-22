@@ -4,7 +4,7 @@ import net from 'net';
 import options from './options';
 import path from 'path';
 
-import { arrayify, cache, get } from 'appcd-util';
+import { arrayify, cacheSync, get } from 'appcd-util';
 import { expandPath } from 'appcd-path';
 import { isDir, isFile } from 'appcd-fs';
 import { readPropertiesFile } from './util';
@@ -40,15 +40,17 @@ export default AndroidEmulator;
  * @param {Boolean} [opts.force] - When `true`, bypasses the cache and forces redetection.
  * @param {Array<SDK>} [opts.sdks] - When passed in, it will attempt to resolve the AVD's target, SDK
  * version, and API level.
- * @returns {Promise<Array<AndroidEmulator>>}
+ * @returns {Array<AndroidEmulator>}
  */
 export function getEmulators({ force, sdks } = {}) {
-	return cache(`androidlib:avd:${sdks && sdks.map(s => s.path).sort().join(':') || ''}`, force, async () => {
+	return cacheSync(`androidlib:avd:${sdks && sdks.map(s => s.path).sort().join(':') || ''}`, force, () => {
 		const avdDir = expandPath(getAvdDir());
 		const emulators = [];
+
 		if (!isDir(avdDir)) {
 			return emulators;
 		}
+
 		sdks = arrayify(sdks, true);
 
 		const avdFilenameRegExp = /^(.+)\.ini$/;

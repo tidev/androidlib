@@ -1,4 +1,4 @@
-import { cache } from 'appcd-util';
+import { cacheSync } from 'appcd-util';
 
 import {
 	getEmulators as getAndroidEmulators,
@@ -18,17 +18,13 @@ import {
  * @param {Array<SDK>} [opts.sdks] - When passed in, it will attempt to resolve the AVD's target, SDK
  * version, and API level.
  * @param {Object} [opts.vbox] - Object containing information about the VirtualBox install.
- * @returns {Promise<Array>}
+ * @returns {Array}
  */
 export function getEmulators({ force, sdks, vbox } = {}) {
-	return cache(`androidlib:emulators:${sdks && sdks.map(s => s.path).sort().join(':') || ''}`, force, async () => {
-		return await Promise.all([
-			getAndroidEmulators({ sdks, force }),
-			getGenymotionEmulators({ vbox, force })
-		])
-			.then(results => {
-				return results[0].concat(results[1]);
-			});
+	return cacheSync(`androidlib:emulators:${sdks && sdks.map(s => s.path).sort().join(':') || ''}`, force, () => {
+		const avds = getAndroidEmulators({ force, sdks });
+		const vms = getGenymotionEmulators({ force, vbox });
+		return avds.concat(vms);
 	});
 }
 
