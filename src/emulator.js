@@ -2,12 +2,12 @@ import { cacheSync } from 'appcd-util';
 
 import {
 	getEmulators as getAndroidEmulators,
-	isEmulator as isAndroidEmulator
+	isEmulatorDevice as isAndroidEmulatorDevice
 } from './android-emulator';
 
 import {
 	getEmulators as getGenymotionEmulators,
-	isEmulator as isGenymotionEmulator
+	isEmulatorDevice as isGenymotionEmulatorDevice
 } from './genymotion';
 
 /**
@@ -34,12 +34,6 @@ export function getEmulators({ force, sdks, vbox } = {}) {
  * @param {Object} info - The device information.
  * @returns {Promise<Boolean>}
  */
-export async function isEmulator(info) {
-	return await Promise.all([
-		isAndroidEmulator(info),
-		isGenymotionEmulator(info)
-	])
-		.then(results => {
-			return results[0] || results[1];
-		});
+export async function isEmulatorDevice(info) {
+	return isGenymotionEmulatorDevice(info) || await isAndroidEmulatorDevice(info);
 }

@@ -1,12 +1,12 @@
 import appcdLogger from 'appcd-logger';
 import Connection from './connection';
 import Device from './device';
-import Emulator, { isEmulator } from './emulator';
 import options from './options';
 
 import { EventEmitter } from 'events';
 import { get, sleep } from 'appcd-util';
 import { getSDKs } from './sdk';
+import { isEmulatorDevice } from './emulator';
 import { run, which } from 'appcd-subprocess';
 
 const { log } = appcdLogger('androidlib:adb');
@@ -238,58 +238,20 @@ async function parseDevices(data = '') {
 		const p = item.split(/\s+/);
 		if (p.length > 1) {
 			const info = {
-				id: p.shift(),
+				id:    p.shift(),
 				state: p.shift()
 			};
 
 			const data = await shell(info.id, 'getprop');
-			const props = {};
 
 			for (const line of data.toString().split(/\r?\n/)) {
 				const m = line.match(getpropRegExp);
-				if (!m) {
-					continue;
-				}
-
-				const key = m[1];
-				const value = m[2];
-				props[key] = value;
-
-				switch (key) {
-					case 'ro.product.model.internal':
-						info.modelnumber = value;
-						break;
-					case 'ro.build.version.release':
-					case 'ro.build.version.sdk':
-					case 'ro.product.brand':
-					case 'ro.product.device':
-					case 'ro.product.manufacturer':
-					case 'ro.product.model':
-					case 'ro.product.name':
-						info[key.split('.').pop()] = value;
-						break;
-					default:
-						if (key.indexOf('ro.product.cpu.abi') === 0) {
-							if (!Array.isArray(info.abi)) {
-								info.abi = [];
-							}
-
-							for (let abi of value.split(',')) {
-								abi = abi.trim();
-								if (abi && info.abi.indexOf(abi) === -1) {
-									info.abi.push(abi);
-								}
-							}
-						}
-						break;
+				if (m && !info.hasOwnProperty(m[1])) {
+					info[m[1]] = m[2];
 				}
 			}
 
-			if (await isEmulator(info)) {
-				devices.push(new Emulator(info));
-			} else {
-				devices.push(new Device(info));
-			}
+			devices.push(await isEmulatorDevice(info) || new Device(info));
 		}
 	}
 

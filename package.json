@@ -1,6 +1,6 @@
 {
   "name": "androidlib",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Android Utility Library",
   "main": "./dist/index",
   "author": "Axway, Inc. <npmjs@appcelerator.com>",
@@ -22,19 +22,19 @@
     "test": "gulp test"
   },
   "dependencies": {
-    "appcd-fs": "^1.0.0-16",
-    "appcd-logger": "^1.0.0-16",
-    "appcd-path": "^1.0.0-16",
-    "appcd-subprocess": "^1.0.0-16",
-    "appcd-util": "^1.0.0-16",
-    "appcd-winreg": "^1.0.0-16",
+    "appcd-fs": "^1.0.0-18",
+    "appcd-logger": "^1.0.0-18",
+    "appcd-path": "^1.0.0-18",
+    "appcd-subprocess": "^1.0.0-18",
+    "appcd-util": "^1.0.0-18",
+    "appcd-winreg": "^1.0.0-18",
     "cli-kit": "^0.0.8",
     "fs-extra": "^4.0.2",
     "simple-plist": "^0.2.1",
     "source-map-support": "^0.5.0"
   },
   "devDependencies": {
-    "appcd-gulp": "^1.0.0-16",
+    "appcd-gulp": "^1.0.0-18",
     "gulp": "^3.9.1",
     "tmp": "^0.0.33"
   },

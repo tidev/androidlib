@@ -1,3 +1,4 @@
+import BaseDevice from './base-device';
 import BaseEmulator from './base-emulator';
 import fs from 'fs';
 import net from 'net';
@@ -32,6 +33,16 @@ export class AndroidEmulator extends BaseEmulator {
 }
 
 export default AndroidEmulator;
+
+/**
+ * Information about a running Android emulator.
+ */
+export class AndroidEmulatorDevice extends BaseDevice {
+	constructor(info, emu) {
+		super(info);
+		this.emulator = emu;
+	}
+}
 
 /**
  * Detects Android Emulators.
@@ -127,7 +138,7 @@ export function getEmulators({ force, sdks } = {}) {
  * @param {Object} info - The device information.
  * @returns {Promise<Boolean>}
  */
-export async function isEmulator(info) {
+export async function isEmulatorDevice(info) {
 	let m = info.id.match(/^emulator-(\d+)$/);
 	if (!m) {
 		return false;
@@ -164,12 +175,9 @@ export async function isEmulator(info) {
 		socket.on('error', reject);
 	});
 
-	const emulators = await getEmulators();
-
-	for (const emu of emulators) {
+	for (const emu of getEmulators()) {
 		if (emu.id === avdName) {
-			info.emulator = emu;
-			return true;
+			return new AndroidEmulatorDevice(info, emu);
 		}
 	}
 

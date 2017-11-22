@@ -1,3 +1,4 @@
+import BaseDevice from './base-device';
 import BaseEmulator from './base-emulator';
 import options from './options';
 import path from 'path';
@@ -109,6 +110,17 @@ export class GenymotionEmulator extends BaseEmulator {
 export default GenymotionEmulator;
 
 /**
+ * Information about a running Genymotion emulator.
+ */
+export class GenymotionEmulatorDevice extends BaseDevice {
+	constructor(info, emu) {
+		super(info);
+		this.emulator = emu;
+		this.genymotion = info['ro.genymotion.version'];
+	}
+}
+
+/**
  * Genymotion information.
  */
 export class Genymotion {
@@ -202,9 +214,17 @@ export function getEmulators({ force, vbox } = {}) {
  * @param {Object} info - The device information.
  * @returns {Boolean}
  */
-export function isEmulator(info) {
-	if (info.genymotion) {
-		return true;
+export function isEmulatorDevice(info) {
+	if (info['ro.genymotion.version']) {
+		if (info['ro.product.model']) {
+			for (const emu of getEmulators()) {
+				if (emu.id === info['ro.product.model']) {
+					return new GenymotionEmulatorDevice(info, emu);
+				}
+			}
+		}
+		return new GenymotionEmulatorDevice(info);
 	}
+
 	return false;
 }
