@@ -81,13 +81,21 @@ export class NDK {
 			}
 		}
 
+		let ndkWhich = path.join(dir, `ndk-which${cmd}`);
+
+		if (process.platform === 'win32' && !isFile(ndkWhich)) {
+			// for some reason, some releases of the android ndk have a ndk-which executable without
+			// a .cmd extension
+			ndkWhich = path.join(dir, 'ndk-which');
+		}
+
 		this.path = dir;
 		this.name = path.basename(dir);
 		this.version = null;
 		this.arch = '32-bit';
 		this.executables = {
 			'ndk-build': path.join(dir, `ndk-build${cmd}`),
-			'ndk-which': path.join(dir, `ndk-which${cmd}`)
+			'ndk-which': ndkWhich
 		};
 
 		for (const name of Object.keys(this.executables)) {
