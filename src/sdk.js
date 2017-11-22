@@ -273,13 +273,16 @@ export class SDK {
 					revision:    +sourceProps['Pkg.Revision'] || null,
 					codename:    sourceProps['AndroidVersion.CodeName'] || null,
 					path:        dir,
-					basedOn:     basedOn && basedOn.sdk || null,
+					basedOn:     basedOn ? { version: basedOn.version, apiLevel: basedOn.apiLevel } : null,
 					abis:        basedOn && basedOn.abis || null,
 					skins:       basedOn && basedOn.skins || null,
 					defaultSkin: basedOn && basedOn.defaultSkin || null,
 					minToolsRev: basedOn && basedOn.minToolsRev || null,
 					androidJar:  basedOn && basedOn.androidJar || null,
-					aidl:        basedOn && basedOn.aidl || null
+					aidl:        basedOn && basedOn.aidl || null,
+					vendor: 	 sourceProps['Addon.VendorDisplay'] || null,
+					description: sourceProps['Pkg.Desc']  || null,
+					version:	 basedOn && basedOn.version || null
 				});
 			}
 		}
