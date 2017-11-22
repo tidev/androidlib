@@ -467,7 +467,6 @@ describe('SDK', () => {
 					revision: 1,
 					codename: null,
 					path:     path.join(dir, 'add-ons', 'addon-google_apis-google-23'),
-					basedOn:  'android-23',
 					abis: {
 						'android-tv':   [ 'armeabi-v7a', 'x86' ],
 						'android-wear': [ 'armeabi-v7a', 'x86' ],
@@ -478,7 +477,13 @@ describe('SDK', () => {
 					defaultSkin: 'WVGA800',
 					minToolsRev: 22,
 					androidJar:  path.join(dir, 'platforms', 'android-23', 'android.jar'),
-					aidl:        path.join(dir, 'platforms', 'android-23', 'framework.aidl')
+					aidl:        path.join(dir, 'platforms', 'android-23', 'framework.aidl'),
+					basedOn: {
+						apiLevel: 23,
+						version: '6.0'
+					},
+					description: 'Android + Google APIs',
+					vendor: 'Google Inc.'
 				}
 			],
 			buildTools: [],
