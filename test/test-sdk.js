@@ -483,7 +483,8 @@ describe('SDK', () => {
 						version: '6.0'
 					},
 					description: 'Android + Google APIs',
-					vendor: 'Google Inc.'
+					vendor: 'Google Inc.',
+					version: '6.0'
 				}
 			],
 			buildTools: [],

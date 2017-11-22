@@ -280,8 +280,9 @@ export class SDK {
 					minToolsRev: basedOn && basedOn.minToolsRev || null,
 					androidJar:  basedOn && basedOn.androidJar || null,
 					aidl:        basedOn && basedOn.aidl || null,
-					vendor: 	 sourceProps['Addon.VendorDisplay'],
-					description: sourceProps['Pkg.Desc']
+					vendor: 	 sourceProps['Addon.VendorDisplay'] || null,
+					description: sourceProps['Pkg.Desc']  || null,
+					version:	 basedOn && basedOn.version || null
 				});
 			}
 		}
