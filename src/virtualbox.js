@@ -134,7 +134,7 @@ export class VirtualBox {
 
 			const vmFile = expandPath(entry.src);
 			const vm = {
-				id:    entry.uuid,
+				id:    entry.uuid.replace(/[{}]/g, ''),
 				name:  null,
 				path:  path.dirname(vmFile),
 				props: {}

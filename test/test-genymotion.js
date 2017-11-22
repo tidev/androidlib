@@ -33,7 +33,7 @@ describe('Genymotion', () => {
 		const template = fs.readFileSync(templateFile, 'utf8')
 			.replace(
 				'MACHINE_ENTRIES',
-				vms.map(vm => `<MachineEntry uuid="${vm.uuid}" src="${vm.src}"/>`).join('\n')
+				vms.map(vm => `<MachineEntry uuid="{${vm.uuid}}" src="${vm.src}"/>`).join('\n')
 			);
 		fs.writeFileSync(configFile, template);
 	});
