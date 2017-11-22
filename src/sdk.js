@@ -228,19 +228,19 @@ export class SDK {
 				}
 
 				this.platforms.push({
-					sdk,
-					name:        `Android ${sourceProps['Platform.Version']}${sourceProps['AndroidVersion.CodeName'] ? ' (Preview)' : ''}`,
+					abis:        abis,
+					aidl:        isFile(tmp = path.join(dir, 'framework.aidl')) ? tmp : null,
+					androidJar:  isFile(tmp = path.join(dir, 'android.jar')) ? tmp : null,
 					apiLevel:    apiLevel,
 					codename:    sourceProps['AndroidVersion.CodeName'] || null,
-					revision:    +sourceProps['Layoutlib.Revision'] || null,
-					path:        dir,
-					version:     sourceProps['Platform.Version'],
-					abis:        abis,
-					skins:       skins,
 					defaultSkin: defaultSkin,
 					minToolsRev: +sourceProps['Platform.MinToolsRev'] || null,
-					androidJar:  isFile(tmp = path.join(dir, 'android.jar')) ? tmp : null,
-					aidl:        isFile(tmp = path.join(dir, 'framework.aidl')) ? tmp : null
+					name:        `Android ${sourceProps['Platform.Version']}${sourceProps['AndroidVersion.CodeName'] ? ' (Preview)' : ''}`,
+					path:        dir,
+					revision:    +sourceProps['Layoutlib.Revision'] || null,
+					sdk,
+					skins:       skins,
+					version:     sourceProps['Platform.Version']
 				});
 			}
 		}
@@ -252,9 +252,15 @@ export class SDK {
 		if (isDir(addonsDir)) {
 			for (const name of fs.readdirSync(addonsDir)) {
 				const dir = path.join(addonsDir, name);
-				const sourceProps = readPropertiesFile(path.join(dir, 'source.properties'));
-				const apiLevel = sourceProps ? ~~sourceProps['AndroidVersion.ApiLevel'] : null;
-				if (!sourceProps || !apiLevel || !sourceProps['Addon.VendorDisplay'] || !sourceProps['Addon.NameDisplay']) {
+				const props = readPropertiesFile(path.join(dir, 'source.properties')) || readPropertiesFile(path.join(dir, 'manifest.ini'));
+				if (!props) {
+					continue;
+				}
+
+				const apiLevel = parseInt(props['AndroidVersion.ApiLevel'] || props.api);
+				const vendorDisplay = props['Addon.VendorDisplay'] || props.vendor;
+				const nameDisplay = props['Addon.NameDisplay'] || props.name;
+				if (!apiLevel || isNaN(apiLevel) || !vendorDisplay || !nameDisplay) {
 					continue;
 				}
 
@@ -267,21 +273,21 @@ export class SDK {
 				}
 
 				this.addons.push({
-					sdk:         `${sourceProps['Addon.VendorDisplay']}:${sourceProps['Addon.NameDisplay']}:${apiLevel}`,
-					name:        sourceProps['Addon.NameDisplay'],
-					apiLevel:    apiLevel,
-					revision:    +sourceProps['Pkg.Revision'] || null,
-					codename:    sourceProps['AndroidVersion.CodeName'] || null,
-					path:        dir,
-					basedOn:     basedOn ? { version: basedOn.version, apiLevel: basedOn.apiLevel } : null,
 					abis:        basedOn && basedOn.abis || null,
-					skins:       basedOn && basedOn.skins || null,
-					defaultSkin: basedOn && basedOn.defaultSkin || null,
-					minToolsRev: basedOn && basedOn.minToolsRev || null,
-					androidJar:  basedOn && basedOn.androidJar || null,
 					aidl:        basedOn && basedOn.aidl || null,
-					vendor: 	 sourceProps['Addon.VendorDisplay'] || null,
-					description: sourceProps['Pkg.Desc']  || null,
+					androidJar:  basedOn && basedOn.androidJar || null,
+					apiLevel:    apiLevel,
+					basedOn:     basedOn ? { version: basedOn.version, apiLevel: basedOn.apiLevel } : null,
+					codename:    props['AndroidVersion.CodeName'] || props.codename || null,
+					defaultSkin: basedOn && basedOn.defaultSkin || null,
+					description: props['Pkg.Desc'] || props.description || null,
+					minToolsRev: basedOn && basedOn.minToolsRev || null,
+					name:        nameDisplay,
+					path:        dir,
+					revision:    parseInt(props['Pkg.Revision'] || props.revision) || null,
+					sdk:         `${vendorDisplay}:${nameDisplay}:${apiLevel}`,
+					skins:       basedOn && basedOn.skins || null,
+					vendor: 	 vendorDisplay,
 					version:	 basedOn && basedOn.version || null
 				});
 			}

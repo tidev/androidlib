@@ -6,7 +6,7 @@ import { isFile } from 'appcd-fs';
  * Cached regex for matching key/values in properties files.
  * @type {RegExp}
  */
-const pkgPropRegExp = /^([^=]*)=\s*(.+)$/;
+const pkgPropRegExp = /^(?!\s*#)\s*([^=\s]+)\s*=\s*(.+?)\s*$/;
 
 /**
  * Reads and parses the specified properties file into an object.
@@ -24,7 +24,7 @@ export function readPropertiesFile(file) {
 	for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
 		const m = line.match(pkgPropRegExp);
 		if (m) {
-			props[m[1].trim()] = m[2].trim();
+			props[m[1]] = m[2];
 		}
 	}
 	return props;
