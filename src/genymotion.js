@@ -165,7 +165,7 @@ export class Genymotion {
 			}
 		}
 
-		let searchPaths = arrayify(get(options, 'genymotion.home.searchPaths'), true);
+		let searchPaths = arrayify(get(options, 'genymotion.searchPaths'), true);
 		if (!searchPaths.length) {
 			searchPaths = genymotionHomeLocations[process.platform];
 		}

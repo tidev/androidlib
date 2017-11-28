@@ -25,6 +25,7 @@ const options = {
 		path: null
 	},
 	executables: {
+		adb: null
 	},
 	genymotion: {
 		executables: {
