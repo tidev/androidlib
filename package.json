@@ -1,6 +1,6 @@
 {
   "name": "androidlib",
-  "version": "2.0.12",
+  "version": "2.0.11",
   "description": "Android Utility Library",
   "main": "./dist/index",
   "author": "Axway, Inc. <npmjs@appcelerator.com>",
