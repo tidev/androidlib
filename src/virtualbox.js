@@ -127,29 +127,33 @@ export class VirtualBox {
 
 		const vms = [];
 
-		for (const entry of readXMLFile(this.configFile, [ 'MachineEntry' ]).MachineEntry) {
-			if (!entry.uuid || !entry.src) {
-				continue;
+		try {
+			for (const entry of readXMLFile(this.configFile, [ 'MachineEntry' ]).MachineEntry) {
+				if (!entry.uuid || !entry.src) {
+					continue;
+				}
+
+				const vmFile = expandPath(entry.src);
+				const vm = {
+					id:    entry.uuid.replace(/[{}]/g, ''),
+					name:  null,
+					path:  path.dirname(vmFile),
+					props: {}
+				};
+				const vmConf = readXMLFile(vmFile, [ 'Machine', 'GuestProperty' ]);
+
+				if (vmConf.Machine.length) {
+					vm.name = vmConf.Machine[0].name;
+				}
+
+				for (const prop of vmConf.GuestProperty) {
+					vm.props[prop.name] = prop.value;
+				}
+
+				vms.push(vm);
 			}
-
-			const vmFile = expandPath(entry.src);
-			const vm = {
-				id:    entry.uuid.replace(/[{}]/g, ''),
-				name:  null,
-				path:  path.dirname(vmFile),
-				props: {}
-			};
-			const vmConf = readXMLFile(vmFile, [ 'Machine', 'GuestProperty' ]);
-
-			if (vmConf.Machine.length) {
-				vm.name = vmConf.Machine[0].name;
-			}
-
-			for (const prop of vmConf.GuestProperty) {
-				vm.props[prop.name] = prop.value;
-			}
-
-			vms.push(vm);
+		} catch (e) {
+			// squelch
 		}
 
 		return vms;
