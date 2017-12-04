@@ -315,6 +315,8 @@ export default class Connection extends EventEmitter {
 					// i.e shell am force-stop
 					resolve();
 				}
+
+				this.emit('close');
 			});
 
 			this.socket.on('error', err => {

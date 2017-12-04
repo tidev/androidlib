@@ -16,10 +16,13 @@ new CLI({
 			desc: 'listens for devices to be connected/disconnected',
 			async action() {
 				const handle = androidlib.devices.trackDevices();
-				handle.on('devices', devices => {
-					console.log(JSON.stringify(devices, null, '  '));
-					console.log();
-				});
+				handle
+					.on('devices', devices => {
+						console.log(JSON.stringify(devices, null, '  '));
+						console.log();
+					})
+					.on('close', () => console.log('ADB connection was closed'))
+					.on('error', console.error);
 			}
 		}
 	}

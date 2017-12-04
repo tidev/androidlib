@@ -4,7 +4,7 @@ import Device from './device';
 import options from './options';
 
 import { EventEmitter } from 'events';
-import { get, sleep } from 'appcd-util';
+import { get, tailgate, sleep } from 'appcd-util';
 import { getSDKs } from './sdk';
 import { isEmulatorDevice } from './emulator';
 import { run, which } from 'appcd-subprocess';
@@ -79,31 +79,33 @@ export async function connect() {
  * @returns {Promise}
  */
 export async function startServer() {
-	const adb = await findAdb();
-	if (!adb) {
-		throw new Error('Unable to find and start adb');
-	}
-
-	const args = [ 'start-server' ];
-	const port = get(options, 'adb.port') || 5037;
-	if (port) {
-		args.unshift('-P', port);
-	}
-
-	try {
-		log(`Running: ${highlight(`${adb} ${args.join(' ')}`)}`);
-		await run(adb, args);
-	} catch ({ code, stderr }) {
-		if (stderr) {
-			const p = stderr.indexOf('Android Debug Bridge');
-			if (p !== -1) {
-				throw new Error(`Failed to start adb (code ${code}): ${stderr.substring(0, p - 1).trim()}`);
-			}
+	return tailgate('adb:startServer', async () => {
+		const adb = await findAdb();
+		if (!adb) {
+			throw new Error('Unable to find and start adb');
 		}
-		throw new Error(`Failed to start adb (code ${code})`);
-	}
 
-	await sleep(250);
+		const args = [ 'start-server' ];
+		const port = get(options, 'adb.port') || 5037;
+		if (port) {
+			args.unshift('-P', port);
+		}
+
+		try {
+			log(`Running: ${highlight(`${adb} ${args.join(' ')}`)}`);
+			await run(adb, args);
+		} catch ({ code, stderr }) {
+			if (stderr) {
+				const p = stderr.indexOf('Android Debug Bridge');
+				if (p !== -1) {
+					throw new Error(`Failed to start adb (code ${code}): ${stderr.substring(0, p - 1).trim()}`);
+				}
+			}
+			throw new Error(`Failed to start adb (code ${code})`);
+		}
+
+		await sleep(250);
+	});
 }
 
 /**
@@ -214,6 +216,7 @@ export function trackDevices() {
 						handle.emit('error', err);
 					}
 				})
+				.on('close', () => handle.emit('close'))
 				.on('error', err => handle.emit('error', err))
 				.exec('host:track-devices', { keepConnection: true })
 				.catch(err => handle.emit('error', err));

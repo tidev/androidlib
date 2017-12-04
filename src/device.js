@@ -1,4 +1,5 @@
 import BaseDevice from './base-device';
+import gawk from 'gawk';
 
 import * as adb from './adb';
 
@@ -25,27 +26,20 @@ export async function getDevices() {
  */
 export function trackDevices() {
 	const handle = adb.trackDevices();
-	let ids = new Set();
+	const devices = gawk([]);
 
-	handle.on('change', devices => {
-		let added = 0;
-		const previous = ids;
-		ids = new Set();
-		devices = devices.filter(d => d instanceof Device);
+	setImmediate(() => {
+		getDevices()
+			.then(connectedDevices => {
+				handle.emit('devices', connectedDevices);
+				handle.on('change', connectedDevices => gawk.set(devices, connectedDevices));
 
-		// determine if the results changed
-		for (const device of devices) {
-			ids.add(device.id);
-			if (previous.has(device.id)) {
-				previous.delete(device.id);
-			} else {
-				added++;
-			}
-		}
-
-		if (added || previous.size) {
-			handle.emit('devices', devices);
-		}
+				gawk.set(devices, connectedDevices);
+				gawk.watch(devices, () => handle.emit('devices', devices));
+			})
+			.catch(err => {
+				handle.emit('error', err);
+			});
 	});
 
 	return handle;
