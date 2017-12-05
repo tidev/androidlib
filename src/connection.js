@@ -208,6 +208,9 @@ export default class Connection extends EventEmitter {
 								if (opts.bufferUntilClose) {
 									log(`[${this.connNum}] [${states[this.state]}] [${cmd}] Done, setting state to BUFFER_UNTIL_CLOSE`);
 									this.state = BUFFER_UNTIL_CLOSE;
+								} else if (opts.waitForData) {
+									log(`[${this.connNum}] [${states[this.state]}] [${cmd}] Done, setting state to WAIT_FOR_NEW_DATA`);
+									this.state = WAIT_FOR_NEW_DATA;
 								} else {
 									log(`[${this.connNum}] [${states[this.state]}] [${cmd}] Done, setting state to DO_NOTHING`);
 									this.state = DO_NOTHING;

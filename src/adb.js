@@ -184,7 +184,7 @@ export async function shell(id, cmd) {
  */
 export async function devices() {
 	const conn = await connect();
-	const results = await conn.exec('host:devices');
+	const results = await conn.exec('host:devices', { waitForData: true });
 	return parseDevices(results);
 }
 
@@ -218,7 +218,7 @@ export function trackDevices() {
 				})
 				.on('close', () => handle.emit('close'))
 				.on('error', err => handle.emit('error', err))
-				.exec('host:track-devices', { keepConnection: true })
+				.exec('host:track-devices', { keepConnection: true, waitForData: true })
 				.catch(err => handle.emit('error', err));
 		} catch (err) {
 			handle.emit('error', err);
