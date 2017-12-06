@@ -1,3 +1,7 @@
+# v2.1.1 (Dec 5, 2017)
+
+ - Updated appcd npm deps to v1.0.0.
+
 # v2.1.0 (Dec 4, 2017)
 
  - Fixed bug where multiple simultaneous calls to ADB-related functions would try to start multiple
