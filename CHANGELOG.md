@@ -1,3 +1,10 @@
+# v2.2.0 (Dec 6, 2017)
+
+ - Fixed regression where track devices would return emulators along with the connected devices.
+ - Removed unnecessary device call to initialize track devices.
+ - Added better error handling when getting a devices properties.
+ - Added more debug logging.
+
 # v2.1.1 (Dec 5, 2017)
 
  - Updated appcd npm deps to v1.0.0.

@@ -1,7 +1,11 @@
+import appcdLogger from 'appcd-logger';
 import BaseDevice from './base-device';
 import gawk from 'gawk';
 
 import * as adb from './adb';
+
+const { log } = appcdLogger('androidlib:device');
+const { pluralize } = appcdLogger;
 
 /**
  * Information for a physically connected device.
@@ -15,8 +19,11 @@ export default class Device extends BaseDevice {
  * @returns {Promise<Array.<Object>>}
  */
 export async function getDevices() {
-	const devices = await adb.devices();
-	return devices.filter(d => d instanceof Device);
+	log('Getting devices...');
+	let devices = await adb.devices();
+	devices = devices.filter(d => d instanceof Device);
+	log(pluralize(`Found ${devices.length} device`, devices.length));
+	return devices;
 }
 
 /**
@@ -27,19 +34,19 @@ export async function getDevices() {
 export function trackDevices() {
 	const handle = adb.trackDevices();
 	const devices = gawk([]);
+	let initialized = false;
 
-	setImmediate(() => {
-		getDevices()
-			.then(connectedDevices => {
-				handle.emit('devices', connectedDevices);
-				handle.on('change', connectedDevices => gawk.set(devices, connectedDevices));
+	handle.on('change', connectedDevices => {
+		connectedDevices = connectedDevices.filter(d => d instanceof Device);
+		log(pluralize(`Found ${connectedDevices.length} device`, connectedDevices.length));
 
-				gawk.set(devices, connectedDevices);
-				gawk.watch(devices, () => handle.emit('devices', devices));
-			})
-			.catch(err => {
-				handle.emit('error', err);
-			});
+		gawk.set(devices, connectedDevices);
+
+		if (!initialized) {
+			handle.emit('devices', devices);
+			gawk.watch(devices, () => handle.emit('devices', devices));
+			initialized = true;
+		}
 	});
 
 	return handle;

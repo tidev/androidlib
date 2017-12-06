@@ -199,7 +199,7 @@ export function trackDevices() {
 
 	setImmediate(async () => {
 		try {
-			let conn = await connect();
+			const conn = await connect();
 
 			handle.stop = function () {
 				if (!this.stopped) {
@@ -245,13 +245,17 @@ async function parseDevices(data = '') {
 				state: p.shift()
 			};
 
-			const data = await shell(info.id, 'getprop');
+			try {
+				const data = await shell(info.id, 'getprop');
 
-			for (const line of data.toString().split(/\r?\n/)) {
-				const m = line.match(getpropRegExp);
-				if (m && !info.hasOwnProperty(m[1])) {
-					info[m[1]] = m[2];
+				for (const line of data.toString().split(/\r?\n/)) {
+					const m = line.match(getpropRegExp);
+					if (m && !info.hasOwnProperty(m[1])) {
+						info[m[1]] = m[2];
+					}
 				}
+			} catch (e) {
+				// squelch
 			}
 
 			devices.push(await isEmulatorDevice(info) || new Device(info));
