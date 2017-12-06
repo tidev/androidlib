@@ -1,3 +1,7 @@
+# v2.2.1 (Dec 6, 2017)
+
+ - Added missing xmldom dependency.
+
 # v2.2.0 (Dec 6, 2017)
 
  - Fixed regression where track devices would return emulators along with the connected devices.
