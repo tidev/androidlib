@@ -1,3 +1,8 @@
+# v2.3.0 (Dec 6, 2017)
+
+ - Fixed bug where an ADB connection wouldn't wait for data for certain queries such as getting
+   devices. This was especially noticeable when querying devices several times.
+
 # v2.2.1 (Dec 6, 2017)
 
  - Added missing xmldom dependency.
