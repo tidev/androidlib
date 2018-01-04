@@ -211,7 +211,10 @@ export function trackDevices() {
 			conn
 				.on('data', async (data) => {
 					try {
-						handle.emit('change', await parseDevices(data));
+						const devices = await parseDevices(data);
+						if (!handle.stopped) {
+							handle.emit('change', devices);
+						}
 					} catch (err) {
 						handle.emit('error', err);
 					}

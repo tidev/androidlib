@@ -1,3 +1,8 @@
+# v2.3.1 (Jan 4, 2018)
+
+ - Prevent device changes from being emitted after stop tracking devices.
+ - Clone internal devices array to strip gawk data before emitting.
+
 # v2.3.0 (Dec 6, 2017)
 
  - Fixed bug where an ADB connection wouldn't wait for data for certain queries such as getting

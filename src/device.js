@@ -43,8 +43,8 @@ export function trackDevices() {
 		gawk.set(devices, connectedDevices);
 
 		if (!initialized) {
-			handle.emit('devices', devices);
-			gawk.watch(devices, () => handle.emit('devices', devices));
+			handle.emit('devices', JSON.parse(JSON.stringify(devices)));
+			gawk.watch(devices, () => handle.emit('devices', JSON.parse(JSON.stringify(devices))));
 			initialized = true;
 		}
 	});
