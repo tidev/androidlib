@@ -1,3 +1,8 @@
+# v2.3.2 (Jan 4, 2018)
+
+ - Updated npm dependencies, namely gawk@4.4.5.
+ - Updated copyright year.
+
 # v2.3.1 (Jan 4, 2018)
 
  - Prevent device changes from being emitted after stop tracking devices.
