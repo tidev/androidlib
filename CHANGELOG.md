@@ -1,3 +1,7 @@
+# v2.3.3 (Jan 10, 2018)
+
+ - Fixed adb socket handling when adb goes away.
+
 # v2.3.2 (Jan 4, 2018)
 
  - Updated npm dependencies, namely gawk@4.4.5.
