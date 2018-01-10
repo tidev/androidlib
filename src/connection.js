@@ -306,7 +306,7 @@ export default class Connection extends EventEmitter {
 				}
 			});
 
-			this.socket.on('end', () => {
+			this.socket.on('close', () => {
 				log(`[${this.connNum}] [${states[this.state]}] [${cmd}] Socket closed by server, ${buffer ? buffer.length : 0} bytes remaining in buffer`);
 				this.end();
 
@@ -323,8 +323,11 @@ export default class Connection extends EventEmitter {
 			});
 
 			this.socket.on('error', err => {
-				this.end();
-				reject(err);
+				// ECONNRESET fires before 'close' fires on Windows for some reason
+				if (err.code !== 'ECONNRESET') {
+					this.end();
+					reject(err);
+				}
 			});
 
 			doSend && send();
