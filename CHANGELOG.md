@@ -1,3 +1,7 @@
+# v2.3.4 (April 2, 2018)
+
+ - Updated npm dependencies.
+
 # v2.3.3 (Jan 10, 2018)
 
  - Fixed adb socket handling when adb goes away.
