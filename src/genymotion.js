@@ -40,7 +40,7 @@ export const genymotionHomeLocations = {
 		'~/.Genymobile/Genymotion',
 		'~/.Genymotion'
 	],
-	linux : [
+	linux: [
 		'~/.Genymobile/Genymotion',
 		'~/.Genymotion'
 	],
