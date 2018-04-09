@@ -1,6 +1,6 @@
-import net from 'net';
+const net = require('net');
 
-export default class MockAdbServer {
+class MockAdbServer {
 	constructor(port = 9999) {
 		this.server = null;
 		this.port = port;
@@ -65,3 +65,5 @@ export default class MockAdbServer {
 		}
 	}
 }
+
+module.exports = MockAdbServer;
