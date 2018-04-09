@@ -1,4 +1,4 @@
-# v2.3.4 (April 9, 2018)
+# v2.3.4 (Apr 9, 2018)
 
  - Updated npm dependencies.
 
