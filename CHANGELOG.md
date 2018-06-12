@@ -1,3 +1,10 @@
+# v2.3.5 (Jun 12, 2018)
+
+ * Added support for scanning the Android SDK `emulator` directory for the emulator executable.
+   ([TIMOB-26126](https://jira.appcelerator.org/browse/TIMOB-26126))
+ * Updated npm dependencies.
+ * Removed `yarn.lock` from distribution.
+
 # v2.3.4 (Apr 9, 2018)
 
  * Updated npm dependencies.
