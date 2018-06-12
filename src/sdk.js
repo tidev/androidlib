@@ -80,7 +80,11 @@ export class SDK {
 			sdkmanager: `bin/sdkmanager${bat}`
 		});
 
-		Object.assign(executables, this.findExecutables(path.join(dir, 'emulator'), { emulator: `emulator${exe}` }));
+		// check the emulator directory
+		const emulatorExe = path.join(dir, 'emulator', `emulator${exe}`);
+		if (isFile(emulatorExe)) {
+			executables.emulator = emulatorExe;
+		}
 
 		if (!isFile(executables.emulator)) {
 			throw new Error('Directory missing "tools/emulator" executable');
