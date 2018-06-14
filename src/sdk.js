@@ -87,7 +87,7 @@ export class SDK {
 		}
 
 		if (!isFile(executables.emulator)) {
-			throw new Error('Directory missing "tools/emulator" executable');
+			throw new Error('Directory missing "emulator" executable');
 		}
 
 		this.addons = [];

@@ -1,3 +1,7 @@
+# v2.3.6 (Jun 14, 2018)
+
+ * Fixed verbiage in invalid SDK when directory does not contain an emulator executable.
+
 # v2.3.5 (Jun 12, 2018)
 
  * Added support for scanning the Android SDK `emulator` directory for the emulator executable.
