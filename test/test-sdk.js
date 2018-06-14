@@ -43,10 +43,10 @@ describe('SDK', () => {
 		}).to.throw(Error, 'Directory contains invalid "tools/source.properties" (missing Pkg.Revision)');
 	});
 
-	it('should error if "tools/emulator" is missing', () => {
+	it('should error if "emulator" is missing', () => {
 		expect(() => {
 			new androidlib.sdk.SDK(path.resolve('./test/mocks/sdk/all/missing-emulator'));
-		}).to.throw(Error, 'Directory missing "tools/emulator" executable');
+		}).to.throw(Error, 'Directory missing "emulator" executable');
 	});
 
 	it('should detect vanilla sdk', () => {
