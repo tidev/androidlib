@@ -1,5 +1,5 @@
 import appcdLogger from 'appcd-logger';
-import MockAdbServer from './fixtures/adb-server';
+import MockAdbServer from './mocks/adb-server';
 import path from 'path';
 
 import * as androidlib from '../dist/index';
@@ -12,7 +12,7 @@ const { highlight } = appcdLogger.styles;
 const port = 9999;
 
 describe('ADB', () => {
-	beforeEach(function () {
+	beforeEach(async function () {
 		this.path = androidlib.options.env.path;
 		this.port = androidlib.options.adb.port;
 		this.searchPaths = androidlib.options.sdk.searchPaths;
@@ -22,7 +22,7 @@ describe('ADB', () => {
 
 		log(`Starting mock server on port ${port}`);
 		this.mockServer = new MockAdbServer(port);
-		this.mockServer.start();
+		await this.mockServer.start();
 	});
 
 	afterEach(async function () {

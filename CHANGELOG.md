@@ -1,3 +1,8 @@
+# v2.4.0
+
+ * Upgraded to Gulp 4.
+ * Updated dependencies.
+
 # v2.3.6 (Jun 14, 2018)
 
  * Fixed verbiage in invalid SDK when directory does not contain an emulator executable.

@@ -172,7 +172,7 @@ export async function shell(id, cmd) {
 	const conn = await connect();
 	await conn.exec(`host:transport:${id}`);
 	return await conn.exec(`shell:${cmd.replace(/^shell:/, '')}`, {
-		bufferUntilClose: true,
+		// for some reason, we no longer need to set bufferUntilClose to true for adb 1.0.40
 		noLength: true
 	});
 }

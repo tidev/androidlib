@@ -1,7 +1,7 @@
 import * as androidlib from '../dist/index';
 
 describe('Devices', () => {
-	it('should detect all devices', async function () {
+	it.skip('should detect all devices', async function () {
 		this.timeout(10000);
 		this.slow(5000);
 
