@@ -1,3 +1,10 @@
+# v2.4.0
+
+ * fix(connection): Fixed bug when executing adb command over a connection and `bufferUntilClose` is
+   `true` and the results hang because of listening to `close` instead of `end` event.
+ * chore: Upgraded to Gulp 4.
+ * chore: Updated dependencies.
+
 # v2.3.6 (Jun 14, 2018)
 
  * Fixed verbiage in invalid SDK when directory does not contain an emulator executable.

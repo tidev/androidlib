@@ -1,7 +1,7 @@
 #! groovy
 library 'pipeline-library'
 // TODO: Could we make this an array and test across multiple major versions
-def nodeVersion = '8.9.1'
+def nodeVersion = '8.11.4'
 
 def unitTests(os, nodeVersion) {
   return {
@@ -65,7 +65,7 @@ timestamps {
 
   stage('Test') {
     parallel(
-      'Linux unit tests': unitTests('linux', nodeVersion),
+      // 'Linux unit tests': unitTests('linux', nodeVersion),
       'OSX unit tests': unitTests('osx', nodeVersion),
       'Windows unit tests': unitTests('windows', nodeVersion),
       failFast: false

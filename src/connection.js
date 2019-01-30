@@ -306,8 +306,8 @@ export default class Connection extends EventEmitter {
 				}
 			});
 
-			this.socket.on('close', () => {
-				log(`[${this.connNum}] [${states[this.state]}] [${cmd}] Socket closed by server, ${buffer ? buffer.length : 0} bytes remaining in buffer`);
+			this.socket.on('end', () => {
+				log(`[${this.connNum}] [${states[this.state]}] [${cmd}] Socket ended by server, ${buffer ? buffer.length : 0} bytes remaining in buffer`);
 				this.end();
 
 				if (buffer && buffer.length) {

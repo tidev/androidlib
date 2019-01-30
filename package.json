@@ -1,6 +1,6 @@
 {
   "name": "androidlib",
-  "version": "2.3.6",
+  "version": "2.4.0",
   "description": "Android Utility Library",
   "main": "./dist/index",
   "author": "Axway, Inc. <npmjs@appcelerator.com>",
@@ -22,21 +22,21 @@
     "test": "gulp test"
   },
   "dependencies": {
-    "appcd-fs": "^1.1.2",
-    "appcd-logger": "^1.1.1",
-    "appcd-path": "^1.1.1",
-    "appcd-subprocess": "^1.1.1",
-    "appcd-util": "^1.1.1",
-    "cli-kit": "^0.3.0",
-    "fs-extra": "^6.0.1",
-    "gawk": "^4.5.0",
-    "simple-plist": "^0.3.0",
-    "source-map-support": "^0.5.6",
+    "appcd-fs": "^1.1.5",
+    "appcd-logger": "^2.0.0",
+    "appcd-path": "^1.1.4",
+    "appcd-subprocess": "^1.2.0",
+    "appcd-util": "^1.1.5",
+    "cli-kit": "^0.6.2",
+    "fs-extra": "^7.0.1",
+    "gawk": "^4.6.2",
+    "pluralize": "^7.0.0",
+    "simple-plist": "^1.0.0",
+    "source-map-support": "^0.5.10",
     "xmldom": "^0.1.27"
   },
   "devDependencies": {
-    "appcd-gulp": "^1.1.5",
-    "gulp": "^3.9.1",
+    "appcd-gulp": "^2.0.0",
     "tmp": "^0.0.33"
   },
   "homepage": "https://github.com/appcelerator/androidlib",
@@ -46,6 +46,6 @@
     "url": "git://github.com/appcelerator/androidlib.git"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=8.10.0"
   }
 }

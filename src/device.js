@@ -1,11 +1,11 @@
 import appcdLogger from 'appcd-logger';
 import BaseDevice from './base-device';
 import gawk from 'gawk';
+import pluralize from 'pluralize';
 
 import * as adb from './adb';
 
 const { log } = appcdLogger('androidlib:device');
-const { pluralize } = appcdLogger;
 
 /**
  * Information for a physically connected device.
