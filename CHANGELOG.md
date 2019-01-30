@@ -1,4 +1,4 @@
-# v2.4.0
+# v2.4.0 (Jan 29, 2019)
 
  * fix(connection): Fixed bug when executing adb command over a connection and `bufferUntilClose` is
    `true` and the results hang because of listening to `close` instead of `end` event.
