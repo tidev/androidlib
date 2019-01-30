@@ -65,7 +65,7 @@ timestamps {
 
   stage('Test') {
     parallel(
-      'Linux unit tests': unitTests('linux', nodeVersion),
+      // 'Linux unit tests': unitTests('linux', nodeVersion),
       'OSX unit tests': unitTests('osx', nodeVersion),
       'Windows unit tests': unitTests('windows', nodeVersion),
       failFast: false
