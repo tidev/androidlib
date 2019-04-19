@@ -1,3 +1,8 @@
+# v2.6.0
+
+ * fix: Removed unused 'targets' property from SDKs.
+ * chore: Updated dependencies.
+
 # v2.5.0 (Mar 29, 2019)
 
  * chore: Updated dependencies.
