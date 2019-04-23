@@ -1,6 +1,6 @@
-# v2.6.0
+# v3.0.0
 
- * fix: Removed unused 'targets' property from SDKs.
+ * BREAKING CHANGE: Removed unused 'targets' property from SDKs.
  * chore: Updated dependencies.
 
 # v2.5.0 (Mar 29, 2019)
