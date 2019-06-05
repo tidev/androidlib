@@ -12,6 +12,14 @@ new CLI({
 				console.log(JSON.stringify(devices, null, '  '));
 			}
 		},
+		emulators: {
+			desc: 'lists emulators',
+			async action() {
+				const sdks = await androidlib.sdk.getSDKs();
+				const emus = await androidlib.emulators.getEmulators({ sdks });
+				console.log(JSON.stringify(emus, null, '  '));
+			}
+		},
 		'track-devices': {
 			desc: 'listens for devices to be connected/disconnected',
 			async action() {
@@ -25,7 +33,8 @@ new CLI({
 					.on('error', console.error);
 			}
 		}
-	}
+	},
+	help: true
 }).exec()
 	.catch(err => {
 		console.error(err.message);

@@ -100,7 +100,6 @@ export class SDK {
 			version: null
 		};
 		this.systemImages = {};
-		this.targets = [];
 		this.tools = {
 			executables,
 			path: toolsDir,

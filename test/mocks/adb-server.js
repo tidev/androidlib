@@ -36,6 +36,7 @@ class MockAdbServer {
 				} else if (data.indexOf('shell:ps') !== -1) {
 					toClose = false;
 					socket.write('OKAY');
+					clearTimeout(timer);
 					timer = setTimeout(() => {
 						try {
 							socket.write('USER     PID   PPID  VSIZE  RSS     WCHAN    PC        NAME\n');
@@ -48,6 +49,7 @@ class MockAdbServer {
 					}, 10);
 				} else if (data.indexOf('host:transport:emulator-5554') !== -1) {
 					toClose = false;
+					clearTimeout(timer);
 					timer = setTimeout(() => {
 						socket.write('OKAY');
 					}, 500);

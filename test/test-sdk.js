@@ -64,7 +64,6 @@ describe('SDK', () => {
 				version: null
 			},
 			systemImages: {},
-			targets: [],
 			tools: {
 				executables: {
 					android: path.join(dir, 'tools', `android${bat}`),
@@ -92,7 +91,6 @@ describe('SDK', () => {
 				version: null
 			},
 			systemImages: {},
-			targets: [],
 			tools: {
 				executables: {
 					android: null,
@@ -132,7 +130,6 @@ describe('SDK', () => {
 				version: null
 			},
 			systemImages: {},
-			targets: [],
 			tools: {
 				executables: {
 					android: path.join(dir, 'tools', `android${bat}`),
@@ -162,7 +159,6 @@ describe('SDK', () => {
 				version: '23.1'
 			},
 			systemImages: {},
-			targets: [],
 			tools: {
 				executables: {
 					android: path.join(dir, 'tools', `android${bat}`),
@@ -273,7 +269,6 @@ describe('SDK', () => {
 					type: 'google_apis'
 				}
 			},
-			targets: [],
 			tools: {
 				executables: {
 					android: path.join(dir, 'tools', `android${bat}`),
@@ -441,7 +436,6 @@ describe('SDK', () => {
 					type: 'google_apis'
 				}
 			},
-			targets: [],
 			tools: {
 				executables: {
 					android: path.join(dir, 'tools', `android${bat}`),
@@ -636,7 +630,6 @@ describe('SDK', () => {
 					type: 'google_apis'
 				}
 			},
-			targets: [],
 			tools: {
 				executables: {
 					android: path.join(dir, 'tools', `android${bat}`),
