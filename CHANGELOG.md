@@ -1,4 +1,4 @@
-# v3.0.0
+# v3.0.0 (Jun 5, 2019)
 
  * BREAKING CHANGE: Removed unused 'targets' property from SDKs.
  * chore: Updated dependencies.
