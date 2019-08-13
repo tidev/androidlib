@@ -1,3 +1,10 @@
+# v4.0.0 (Aug 13, 2019)
+
+ * BREAKING CHANGE: Updated to `appcd-util@2.0.0` which requires Node.js 8.1.0 or newer.
+ * feat: Registered `androidlib` bin in `package.json`.
+ * chore: Fixed eslint `hasOwnProperty` warnings.
+ * chore: Updated dependencies.
+
 # v3.0.0 (Jun 5, 2019)
 
  * BREAKING CHANGE: Removed unused 'targets' property from SDKs.

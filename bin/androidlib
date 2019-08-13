@@ -2,6 +2,7 @@
 
 const androidlib = require('../dist/index');
 const CLI = require('cli-kit').CLI;
+const pkgJson = require('../package.json');
 
 new CLI({
 	commands: {
@@ -34,7 +35,9 @@ new CLI({
 			}
 		}
 	},
-	help: true
+	help: true,
+	name: pkgJson.name,
+	version: pkgJson.version
 }).exec()
 	.catch(err => {
 		console.error(err.message);
