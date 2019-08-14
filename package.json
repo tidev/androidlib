@@ -14,9 +14,7 @@
     "ndk",
     "adb"
   ],
-  "bin": {
-    "androidlib": "./bin/androidlib"
-  },
+  "bin": "./bin/androidlib",
   "scripts": {
     "build": "gulp build",
     "coverage": "gulp coverage",
