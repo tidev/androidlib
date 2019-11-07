@@ -1,3 +1,7 @@
+# v4.0.1 (Nov 7, 2019)
+
+ * chore: Updated dependencies.
+
 # v4.0.0 (Aug 13, 2019)
 
  * BREAKING CHANGE: Updated to `appcd-util@2.0.0` which requires Node.js 8.1.0 or newer.
