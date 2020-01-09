@@ -368,9 +368,9 @@
   integrity sha512-rr+OQyAjxze7GgWrSaJwydHStIhHq2lvY3BOC2Mj7KnzI7XK0Uw1TOOdI9lDoajEbSWLiYgoo4f1R51erQfhPQ==
 
 "@types/node@*":
-  version "13.1.4"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.1.4.tgz#4cfd90175a200ee9b02bd6b1cd19bc349741607e"
-  integrity sha512-Lue/mlp2egZJoHXZr4LndxDAd7i/7SQYhV0EjWfb/a4/OZ6tuVwMCVPiwkU5nsEipxEf7hmkSU7Em5VQ8P5NGA==
+  version "13.1.5"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.1.5.tgz#4d5efc52a1d3e45d13e5ec9f911cbc5b089ccaec"
+  integrity sha512-wupvfmtbqRJzjCm1H2diy7wo31Gn1OzvqoxCfQuKM9eSecogzP0WTlrjdq7cf7jgSO2ZX6hxwgRPR8Wt7FA22g==
 
 "@webassemblyjs/ast@1.8.5":
   version "1.8.5"
@@ -1707,20 +1707,20 @@ cli-cursor@^3.1.0:
   dependencies:
     restore-cursor "^3.1.0"
 
-cli-kit@^0.13.0:
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/cli-kit/-/cli-kit-0.13.0.tgz#9ac97135d2a9368ae83d9e4ab04465c220555748"
-  integrity sha512-5QXOxgi+Ml4s/bKxn66HJxVXI04IoZzK6SE1f5mBEmlwc6xJgcQG3UETYbW+lslangdPG7PDSXakSSulE9OQbg==
+cli-kit@^0.13.1:
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/cli-kit/-/cli-kit-0.13.1.tgz#eb7418a1c030b10b1e6e17ea6b536f003ac9cbf6"
+  integrity sha512-EnXk2BAmMM5OHH4wU68hyDykRHBUZQgdiOOnnWNwqoctFupT7Z0yxTWtltaydMD2Oh7F/MkdJziWZ4Vdk1kW9w==
   dependencies:
     argv-split "^2.0.1"
     fast-levenshtein "^2.0.6"
     fs-extra "^8.1.0"
-    hook-emitter "^4.0.0"
+    hook-emitter "^4.0.1"
     lodash.camelcase "^4.3.0"
     pkg-dir "^4.2.0"
     pluralize "^8.0.0"
-    semver "^6.3.0"
-    snooplogg "^2.3.2"
+    semver "^7.1.1"
+    snooplogg "^2.3.3"
     source-map-support "^0.5.16"
     which "^2.0.2"
 
@@ -3833,7 +3833,7 @@ homedir-polyfill@^1.0.1:
   dependencies:
     parse-passwd "^1.0.0"
 
-hook-emitter@^4.0.0:
+hook-emitter@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/hook-emitter/-/hook-emitter-4.0.1.tgz#aab2755f3590263ce09a74d70bfa036c3555d767"
   integrity sha512-PN5jRmF3po48FOCPvzEfJF8gJlmmW4hJSp2QUUenrVe4mDmPy4MfaoUsKYriDEmclil6MQQPWMfhWqui86AUFg==
@@ -6637,7 +6637,7 @@ snapdragon@^0.8.1:
     source-map-resolve "^0.5.0"
     use "^3.1.0"
 
-snooplogg@^2.3.2, snooplogg@^2.3.3:
+snooplogg@^2.3.3:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/snooplogg/-/snooplogg-2.3.3.tgz#5ff87d24e6dd4d59bb45f9c97372b45a64eaeb9d"
   integrity sha512-ibqjTxEjn4axSxl+bX17h71ioK/MN8xHdaLFNAkyqHvywOI5xqT7blyUm6ALPDYzfVNIe6Itr+61odaVSEU20A==
