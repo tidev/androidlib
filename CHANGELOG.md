@@ -1,3 +1,11 @@
+# v4.1.0 (Feb 13, 2020)
+
+ * feat: Added support for Android NDK (side by side) installs.
+   [(DAEMON-322)](https://jira.appcelerator.org/browse/DAEMON-322)
+ * feat: Added `sdk` and `ndk` commands to `androidlib` CLI.
+ * feat: Added `ndk.getNDKs()` to match parity with SDKs.
+ * chore: Updated dependencies.
+
 # v4.0.3 (Jan 8, 2020)
 
  * chore: Updated dependencies.

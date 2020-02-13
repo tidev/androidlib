@@ -1,6 +1,8 @@
 import fs from 'fs';
+import options from './options';
 import path from 'path';
 
+import { arrayify, cache, get } from 'appcd-util';
 import { cmd } from 'appcd-subprocess';
 import { expandPath } from 'appcd-path';
 import { isDir, isFile } from 'appcd-fs';
@@ -12,6 +14,7 @@ import { readPropertiesFile } from './util';
  */
 export const ndkLocations = {
 	darwin: [
+		'~/Library/Android/sdk/ndk',
 		'~/Library/Android/sdk/ndk-bundle',
 		'~',
 		'/opt',
@@ -20,6 +23,7 @@ export const ndkLocations = {
 		'/usr/local'
 	],
 	linux: [
+		'~/Android/sdk/ndk',
 		'~/Android/sdk/ndk-bundle',
 		'~',
 		'/opt',
@@ -28,6 +32,7 @@ export const ndkLocations = {
 		'/usr/local'
 	],
 	win32: [
+		'%LOCALAPPDATA%\\Android\\Sdk\\ndk',
 		'%LOCALAPPDATA%\\Android\\Sdk\\ndk-bundle',
 		'~',
 		'%SystemDrive%',
@@ -144,4 +149,36 @@ export class NDK {
 			}
 		}
 	}
+}
+
+/**
+ * Detects installed Android NDKs, then caches and returns the results.
+ *
+ * @param {Boolean} [force=false] - When `true`, bypasses cache and forces redetection.
+ * @returns {Promise<Array.<NDK>>}
+ */
+export function getNDKs(force) {
+	return cache('androidlib:ndk', force, () => {
+		const results = [];
+		const searchPaths = arrayify(get(options, 'ndk.searchPaths') || ndkLocations[process.platform], true);
+
+		for (let dir of searchPaths) {
+			try {
+				results.push(new NDK(dir));
+			} catch (e) {
+				// not an NDK, check subdirectories
+				if (isDir(dir = expandPath(dir))) {
+					for (const name of fs.readdirSync(dir)) {
+						try {
+							results.push(new NDK(path.join(dir, name)));
+						} catch (e2) {
+							// not an NDK
+						}
+					}
+				}
+			}
+		}
+
+		return results;
+	});
 }
