@@ -21,6 +21,22 @@ new CLI({
 				console.log(JSON.stringify(emus, null, '  '));
 			}
 		},
+		ndk: {
+			aliases: 'ndks',
+			desc: 'detect Android NDKs',
+			async action() {
+				const ndks = await androidlib.ndk.getNDKs();
+				console.log(JSON.stringify(ndks, null, '  '));
+			}
+		},
+		sdk: {
+			aliases: 'sdks',
+			desc: 'detect Android SDKs',
+			async action() {
+				const sdks = await androidlib.sdk.getSDKs();
+				console.log(JSON.stringify(sdks, null, '  '));
+			}
+		},
 		'track-devices': {
 			desc: 'listens for devices to be connected/disconnected',
 			async action() {
