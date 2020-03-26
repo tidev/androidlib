@@ -52,6 +52,8 @@ describe('Emulators', () => {
 	});
 
 	it('should detect mock emulators with no virtualbox', function () {
+		this.timeout(10000);
+
 		const dir = path.resolve(`./test/mocks/sdk/${process.platform}/with-platforms`);
 		const sdks = [ new androidlib.sdk.SDK(dir) ];
 		const avdDir = path.join(__dirname, 'mocks', 'avd');
