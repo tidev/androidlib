@@ -1,3 +1,7 @@
+# v4.1.1
+
+* fix: Switched from `errno` to `code` in connect catch due to breaking change in Node.js v13.
+
 # v4.1.0 (Feb 13, 2020)
 
  * feat: Added support for Android NDK (side by side) installs.
