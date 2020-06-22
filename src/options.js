@@ -27,24 +27,10 @@ const options = {
 	executables: {
 		adb: null
 	},
-	genymotion: {
-		executables: {
-			genymotion: null,
-			player: null
-		},
-		searchPaths: null
-	},
 	ndk: {
 		searchPaths: null
 	},
 	sdk: {
-		searchPaths: null
-	},
-	virtualbox: {
-		configFile: null,
-		executables: {
-			vboxmanage: null,
-		},
 		searchPaths: null
 	}
 };

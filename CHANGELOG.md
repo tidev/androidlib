@@ -1,6 +1,10 @@
-# v4.1.1
+# v5.0.0
 
-* fix: Switched from `errno` to `code` in connect catch due to breaking change in Node.js v13.
+ * BREAKING CHANGE: Removed Genymotion and VirtualBox support.
+   [(DAEMON-313)](https://jira.appcelerator.org/browse/DAEMON-313)
+ * BREAKING CHANGE: Dropped support for Node.js 10.12 and older.
+ * fix: Switched from `errno` to `code` in connect catch due to breaking change in Node.js v13/14.
+ * chore: Updated dependencies.
 
 # v4.1.0 (Feb 13, 2020)
 
