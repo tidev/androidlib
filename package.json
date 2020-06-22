@@ -1,6 +1,6 @@
 {
   "name": "androidlib",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "description": "Android Utility Library",
   "main": "./dist/index",
   "author": "Axway, Inc. <npmjs@appcelerator.com>",
@@ -24,22 +24,22 @@
     "test": "gulp test"
   },
   "dependencies": {
-    "appcd-fs": "^1.1.10",
-    "appcd-logger": "^2.0.5",
-    "appcd-path": "^1.1.10",
-    "appcd-subprocess": "^3.0.2",
-    "appcd-util": "^2.0.2",
-    "cli-kit": "^0.13.2",
-    "fs-extra": "^8.1.0",
-    "gawk": "^4.7.0",
+    "appcd-fs": "^2.0.0",
+    "appcd-logger": "^3.0.0",
+    "appcd-path": "^2.0.1",
+    "appcd-subprocess": "^4.0.0",
+    "appcd-util": "^3.0.0",
+    "cli-kit": "^1.2.3",
+    "fs-extra": "^9.0.1",
+    "gawk": "^4.7.1",
     "pluralize": "^8.0.0",
     "simple-plist": "^1.1.0",
-    "source-map-support": "^0.5.16",
-    "xmldom": "^0.2.1"
+    "source-map-support": "^0.5.19",
+    "xmldom": "^0.3.0"
   },
   "devDependencies": {
-    "appcd-gulp": "^2.4.0",
-    "tmp": "^0.1.0"
+    "appcd-gulp": "^3.0.1",
+    "tmp": "^0.2.1"
   },
   "homepage": "https://github.com/appcelerator/androidlib",
   "bugs": "https://github.com/appcelerator/androidlib/issues",
@@ -48,6 +48,6 @@
     "url": "git://github.com/appcelerator/androidlib.git"
   },
   "engines": {
-    "node": ">=8.10.0"
+    "node": ">=10.13.0"
   }
 }
