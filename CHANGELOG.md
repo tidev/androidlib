@@ -1,4 +1,4 @@
-# v5.0.0
+# v5.0.0 (Jun 22, 2020)
 
  * BREAKING CHANGE: Removed Genymotion and VirtualBox support.
    [(DAEMON-313)](https://jira.appcelerator.org/browse/DAEMON-313)
