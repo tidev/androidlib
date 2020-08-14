@@ -15,30 +15,15 @@ import { readPropertiesFile } from './util';
 export const ndkLocations = {
 	darwin: [
 		'~/Library/Android/sdk/ndk',
-		'~/Library/Android/sdk/ndk-bundle',
-		'~',
-		'/opt',
-		'/opt/local',
-		'/usr',
-		'/usr/local'
+		'~/Library/Android/sdk/ndk-bundle'
 	],
 	linux: [
 		'~/Android/sdk/ndk',
-		'~/Android/sdk/ndk-bundle',
-		'~',
-		'/opt',
-		'/opt/local',
-		'/usr',
-		'/usr/local'
+		'~/Android/sdk/ndk-bundle'
 	],
 	win32: [
-		'%LOCALAPPDATA%\\Android\\Sdk\\ndk',
-		'%LOCALAPPDATA%\\Android\\Sdk\\ndk-bundle',
-		'~',
-		'%SystemDrive%',
-		'%ProgramFiles%',
-		'%ProgramFiles(x86)%',
-		'%CommonProgramFiles%'
+		'%LOCALAPPDATA%\\Android\\sdk\\ndk',
+		'%LOCALAPPDATA%\\Android\\sdk\\ndk-bundle'
 	]
 };
 
