@@ -22,7 +22,7 @@ new CLI({
 			}
 		},
 		ndk: {
-			aliases: 'ndks',
+			aliases: '!ndks',
 			desc: 'detect Android NDKs',
 			async action() {
 				const ndks = await androidlib.ndk.getNDKs();
@@ -30,7 +30,7 @@ new CLI({
 			}
 		},
 		sdk: {
-			aliases: 'sdks',
+			aliases: '!sdks',
 			desc: 'detect Android SDKs',
 			async action() {
 				const sdks = await androidlib.sdk.getSDKs();

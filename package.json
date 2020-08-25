@@ -1,6 +1,6 @@
 {
   "name": "androidlib",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "Android Utility Library",
   "main": "./dist/index",
   "author": "Axway, Inc. <npmjs@appcelerator.com>",
@@ -29,7 +29,7 @@
     "appcd-path": "^2.0.1",
     "appcd-subprocess": "^4.0.0",
     "appcd-util": "^3.0.0",
-    "cli-kit": "^1.2.3",
+    "cli-kit": "^1.8.0",
     "fs-extra": "^9.0.1",
     "gawk": "^4.7.1",
     "pluralize": "^8.0.0",
