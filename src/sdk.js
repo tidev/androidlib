@@ -14,28 +14,13 @@ import { readPropertiesFile } from './util';
  */
 export const sdkLocations = {
 	darwin: [
-		'~/Library/Android/sdk',
-		'~',
-		'/opt',
-		'/opt/local',
-		'/usr',
-		'/usr/local',
+		'~/Library/Android/sdk'
 	],
 	linux: [
-		'~/Android/sdk',
-		'~',
-		'/opt',
-		'/opt/local',
-		'/usr',
-		'/usr/local'
+		'~/Android/sdk'
 	],
 	win32: [
-		'%LOCALAPPDATA%\\Android\\Sdk',
-		'~',
-		'%SystemDrive%',
-		'%ProgramFiles%',
-		'%ProgramFiles(x86)%',
-		'%CommonProgramFiles%'
+		'%LOCALAPPDATA%\\Android\\sdk'
 	]
 };
 
