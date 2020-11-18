@@ -31,7 +31,7 @@
     "appcd-util": "^3.0.0",
     "cli-kit": "^1.8.0",
     "fs-extra": "^9.0.1",
-    "gawk": "^4.7.1",
+    "gawk": "^5.0.0",
     "pluralize": "^8.0.0",
     "simple-plist": "^1.1.0",
     "source-map-support": "^0.5.19",
