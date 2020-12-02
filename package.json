@@ -1,6 +1,6 @@
 {
   "name": "androidlib",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "description": "Android Utility Library",
   "main": "./dist/index",
   "author": "Axway, Inc. <npmjs@appcelerator.com>",
@@ -24,21 +24,21 @@
     "test": "gulp test"
   },
   "dependencies": {
-    "appcd-fs": "^2.0.0",
-    "appcd-logger": "^3.0.0",
-    "appcd-path": "^2.0.1",
-    "appcd-subprocess": "^4.0.0",
-    "appcd-util": "^3.0.0",
-    "cli-kit": "^1.8.0",
+    "appcd-fs": "^2.0.1",
+    "appcd-logger": "^3.0.1",
+    "appcd-path": "^2.0.2",
+    "appcd-subprocess": "^5.0.0",
+    "appcd-util": "^3.1.0",
+    "cli-kit": "^1.9.1",
     "fs-extra": "^9.0.1",
-    "gawk": "^4.7.1",
+    "gawk": "^5.0.0",
     "pluralize": "^8.0.0",
-    "simple-plist": "^1.1.0",
+    "simple-plist": "^1.1.1",
     "source-map-support": "^0.5.19",
-    "xmldom": "^0.3.0"
+    "xmldom": "^0.4.0"
   },
   "devDependencies": {
-    "appcd-gulp": "^3.0.1",
+    "appcd-gulp": "^3.1.0",
     "tmp": "^0.2.1"
   },
   "homepage": "https://github.com/appcelerator/androidlib",

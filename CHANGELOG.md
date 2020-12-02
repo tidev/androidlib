@@ -1,3 +1,7 @@
+# v6.1.0 (Dec 1, 2020)
+
+ * chore: Updated dependencies.
+
 # v6.0.0 (Aug 25, 2020)
 
  * BREAKING CHANGE: Remove old Android SDK and NDK search paths.
