@@ -816,9 +816,9 @@ appcd-gulp@^3.1.1:
     webpack "^5.11.1"
 
 appcd-logger@^3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/appcd-logger/-/appcd-logger-3.0.2.tgz#a7294e8ed24c1bc5646bcd77bb85d9aac4920888"
-  integrity sha512-xDYxNWg2OH4i3sKAeTmAdmfnTucw92BtDU59+BEq19kphCD06l8aFsMEusMerPPEUeYs5yDZLcLDlMssL7iLtQ==
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/appcd-logger/-/appcd-logger-3.0.4.tgz#fce7335b066ef116703fe7159bf37155edf9c87d"
+  integrity sha512-7HbfZRtN3UqhSpUKSpbCDkgQn6eixVmaZfldP38lDY82ODI0TDd69Ry+J0aSLLbH02CeVDe9wv0MpoVv+SiinA==
   dependencies:
     snooplogg "^3.0.2"
     source-map-support "^0.5.19"
