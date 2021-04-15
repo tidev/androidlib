@@ -1,3 +1,7 @@
+# v2.5.1 (Apr 15, 2021)
+
+* fix: Switched from errno to code in connect catch due to breaking change in Node.js v13/14.
+
 # v2.5.0 (Mar 29, 2019)
 
  * chore: Updated dependencies.
