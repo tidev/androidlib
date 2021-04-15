@@ -254,7 +254,7 @@ async function parseDevices(data = '') {
 
 				for (const line of data.toString().split(/\r?\n/)) {
 					const m = line.match(getpropRegExp);
-					if (m && !info.hasOwnProperty(m[1])) {
+					if (m && !Object.prototype.hasOwnProperty.call(info, m[1])) {
 						info[m[1]] = m[2];
 					}
 				}
