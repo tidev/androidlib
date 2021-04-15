@@ -63,7 +63,7 @@ export async function connect() {
 		log(`Attempting to connect to adb on port ${port}`);
 		return await conn.connect();
 	} catch (err) {
-		if (err.errno !== 'ECONNREFUSED') {
+		if (err.code !== 'ECONNREFUSED') {
 			throw err;
 		}
 	}
