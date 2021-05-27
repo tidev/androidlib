@@ -35,7 +35,7 @@
     "pluralize": "^8.0.0",
     "simple-plist": "^1.1.1",
     "source-map-support": "^0.5.19",
-    "xmldom": "^0.4.0"
+    "xmldom": "^0.5.0"
   },
   "devDependencies": {
     "appcd-gulp": "^3.1.1",
